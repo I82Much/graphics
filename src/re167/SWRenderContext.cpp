@@ -27,10 +27,10 @@ void SWRenderContext::setViewport(int width, int height)
 	// Compute viewport matrix based on width, height.
 
 	viewport = Matrix4(
-			width/2,	0,			0,	width/2,
+			width/2.0f,	0,			0,	width/2.0f,
 			// We need to take the - of the height due to the flipped y
 			// axis, but only for the entry on diagonal
-			0,			-height/2,	0,	height/2,
+			0,			-height/2.0f,	0,	height/2.0f,
 			0,			0,			.5,	.5,
 			0,			0,			0,	1
 		);
@@ -188,6 +188,48 @@ void SWRenderContext::render(Object *object)
 */
 void SWRenderContext::rasterizeTriangle(float p[3][4], float n[3][3], float c[3][4])
 {
+    Matrix4 clipSpace = projection * modelview;
+    
+    //  std::cout << clipSpace << std::endl;
+    
+    
+    
+    // projection*modelview should bring all of the vertices in the range (-1...1).  Let's test
+    Vector4 w1 = clipSpace * Vector4(p[0][0], p[0][1], p[0][2], p[0][3]);
+	Vector4 w2 = clipSpace * Vector4(p[1][0], p[1][1], p[1][2], p[1][3]);
+	Vector4 w3 = clipSpace * Vector4(p[2][0], p[2][1], p[2][2], p[2][3]);
+
+    //    std::cout << w1 << " " << w2 << " " << w3 << std::endl;
+    
+    // projection*modelview should bring all of the vertices in the range (-1...1).  Let's test
+    
+    
+    w1 = viewport * w1;
+    w2 = viewport * w2;
+    w3 = viewport * w3;
+    
+    w1 *= (1.0f/w1.getW());
+    w2 *= (1.0f/w2.getW());
+    w3 *= (1.0f/w3.getW());
+    
+    
+    std::cout << w1 << " " << w2 << " " << w3 << std::endl;
+   
+   
+    
+   
+    
+    QRgb value;
+
+    value = qRgb(255, 255, 255); // 0xffbd9527
+    
+    
+    image->setPixel(static_cast<int>(w1.getX()), static_cast<int>(w1.getY()), value);
+    image->setPixel(static_cast<int>(w2.getX()), static_cast<int>(w2.getY()), value);
+    image->setPixel(static_cast<int>(w3.getX()), static_cast<int>(w3.getY()), value);
+    
+    return;
+    
 	// Implement triangle rasterization here.
 	// Use viewport*projection*modelview matrix to project vertices to screen.
 	// You can draw pixels in the output image using image->setPixel(...);
@@ -218,7 +260,7 @@ void SWRenderContext::rasterizeTriangle(float p[3][4], float n[3][3], float c[3]
     image->setPixel(static_cast<int>(x2), static_cast<int>(y2), QColor::fromRgb(1,0,0).value());
     image->setPixel(static_cast<int>(x3), static_cast<int>(y3), QColor::fromRgb(1,0,0).value());
 	
-	
+	/*
 	// Calculate a bounding box around the vertex
 	float xMin = std::min(x1, std::min(x2, x3));
 	float xMax = std::max(x1, std::max(x2, x3));
@@ -252,7 +294,7 @@ void SWRenderContext::rasterizeTriangle(float p[3][4], float n[3][3], float c[3]
 			}
 			
 		}
-	}
+	}*/
 	
 	
 }

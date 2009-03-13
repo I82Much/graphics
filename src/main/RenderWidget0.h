@@ -10,7 +10,7 @@
 
 using namespace RE167;
 
-class RenderWidget0 : public GLRenderWidget //SWRenderWidget //GLRenderWidget
+class RenderWidget0 : public GLRenderWidget
 {
 
 public:
@@ -55,6 +55,7 @@ private:
 	Object *houses;
 	Object *terrain;
 	Object *bunny;
+    Object *cube;
 	Object *dragon;
 	
 	// Hold the last mouse position

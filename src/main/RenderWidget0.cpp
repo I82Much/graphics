@@ -67,18 +67,25 @@ void RenderWidget0::initSceneEvent()
 
 	/*
 	dragon = sceneManager->createObject();
-	GeometryFactory::createObject(dragon, "dragon_smooth.obj");
+	GeometryFactory::createObject(dragon, "objects/dragon_smooth.obj");
 	
 
 	bunny = sceneManager->createObject();
-	GeometryFactory::createObject(bunny, "bunny.obj");
+	GeometryFactory::createObject(bunny, "objects/bunny.obj");
+	
+	terrain = sceneManager->createObject();
+	GeometryFactory::createTerrainFromPGM(terrain, "objects/Heightmap.pgm");
+	*/
+    /*
+    cube = sceneManager->createObject();
+    GeometryFactory::createCube(cube);
 	*/
 	
-	//terrain = sceneManager->createObject();
-	//GeometryFactory::createTerrainFromPGM(terrain, "Heightmap.pgm");
-	
+		
 	houses = sceneManager->createObject();
 	GeometryFactory::createHouses(houses);
+
+
 
 	// Code to draw house provided by Prof. Palacio
 	/*
@@ -163,6 +170,8 @@ void RenderWidget0::timerEvent(QTimerEvent *t)
 	//dragon->setTransformation(Matrix4::translate(-1,0,0) * Matrix4::rotateY(-0.05f * counter));
 	//object->setTransformation(Matrix4::rotateY(-0.05f * counter));
 	//camera->setViewMatrix(camera->getViewMatrix() * Matrix4::rotateY(-0.005f));
+
+    //cube->setTransformation(cube->getTransformation() * Matrix4::rotateY(-0.05f) * Matrix4::rotateX(-0.05f));
 
 	updateScene();
 
