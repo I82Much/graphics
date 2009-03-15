@@ -20,6 +20,9 @@ void SWRenderContext::init()
 	projection = Matrix4::IDENTITY;
 	viewport = Matrix4::IDENTITY;
 	total = Matrix4::IDENTITY;
+	
+	// Create the z-buffer that will be used for depth ordering
+    buffer = new SWZBuffer(this->width, this->height);
 }
 
 void SWRenderContext::setViewport(int width, int height)
@@ -37,19 +40,28 @@ void SWRenderContext::setViewport(int width, int height)
 
 	total = viewport * projection * modelview;
 
-	// The width and height have changed, need to resize our z-buffer
-
+    // Keep track of width and height of image for when we compute bounding boxes
+    this->width = width;
+    this->height = height;
+    
+    // The width and height have changed, need to resize our z-buffer
+    buffer->setSize(width, height);
 }
 
 void SWRenderContext::beginFrame()
 {
 	image->fill(qRgb(0,0,0));
+    
+    
+    
 }
 
 void SWRenderContext::endFrame()
 {
 	mswWidget->setPixmap(QPixmap::fromImage(*image));
 	mswWidget->repaint();
+	
+	buffer->reset();
 }
 
 void SWRenderContext::setModelViewMatrix(const Matrix4 &m)
@@ -188,97 +200,86 @@ void SWRenderContext::render(Object *object)
 */
 void SWRenderContext::rasterizeTriangle(float p[3][4], float n[3][3], float c[3][4])
 {
-    Matrix4 clipSpace = projection * modelview;
-    
-    //  std::cout << clipSpace << std::endl;
-    
-    
-    
-    // projection*modelview should bring all of the vertices in the range (-1...1).  Let's test
-    Vector4 w1 = clipSpace * Vector4(p[0][0], p[0][1], p[0][2], p[0][3]);
-	Vector4 w2 = clipSpace * Vector4(p[1][0], p[1][1], p[1][2], p[1][3]);
-	Vector4 w3 = clipSpace * Vector4(p[2][0], p[2][1], p[2][2], p[2][3]);
+    // Do the complete transformation on object coordinates 
+    Vector4 w1 = total * Vector4(p[0][0], p[0][1], p[0][2], p[0][3]);
+	Vector4 w2 = total * Vector4(p[1][0], p[1][1], p[1][2], p[1][3]);
+	Vector4 w3 = total * Vector4(p[2][0], p[2][1], p[2][2], p[2][3]);
 
-    //    std::cout << w1 << " " << w2 << " " << w3 << std::endl;
+
+    float d1 = 1.0f / w1.getW();
+    float d2 = 1.0f / w2.getW();
+    float d3 = 1.0f / w3.getW();
     
-    // projection*modelview should bring all of the vertices in the range (-1...1).  Let's test
-    
-    
-    w1 = viewport * w1;
-    w2 = viewport * w2;
-    w3 = viewport * w3;
-    
+    // Bring to screen coordinates by homogenizing.  This is the same as dividing by the w coordinate,
+    // but we must do it this way since vectors do not have division defined.
     w1 *= (1.0f/w1.getW());
     w2 *= (1.0f/w2.getW());
     w3 *= (1.0f/w3.getW());
     
     
-    std::cout << w1 << " " << w2 << " " << w3 << std::endl;
-   
-   
+    // Define the colors of the 3 vertices
+    const int MAX_RGB_VALUE = 255;
     
-   
+    QRgb c1 = qRgb( static_cast<int>(MAX_RGB_VALUE * c[0][0]), 
+                    static_cast<int>(MAX_RGB_VALUE * c[0][1]),
+                    static_cast<int>(MAX_RGB_VALUE * c[0][2]) );
+                    
+    QRgb c2 = qRgb( static_cast<int>(MAX_RGB_VALUE * c[1][0]), 
+                    static_cast<int>(MAX_RGB_VALUE * c[1][1]),
+                    static_cast<int>(MAX_RGB_VALUE * c[1][2]) );
+                  
+    QRgb c3 = qRgb( static_cast<int>(MAX_RGB_VALUE * c[2][0]), 
+                    static_cast<int>(MAX_RGB_VALUE * c[2][1]),
+                    static_cast<int>(MAX_RGB_VALUE * c[2][2]) );
+                  
+                QRgb white = qRgb(255,255,255);
+    /*image->setPixel(static_cast<int>(w1.getX()), static_cast<int>(w1.getY()), c1);
+    image->setPixel(static_cast<int>(w2.getX()), static_cast<int>(w2.getY()), c2);
+    image->setPixel(static_cast<int>(w3.getX()), static_cast<int>(w3.getY()), c3);
+    */
     
-    QRgb value;
+    
+    
+    float x1 = w1.getX();
+    float y1 = w1.getY();
+    float z1 = w1.getZ();
+    
+    float x2 = w2.getX();
+    float y2 = w2.getY();
+    float z2 = w2.getZ();
 
-    value = qRgb(255, 255, 255); // 0xffbd9527
-    
-    
-    image->setPixel(static_cast<int>(w1.getX()), static_cast<int>(w1.getY()), value);
-    image->setPixel(static_cast<int>(w2.getX()), static_cast<int>(w2.getY()), value);
-    image->setPixel(static_cast<int>(w3.getX()), static_cast<int>(w3.getY()), value);
-    
-    return;
-    
-	// Implement triangle rasterization here.
-	// Use viewport*projection*modelview matrix to project vertices to screen.
-	// You can draw pixels in the output image using image->setPixel(...);
-	
- 	
-	// Project vertices to screen
+    float x3 = w3.getX();
+    float y3 = w3.getY();
+    float z3 = w3.getZ();
 
-	Vector4 v1 = total * Vector4(p[0][0], p[0][1], p[0][2], p[0][3]);
-	Vector4 v2 = total * Vector4(p[1][0], p[1][1], p[1][2], p[1][3]);
-	Vector4 v3 = total * Vector4(p[2][0], p[2][1], p[2][2], p[2][3]);
-	
-	// Need to homogenize the coordinates
-	float x1, y1;
-	float x2, y2;
-	float x3, y3;
-	
-    x1 = v1.getX() / v1.getW();
-    y1 = v1.getY() / v1.getW();
     
-    x2 = v2.getX() / v2.getW();
-    y2 = v2.getY() / v2.getW();
+   /* std::cout<<"z1:" << z1 << " z2:"<< z2 << " z3" << z3 << std::endl;
+    std::cout<<"d1: " << d1 << " d2: "<< d2 << " d3 " << d3 << std::endl;
+    */
     
-	x2 = v2.getX() / v2.getW();
-    y2 = v2.getY() / v2.getW();
+    // Calculate a bounding box around the vertex
+    float xMin = std::min(x1, std::min(x2, x3));
+    float xMax = std::max(x1, std::max(x2, x3));
+    float yMin = std::min(y1, std::min(y2, y3));
+    float yMax = std::max(y1, std::max(y2, y3));
+    
+    // Clamp the mins and maxes to fit within the screen
+    xMin = std::max(0.0f, xMin);
+    xMax = std::min((float)width, xMax);
+    
+    yMin = std::max(0.0f, yMin);
+    yMax = std::min((float)height, yMax);
     
     
-    image->setPixel(static_cast<int>(x1), static_cast<int>(y1), QColor::fromRgb(1,0,0).value());
-    image->setPixel(static_cast<int>(x2), static_cast<int>(y2), QColor::fromRgb(1,0,0).value());
-    image->setPixel(static_cast<int>(x3), static_cast<int>(y3), QColor::fromRgb(1,0,0).value());
-	
-	/*
-	// Calculate a bounding box around the vertex
-	float xMin = std::min(x1, std::min(x2, x3));
-	float xMax = std::max(x1, std::max(x2, x3));
-	float yMin = std::min(y1, std::min(y2, y3));
-	float yMax = std::max(y1, std::max(y2, y3));
-	
-	float vertices[3][2] = { 	{ x1, y1 },
+    float vertices[3][2] = { 	{ x1, y1 },
 								{ x2, y2 },
 								{ x3, y3 }
 							};
-	const int ALPHA = 0;
-	const int BETA = 1;
-	const int GAMMA = 2;
-							
 	
 	// Calculate barycentric coordinates for each pixel in bounding box.
 	for (int x = xMin; x < xMax; x++) {
 		for (int y = yMin; y < yMax; y++) {
+			
 			float point[] = {x, y};
 			
 			Vector3 baryCoords = barycentric(point, vertices);
@@ -290,11 +291,37 @@ void SWRenderContext::rasterizeTriangle(float p[3][4], float n[3][3], float c[3]
 			if ( (0 < alpha && alpha < 1) &&
 				 (0 < beta && beta < 1) &&
 				 (0 < gamma && gamma < 1) ) {
-				// Set pixel to triangle color	
-			}
+                    
+                    
+                // Linearly interpolate the z value so we can check if the point
+                // is visible    
+                float depth = 0.0f;        
+                    
+				if (buffer->isCloser(x, y, depth)) {
+				    
+				    
+                    buffer->setPixel(x, y, depth);
+                    // Set pixel to linearly interpolated color
+				
+			    	// c(p) = alpha(p)c_a + beta(p)c_b + gamma(p)c_c
+                    float r = (alpha * c[0][0]) + (beta * c[1][0]) + (gamma * c[2][0]);
+                    float g = (alpha * c[0][1]) + (beta * c[1][1]) + (gamma * c[2][1]);
+                    float b = (alpha * c[0][2]) + (beta * c[1][2]) + (gamma * c[2][2]);
+                    float a = (alpha * c[0][3]) + (beta * c[1][3]) + (gamma * c[2][3]);
+				
+    				// We have our rgba on a scale of [0...1].  Scale to be in range [0...255].
+                    r *= 255;
+                    g *= 255;
+                    b *= 255;
+                    a *= 255;
+				
+                    image->setPixel(x, y, qRgba(r,g,b,a) );
+                
+				} // pixel visible
+			} // pixel in triangle
 			
 		}
-	}*/
+	}
 	
 	
 }

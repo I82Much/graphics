@@ -21,11 +21,9 @@ const int SWZBuffer::NUMBER_OF_BINS = 4;
 
 // PUBLIC METHODS
 
-SWZBuffer::SWZBuffer(int width, int height, QImage * image) {
+SWZBuffer::SWZBuffer(int width, int height) {
 	this->width = width;
 	this->height = height;
-	// Store the image pointer for later
-	this->image = image;
 
 	createBuffer(width, height);
 }
@@ -47,22 +45,19 @@ void SWZBuffer::setSize(int newWidth, int newHeight) {
 
 
 /**
-* @param i 		which row in image?
-* @param j 		which column in image?
-* @param z  	at what depth is the pixel?
-* @param color	what color to set (3 element array, (r,g,b)
+* Determines if this z coordinate is closer than the one previously stored in
+* the zbuffer data structure.  If so, overwrites the value in the zbuffer and
+* returns true; else false.
+* @param i which row in the image
+* @param j which column
+* @param 
 */
-void SWZBuffer::setPixel(int i, int j, float z, float* color) {
-	// Note: since these values only change when changing camera 
-	// settings, these should really be constants...
-	float a = far / ( far - near );
-	float b = far * near / ( near - far );
+bool SWZBuffer::isCloser(int i, int j, float depth) {
+    return depth > zbuffer[i][j];    
+}
 
-	int depth = NUMBER_OF_BINS * ( a + b / z );
-	if (zbuffer[i][j] < depth) {
-		zbuffer[i][j] = depth;
-		//image->setPixel(i, j, color[0], color[1], color[2]);
-	}
+void SWZBuffer::setPixel(int i, int j, float depth) {
+    zbuffer[i][j] = depth;
 }
 
 
@@ -70,6 +65,13 @@ void SWZBuffer::setPixel(int i, int j, float z, float* color) {
 
 
 
+
+void SWZBuffer::reset() {
+    if (zbuffer != NULL) {
+        fill();
+    }
+    
+}
 
 
 // PRIVATE METHODS
@@ -77,29 +79,32 @@ void SWZBuffer::setPixel(int i, int j, float z, float* color) {
 
 void SWZBuffer::createBuffer(int width, int height) {
 	// Initialize the zbuffer
-	zbuffer = new int*[height];
+	zbuffer = new float*[height];
 	assert(zbuffer != NULL);
 	for (int i = 0; i < height; i++) {
-		zbuffer[i] = new int[width];
+		zbuffer[i] = new float[width];
 		assert(zbuffer[i] != NULL);
 	}
-	
+
 	// Initialize the buffer to hold the farthest value
 	// that can be represented.
-	int maxDist = 0;
-	for (int row = 0; row < height; row++) {
-		for (int col = 0; col < width; col++) {
-			zbuffer[row][col] = maxDist;
-		}
-	}
+    fill();
 }
 
 /**
 * Fills the buffer with the farthest value that can be
 * represented.
 */
-void SWZBuffer::fillZBuffer(int width, int height) {
-	
+void SWZBuffer::fill() {
+    
+	float maxDist = 0;
+	for (int row = 0; row < height; row++) {
+		for (int col = 0; col < width; col++) {
+			zbuffer[row][col] = maxDist;
+		}
+	}
+    
+    
 }
 
 /**

@@ -16,6 +16,8 @@ void GLRenderContext::init()
 {
 	assert(glewInit() == GLEW_OK);
 	assert(GL_VERSION_2_0);
+
+
 	
 	wireframe = false;
 

@@ -11,37 +11,34 @@ namespace RE167
 	* Note that the zbuffer depends on the frustum in the scene,
 	* since only those objects that are within the near/far range
 	* are rendered.
-	* This class holds a reference to the QImage as it serves as
-	* an intermediary between the SWRenderContext and the QImage.
-	* This class delegates.
 	*/
 	class RE167_EXPORT SWZBuffer
 	{
 	public:
-		SWZBuffer(int width, int height, QImage * image);
+		SWZBuffer(int width, int height);
 		~SWZBuffer();
 
 		void setSize(int width, int height);
-
-		void setPixel(int i, int j, float z, float* color);
-
-
+        
+        void reset();
+        
+        bool isCloser(int x, int y, float z);
+        void setPixel(int x, int y, float z);
+        
+        
 	private:
         int width;
         int height;
-        QImage *image;
 
 
-		int ** zbuffer;
+		float ** zbuffer;
 		float near;
 		float far;
 
-		/*float farOverDiff;
-		float farTimesNearOverDiff;*/
-
 		void createBuffer(int width, int height);
 		void deleteBuffer(int width, int height);
-        void fillZBuffer(int width, int height);
+        
+        void fill();
 
 		static const int NUM_BITS_PRECISION;
 		static const int NUMBER_OF_BINS;

@@ -6,6 +6,7 @@
 #include "RenderContext.h"
 #include "VertexDeclaration.h"
 #include "Matrix4.h"
+#include "SWZBuffer.h"
 
 namespace RE167 {
 
@@ -48,7 +49,10 @@ namespace RE167 {
 		Matrix4 viewport;
 		Matrix4 total;
 
+        int width;
+        int height;
 		
+        SWZBuffer *buffer;
 
 		void rasterizeTriangle(float p[3][4], float n[3][3], float c[3][4]);
 		Vector3 barycentric(float point[2], float vertices[3][2]);

@@ -10,7 +10,7 @@
 
 using namespace RE167;
 
-class RenderWidget0 : public GLRenderWidget
+class RenderWidget0 : public SWRenderWidget
 {
 
 public:

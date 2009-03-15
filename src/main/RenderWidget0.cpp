@@ -28,7 +28,10 @@
 
 RenderWidget0::RenderWidget0()
 {
-	RenderContext *rs = new GLRenderContext();
+	RenderContext *rs = new SWRenderContext();
+    rs->init();
+    
+    
 	sceneManager = 0;
 	counter = 0;
 	QWidget::grabKeyboard();
@@ -80,7 +83,6 @@ void RenderWidget0::initSceneEvent()
     cube = sceneManager->createObject();
     GeometryFactory::createCube(cube);
 	*/
-	
 		
 	houses = sceneManager->createObject();
 	GeometryFactory::createHouses(houses);
