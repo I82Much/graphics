@@ -53,10 +53,16 @@ void SWZBuffer::setSize(int newWidth, int newHeight) {
 * @param 
 */
 bool SWZBuffer::isCloser(int i, int j, float depth) {
+    assert(zbuffer);
+    assert(zbuffer[i]);
+    
     return depth > zbuffer[i][j];    
 }
 
 void SWZBuffer::setPixel(int i, int j, float depth) {
+    assert(zbuffer);
+    assert(zbuffer[i]);
+    
     zbuffer[i][j] = depth;
 }
 

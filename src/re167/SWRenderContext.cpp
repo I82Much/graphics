@@ -205,7 +205,8 @@ void SWRenderContext::rasterizeTriangle(float p[3][4], float n[3][3], float c[3]
 	Vector4 w2 = total * Vector4(p[1][0], p[1][1], p[1][2], p[1][3]);
 	Vector4 w3 = total * Vector4(p[2][0], p[2][1], p[2][2], p[2][3]);
 
-
+    // We will linearly interpolate between these values for the depths; note that 
+    // w is not necessarily equal to 1 due to perspective transformation.
     float d1 = 1.0f / w1.getW();
     float d2 = 1.0f / w2.getW();
     float d3 = 1.0f / w3.getW();
@@ -216,46 +217,15 @@ void SWRenderContext::rasterizeTriangle(float p[3][4], float n[3][3], float c[3]
     w2 *= (1.0f/w2.getW());
     w3 *= (1.0f/w3.getW());
     
-    
-    // Define the colors of the 3 vertices
-    const int MAX_RGB_VALUE = 255;
-    
-    QRgb c1 = qRgb( static_cast<int>(MAX_RGB_VALUE * c[0][0]), 
-                    static_cast<int>(MAX_RGB_VALUE * c[0][1]),
-                    static_cast<int>(MAX_RGB_VALUE * c[0][2]) );
-                    
-    QRgb c2 = qRgb( static_cast<int>(MAX_RGB_VALUE * c[1][0]), 
-                    static_cast<int>(MAX_RGB_VALUE * c[1][1]),
-                    static_cast<int>(MAX_RGB_VALUE * c[1][2]) );
-                  
-    QRgb c3 = qRgb( static_cast<int>(MAX_RGB_VALUE * c[2][0]), 
-                    static_cast<int>(MAX_RGB_VALUE * c[2][1]),
-                    static_cast<int>(MAX_RGB_VALUE * c[2][2]) );
-                  
-                QRgb white = qRgb(255,255,255);
-    /*image->setPixel(static_cast<int>(w1.getX()), static_cast<int>(w1.getY()), c1);
-    image->setPixel(static_cast<int>(w2.getX()), static_cast<int>(w2.getY()), c2);
-    image->setPixel(static_cast<int>(w3.getX()), static_cast<int>(w3.getY()), c3);
-    */
-    
-    
-    
+        
     float x1 = w1.getX();
     float y1 = w1.getY();
-    float z1 = w1.getZ();
-    
+   
     float x2 = w2.getX();
     float y2 = w2.getY();
-    float z2 = w2.getZ();
-
+   
     float x3 = w3.getX();
     float y3 = w3.getY();
-    float z3 = w3.getZ();
-
-    
-   /* std::cout<<"z1:" << z1 << " z2:"<< z2 << " z3" << z3 << std::endl;
-    std::cout<<"d1: " << d1 << " d2: "<< d2 << " d3 " << d3 << std::endl;
-    */
     
     // Calculate a bounding box around the vertex
     float xMin = std::min(x1, std::min(x2, x3));
@@ -270,13 +240,18 @@ void SWRenderContext::rasterizeTriangle(float p[3][4], float n[3][3], float c[3]
     yMin = std::max(0.0f, yMin);
     yMax = std::min((float)height, yMax);
     
-    
+    // Group all of our vertices in screen coordinates together
     float vertices[3][2] = { 	{ x1, y1 },
 								{ x2, y2 },
 								{ x3, y3 }
 							};
 	
 	// Calculate barycentric coordinates for each pixel in bounding box.
+	// Barycentric coordinates are a coordinate system in which a plane is
+	// defined by the three sides of a triangle.  The parametrization values
+	// are called alpha, beta, gamma.  If all are between 0 and 1, the point is
+	// within the triangle. 
+	// See http://en.wikipedia.org/wiki/Barycentric_coordinates_(mathematics)
 	for (int x = xMin; x < xMax; x++) {
 		for (int y = yMin; y < yMax; y++) {
 			
@@ -295,7 +270,8 @@ void SWRenderContext::rasterizeTriangle(float p[3][4], float n[3][3], float c[3]
                     
                 // Linearly interpolate the z value so we can check if the point
                 // is visible    
-                float depth = 0.0f;        
+                // di is the z distance to vertex i
+                float depth = (alpha * d1) + (beta * d2) + (gamma * d3);
                     
 				if (buffer->isCloser(x, y, depth)) {
 				    
