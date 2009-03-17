@@ -60,8 +60,8 @@ bool SWZBuffer::isCloser(int i, int j, float depth) {
 }
 
 void SWZBuffer::setPixel(int i, int j, float depth) {
-    assert(zbuffer);
-    assert(zbuffer[i]);
+    assert(zbuffer != NULL);
+    assert(zbuffer[i] != NULL);
     
     zbuffer[i][j] = depth;
 }
@@ -82,13 +82,21 @@ void SWZBuffer::reset() {
 
 // PRIVATE METHODS
 
+/**
+ * See http://www.velocityreviews.com/forums/t286693-how-to-quotnewquot-a-twodimension-array-in-c.html
 
+ */
 void SWZBuffer::createBuffer(int width, int height) {
 	// Initialize the zbuffer
 	zbuffer = new float*[height];
 	assert(zbuffer != NULL);
-	for (int i = 0; i < height; i++) {
-		zbuffer[i] = new float[width];
+
+    zbuffer[0] = new float[height * width];
+    assert (zbuffer[0] != NULL);
+    // Rather than manually calling "new" each time, we just take
+    // a pointer to an element within our zbuffer[0] that we allocated.
+	for (int i = 1; i < height; i++) {
+		zbuffer[i] = zbuffer[i-1] + width;
 		assert(zbuffer[i] != NULL);
 	}
 
@@ -102,15 +110,13 @@ void SWZBuffer::createBuffer(int width, int height) {
 * represented.
 */
 void SWZBuffer::fill() {
-    
+    assert(zbuffer);
 	float maxDist = 0;
 	for (int row = 0; row < height; row++) {
 		for (int col = 0; col < width; col++) {
 			zbuffer[row][col] = maxDist;
 		}
 	}
-    
-    
 }
 
 /**
@@ -118,9 +124,7 @@ void SWZBuffer::fill() {
 */
 void SWZBuffer::deleteBuffer(int width, int height) {
 	if (zbuffer != NULL) {
-		for (int i = 0; i < height; i++) {
-			delete[] zbuffer[i];
-		}
-		delete[] zbuffer;
-	}
+        delete[] zbuffer[0];
+        delete[] zbuffer;
+    }
 }

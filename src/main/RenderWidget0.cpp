@@ -79,14 +79,12 @@ void RenderWidget0::initSceneEvent()
 	terrain = sceneManager->createObject();
 	GeometryFactory::createTerrainFromPGM(terrain, "objects/Heightmap.pgm");
 	*/
-    /*
+    
     cube = sceneManager->createObject();
     GeometryFactory::createCube(cube);
-	*/
-		
+	
 	houses = sceneManager->createObject();
 	GeometryFactory::createHouses(houses);
-
 
 
 	// Code to draw house provided by Prof. Palacio
