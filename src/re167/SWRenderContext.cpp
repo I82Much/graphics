@@ -1,6 +1,7 @@
 #include "SWRenderContext.h"
 #include "SWWidget.h"
 #include <algorithm>
+#include <qdatetime.h>
 using namespace RE167;
 
 SWRenderContext* SWRenderContext::getSingletonPtr(void)
@@ -23,6 +24,10 @@ void SWRenderContext::init()
 
 	// Create the z-buffer that will be used for depth ordering
     buffer = new SWZBuffer(this->width, this->height);
+    numFramesRendered = 0;
+
+    clock = new QTime();
+
 }
 
 void SWRenderContext::setViewport(int width, int height)
@@ -51,6 +56,7 @@ void SWRenderContext::setViewport(int width, int height)
 void SWRenderContext::beginFrame()
 {
 	image->fill(qRgb(0,0,0));
+    clock->start();
 }
 
 void SWRenderContext::endFrame()
@@ -59,6 +65,9 @@ void SWRenderContext::endFrame()
 	mswWidget->repaint();
 
     buffer->reset();
+    std::cout << clock->elapsed() << " ms for this frame." << std::endl;
+    numFramesRendered++;
+
 }
 
 void SWRenderContext::setModelViewMatrix(const Matrix4 &m)
@@ -202,13 +211,18 @@ void SWRenderContext::rasterizeTriangle(float p[3][4], float n[3][3], float c[3]
 	Vector4 c2 = (projection * modelview) * Vector4(p[1][0], p[1][1], p[1][2], p[1][3]);
 	Vector4 c3 = (projection * modelview) * Vector4(p[2][0], p[2][1], p[2][2], p[2][3]);
 
-  //  std::cout << c1 << " " << c2 << " " << c3 << std::endl;
+    // std::cout << c1 << " " << c2 << " " << c3 << std::endl;
 
 
     // Do the complete transformation on object coordinates
     Vector4 w1 = total * Vector4(p[0][0], p[0][1], p[0][2], p[0][3]);
 	Vector4 w2 = total * Vector4(p[1][0], p[1][1], p[1][2], p[1][3]);
 	Vector4 w3 = total * Vector4(p[2][0], p[2][1], p[2][2], p[2][3]);
+
+
+
+
+    if (w1.getW() == 0 || w2.getW() == 0 || w3.getW() == 0) { return; }
 
     // We will linearly interpolate between these values for the depths; note that
     // w is not necessarily equal to 1 due to perspective transformation.
@@ -221,6 +235,26 @@ void SWRenderContext::rasterizeTriangle(float p[3][4], float n[3][3], float c[3]
     w1 *= (1.0f/w1.getW());
     w2 *= (1.0f/w2.getW());
     w3 *= (1.0f/w3.getW());
+
+    // After homogenous division, the vector is basically a 3d vector so we can
+    // treat it as such (necessary for what we need to do with cross products)
+    Vector3 v1(w1.getX(), w1.getY(), w1.getZ());
+    Vector3 v2(w2.getX(), w2.getY(), w2.getZ());
+    Vector3 v3(w3.getX(), w3.getY(), w3.getZ());
+
+    // Attempt to cull this triangle
+    Vector3 normal = (v2 - v1).crossProduct((v3 - v1));
+    // Triangle is backfacing.  Ignore it
+    if (normal.getZ() > 0) {
+        return;
+    }
+    // Degenerate culling
+    else if (normal == Vector3::ZERO_VECTOR) {
+        return;
+    }
+
+    // TODO:
+    // Insert clipping stuff here?
 
 
     float x1 = w1.getX();
@@ -279,7 +313,6 @@ void SWRenderContext::rasterizeTriangle(float p[3][4], float n[3][3], float c[3]
                 float depth = (alpha * d1) + (beta * d2) + (gamma * d3);
 
 				if (buffer->isCloser(x, y, depth)) {
-
 
                      buffer->setPixel(x, y, depth);
                     // Set pixel to linearly interpolated color

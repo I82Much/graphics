@@ -17,6 +17,8 @@ Vector4::Vector4(float x_, float y_, float z_, float w_) :
 // delete
 Vector4::~Vector4() {}
 
+const Vector4 Vector4::ZERO_VECTOR(0, 0, 0, 0);
+
 // Addition operator for vectors
 Vector4 & Vector4::operator+=(const Vector4 &rhs) {
 	x += rhs.x;

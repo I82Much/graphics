@@ -16,6 +16,8 @@ namespace RE167 {
 			Vector3(float x, float y, float z);
 			~Vector3();
 
+            static const Vector3 ZERO_VECTOR;
+
 			static const float angleBetween(const Vector3 &a, const Vector3 &b);
 
 			// Equality operator

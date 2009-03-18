@@ -86,69 +86,6 @@ void RenderWidget0::initSceneEvent()
 	houses = sceneManager->createObject();
 	GeometryFactory::createHouses(houses);
 
-
-	// Code to draw house provided by Prof. Palacio
-	/*
-	// A house
-	int nVerts = 42;
-	float vertices[] = {-4,-4,4, 4,-4,4, 4,4,4, -4,4,4,		 // front face
-		                -4,-4,-4, -4,-4,4, -4,4,4, -4,4,-4,  // left face
-						4,-4,-4,-4,-4,-4, -4,4,-4, 4,4,-4,   // back face
-						4,-4,4, 4,-4,-4, 4,4,-4, 4,4,4,		 // right face
-						4,4,4, 4,4,-4, -4,4,-4, -4,4,4,		 // top face
-						-4,-4,4, -4,-4,-4, 4,-4,-4, 4,-4,4,  // bottom face
-
-						-20,-4,20, 20,-4,20, 20,-4,-20, -20,-4,-20,  // ground floor
-						-4,4,4, 4,4,4, 0,8,4,						 // roof
-						4,4,4, 4,4,-4, 0,8,-4, 0,8,4,
-						-4,4,4, 0,8,4, 0,8,-4, -4,4,-4,
-						4,4,-4, -4,4,-4, 0,8,-4};
-
-	float colors[] = {1,0,0, 1,0,0, 1,0,0, 1,0,0,	// front face
-					  0,1,0, 0,1,0, 0,1,0, 0,1,0,	// left face
-					  1,0,0, 1,0,0, 1,0,0, 1,0,0,	// back face
-					  0,1,0, 0,1,0, 0,1,0, 0,1,0,	// right face
-					  0,0,1, 0,0,1, 0,0,1, 0,0,1,	// top face
-					  0,0,1, 0,0,1, 0,0,1, 0,0,1,	// bottom face
-	
-					  0,0.5,0, 0,0.5,0, 0,0.5,0, 0,0.5,0,	// ground floor
-					  0,0,1, 0,0,1, 0,0,1,					// roof
-					  1,0,0, 1,0,0, 1,0,0, 1,0,0,
-					  0,1,0, 0,1,0, 0,1,0, 0,1,0,
-					  0,0,1, 0,0,1, 0,0,1,};
-
-	// Add an object to the scene
-	object = sceneManager->createObject();
-
-	// Set up the vertex data
-	VertexData& vertexData = object->vertexData;
-
-	// Specify the elements of the vertex data:
-	// - one element for vertex positions
-	vertexData.vertexDeclaration.addElement(0, 0, 3, 3*sizeof(float), RE167::VES_POSITION);
-	// - one element for vertex colors
-	vertexData.vertexDeclaration.addElement(1, 0, 3, 3*sizeof(int), RE167::VES_DIFFUSE);
-	
-	// Create the buffers and load the data
-	vertexData.createVertexBuffer(0, nVerts*3*sizeof(float), (unsigned char*)vertices);
-	vertexData.createVertexBuffer(1, nVerts*3*sizeof(float), (unsigned char*)colors);
-
-	// The index data that stores the connectivity of the triangles
-	int indices[] = {0,2,3, 0,1,2,			// front face
-		             4,6,7, 4,5,6,			// left face
-					 8,10,11, 8,9,10,		// back face
-					 12,14,15, 12,13,14,	// right face
-					 16,18,19, 16,17,18,	// top face
-					 20,22,23, 20,21,22,	// bottom face
-	                 
-					 24,26,27, 24,25,26,	// ground floor
-					 28,29,30,				// roof
-					 31,33,34, 31,32,33,
-					 35,37,38, 35,36,37,
-					 39,40,41};	
-
-	vertexData.createIndexBuffer(60, indices);
-	*/
 	// Trigger timer event every 5ms.
 	timerId = startTimer(5);
 

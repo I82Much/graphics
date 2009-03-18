@@ -51,7 +51,10 @@ namespace RE167 {
 
         int width;
         int height;
-		
+
+        int numFramesRendered;
+        QTime *clock;
+
         SWZBuffer *buffer;
 
 		void rasterizeTriangle(float p[3][4], float n[3][3], float c[3][4]);

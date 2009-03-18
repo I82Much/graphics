@@ -21,6 +21,8 @@ Vector3::Vector3(float x_, float y_, float z_) :
 // delete
 Vector3::~Vector3() {}
 
+const Vector3 Vector3::ZERO_VECTOR(0,0,0);
+
 // Addition operator for vectors
 Vector3 & Vector3::operator+=(const Vector3 &rhs) {
 	x += rhs.x;

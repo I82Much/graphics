@@ -15,21 +15,22 @@ namespace RE167 {
 			Vector4(float x, float y, float z, float w);
 			~Vector4();
 
-			
+            static const Vector4 ZERO_VECTOR;
+
 			static float angleBetween(const Vector4 &first, const Vector4 &second);
-						
+
 			static int runTestSuite();
 
 			// Equality operator
 			const bool operator==(const Vector4 &other) const;
-			
+
 			// Inequality operator
 			const bool operator!=(const Vector4 &other) const;
 
-			// Unary negation; returns vector pointing in opposite direction 
+			// Unary negation; returns vector pointing in opposite direction
 			// but with same magnitude
 			friend Vector4 operator-(const Vector4 &other);
-			
+
 			// Addition operator for vectors
 			Vector4 & operator+=(const Vector4 &rhs);
 			const Vector4 operator+(const Vector4 &rhs) const;
@@ -42,19 +43,19 @@ namespace RE167 {
 
 			// Scalar multiplication
 			friend Vector4 operator*(const Vector4 &vec, float scalar);
-			friend Vector4 operator*(float scalar, const Vector4 &vec);	
+			friend Vector4 operator*(float scalar, const Vector4 &vec);
 
 			// Multiplication operator for scalar and vector
 			Vector4 & operator*=(const float scalar);
-			
+
 			// Dot product is a scalar operation
 			const float dotProduct(const Vector4 &rhs) const;
-						
+
 			// Returns the normalized version of this vector.
 			const Vector4 normalize();
 
 			const float magnitude() const;
-	
+
 			const float getX() const { return x; }
 			const float getY() const { return y; }
 			const float getZ() const { return z; }
@@ -64,7 +65,7 @@ namespace RE167 {
 			void setY(const float _y) { y = _y; }
 			void setZ(const float _z) { z = _z; }
 			void setW(const float _w) { w = _w; }
-			
+
 			inline friend std::ostream &operator<<(std::ostream &os, const Vector4 &obj) {
 				os << "(" << obj.x << ", " << obj.y << ", " << obj.z << ", " << obj.w << ")";
 				return os;
@@ -74,13 +75,13 @@ namespace RE167 {
 		float x, y, z, w;
 	};
 
-	
+
 
 	/* Friend operator:
 	Scalar multiplication */
 	inline Vector4 operator*(const Vector4 &vec, float scalar) {
-		return Vector4( scalar * vec.x, 
-						scalar * vec.y, 
+		return Vector4( scalar * vec.x,
+						scalar * vec.y,
 						scalar * vec.z,
 						scalar * vec.w );
 	}
@@ -88,8 +89,8 @@ namespace RE167 {
 	/* Friend operator:
 	* Scalar multiplication */
 	inline Vector4 operator*(float scalar, const Vector4 &vec) {
-		return Vector4( scalar * vec.x, 
-						scalar * vec.y, 
+		return Vector4( scalar * vec.x,
+						scalar * vec.y,
 						scalar * vec.z,
 						scalar * vec.w );
 	}
@@ -100,7 +101,7 @@ namespace RE167 {
 	}
 
 	/*
-	inline std::ostream &operator<<(std::ostream &os, const Vector4 &obj) { 
+	inline std::ostream &operator<<(std::ostream &os, const Vector4 &obj) {
 		os << "(" << obj.x << ", " << obj.y << ", " << obj.z << ", " << obj.w << ")";
 		return os;
 	}*/
