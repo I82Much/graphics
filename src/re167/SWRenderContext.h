@@ -52,13 +52,21 @@ namespace RE167 {
         int width;
         int height;
 
+        int lastFrameTime;
+        int curFrameTime;
+
         int numFramesRendered;
         QTime *clock;
 
         SWZBuffer *buffer;
 
+        bool offscreen(float left, float right, float top, float bottom);
 		void rasterizeTriangle(float p[3][4], float n[3][3], float c[3][4]);
+        void drawTile(int left, int right, int top, int bottom, float vertices[3][2],
+                      float colors[3][4], float depths[3]);
+
 		Vector3 barycentric(float point[2], float vertices[3][2]);
+        bool tileOverlapsTriangle(int left, int right, int top, int bottom, float vertices[3][2]);
 	};
 
 }
