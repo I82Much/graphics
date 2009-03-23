@@ -41,6 +41,11 @@ namespace RE167 {
         static SWRenderContext* getSingletonPtr(void);
 
 	private:
+
+        enum TriangleLocation {INSIDE, OUTSIDE, ON_EDGE};
+        enum TriangleEdge {AB, AC, BC };
+
+
 		SWWidget *mswWidget;
 		QImage *image;
 
@@ -59,6 +64,15 @@ namespace RE167 {
         QTime *clock;
 
         SWZBuffer *buffer;
+
+        TriangleLocation fromBarycentric(float alpha, float beta, float gamma);
+
+        bool isOnLeftEdge(float alpha, float beta, float gamma, float vertices[3][2]);
+        bool isOnTopHorizontalEdge(float alpha, float beta, float gamma, float vertices[3][2]);
+
+
+        QRgb linearInterpolation(float alpha, float beta, float gamma, float colors[3][4]);
+        QRgb perspectiveCorrectInterpolation(float alpha, float beta, float gamma, float depths[3], float colors[3][4]);
 
         bool offscreen(float left, float right, float top, float bottom);
 		void rasterizeTriangle(float p[3][4], float n[3][3], float c[3][4]);

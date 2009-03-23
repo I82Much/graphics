@@ -1,5 +1,5 @@
 #include "SWZBuffer.h"
-
+#include <iostream>
 
 using namespace RE167;
 
@@ -37,6 +37,8 @@ SWZBuffer::~SWZBuffer() {
 * newHeight.
 */
 void SWZBuffer::setSize(int newWidth, int newHeight) {
+    std::cout << "setting size " << std::endl;
+
 	deleteBuffer(width, height);
 	createBuffer(newWidth, newHeight);
 	this->width = newWidth;
@@ -48,28 +50,26 @@ void SWZBuffer::setSize(int newWidth, int newHeight) {
 * Determines if this z coordinate is closer than the one previously stored in
 * the zbuffer data structure.  If so, overwrites the value in the zbuffer and
 * returns true; else false.
-* @param i which row in the image
-* @param j which column
+* @param x x-coordinate in image (column)
+* @param y y-coordinate in image (row)
 * @param 
 */
-bool SWZBuffer::isCloser(int i, int j, float depth) {
+bool SWZBuffer::isCloser(int x, int y, float depth) {
     assert(zbuffer);
-    assert(zbuffer[i]);
-    
-    return depth > zbuffer[i][j];    
+    assert(zbuffer[y]);
+
+    assert(y <= (height - 1));
+    assert(x <= (width - 1));
+
+    return depth > zbuffer[y][x];    
 }
 
-void SWZBuffer::setPixel(int i, int j, float depth) {
+void SWZBuffer::setPixel(int x, int y, float depth) {
     assert(zbuffer != NULL);
-    assert(zbuffer[i] != NULL);
-    
-    zbuffer[i][j] = depth;
+    assert(zbuffer[y] != NULL);
+
+    zbuffer[y][x] = depth;
 }
-
-
-
-
-
 
 
 void SWZBuffer::reset() {

@@ -30,8 +30,8 @@ RenderWidget0::RenderWidget0()
 {
 	RenderContext *rs = new SWRenderContext();
     rs->init();
-    
-    
+
+
 	sceneManager = 0;
 	counter = 0;
 	QWidget::grabKeyboard();
@@ -45,7 +45,7 @@ RenderWidget0::~RenderWidget0()
 	}
 }
 
-void RenderWidget0::initSceneEvent() 
+void RenderWidget0::initSceneEvent()
 {
 	sceneManager = new SceneManager();
 
@@ -63,33 +63,43 @@ void RenderWidget0::initSceneEvent()
 	Vector3 cameraCenter2 = Vector3(-10, 40, 40);
 	Vector3 lookAtPoint2 = Vector3(-5,0,0);
 	Vector3 upVector2 = Vector3(0, 1, 0);
-	
+
 	//camera->changeSettings(cameraCenter2, lookAtPoint2, upVector2);
 
 	camera->setFrustum(1, 100, 1, BasicMath::radian(60));
-
-	/*
+    
+/*
 	dragon = sceneManager->createObject();
 	GeometryFactory::createObject(dragon, "objects/dragon_smooth.obj");
-	
+*/
 
-	bunny = sceneManager->createObject();
-	GeometryFactory::createObject(bunny, "objects/bunny.obj");
-	
+	/*bunny = sceneManager->createObject();
+      GeometryFactory::createObject(bunny, "objects/bunny.obj");*/
+/*
 	terrain = sceneManager->createObject();
 	GeometryFactory::createTerrainFromPGM(terrain, "objects/Heightmap.pgm");
 	*/
-    
+
     cube = sceneManager->createObject();
     GeometryFactory::createCube(cube);
-	
-	houses = sceneManager->createObject();
-	GeometryFactory::createHouses(houses);
+    cube->setTransformation(cube->getTransformation() * Matrix4::scale(10, 10, 50));
+    
 
+
+
+    /*sphere = sceneManager->createObject();
+    GeometryFactory::createSphere(sphere);
+	*/
+
+
+
+	/*houses = sceneManager->createObject();
+	GeometryFactory::createHouses(houses);
+    */
 	// Trigger timer event every 5ms.
 	timerId = startTimer(5);
 
-	
+
 }
 
 void RenderWidget0::renderSceneEvent()
@@ -108,7 +118,7 @@ void RenderWidget0::timerEvent(QTimerEvent *t)
 	//object->setTransformation(Matrix4::rotateY(-0.05f * counter));
 	//camera->setViewMatrix(camera->getViewMatrix() * Matrix4::rotateY(-0.005f));
 
-    //cube->setTransformation(cube->getTransformation() * Matrix4::rotateY(-0.05f) * Matrix4::rotateX(-0.05f));
+    /*cube->setTransformation(cube->getTransformation() * Matrix4::rotateY(-0.05f) * Matrix4::rotateX(-0.05f));*/
 
 	updateScene();
 
@@ -143,7 +153,7 @@ void RenderWidget0::mouseMoveEvent(QMouseEvent *e)
 	// Calculate the vector around which we need to rotate to take us from lastPoint to curPoint along
 	// the sphere
 	Vector3 axis = lastVector.crossProduct(curVector);
-	
+
 	// Check whether the cross product is 0.  If it is, then normalizing this
 	// will cause a crash.  Just change the vector slightly
 	if (axis.magnitude() == 0.0f) {
@@ -152,10 +162,10 @@ void RenderWidget0::mouseMoveEvent(QMouseEvent *e)
 
 	Vector4 axis4 = Vector4(axis.getX(), axis.getY(), axis.getZ(), 0).normalize();
 	float angle = Vector3::angleBetween(lastVector, curVector);
-	
+
 
 	// Calculate the angle we would need
-	// Calculate the transformation needed to rotate 
+	// Calculate the transformation needed to rotate
 	// the camera
 	Matrix4 rotation = Matrix4::rotate(axis4, angle);
 
@@ -164,7 +174,7 @@ void RenderWidget0::mouseMoveEvent(QMouseEvent *e)
 	// Apply transformation to the camera
 	camera->setViewMatrix(camera->getViewMatrix() * rotation);
 
-	// Current points are now old points.  
+	// Current points are now old points.
 	lastX = e->x();
 	lastY = e->y();
 }
@@ -185,8 +195,8 @@ Vector3 RenderWidget0::mapToUnitSphere(int x, int y, int width, int height) {
 	// our sphere have radius min(width, height).
 
 	// Calculate our x and y position relative to the center of
-	// the screen.  
-	int dx = x - (width / 2);  
+	// the screen.
+	int dx = x - (width / 2);
 	int dy = y - (height / 2);
 
 	// Divide through by the smaller side.  Now all of the points along
@@ -245,10 +255,10 @@ void RenderWidget0::stopAnimation()
 
 void RenderWidget0::toggleWireframe()
 {
-	
+
 }
 
-void RenderWidget0::keyPressEvent ( QKeyEvent * k ) 
+void RenderWidget0::keyPressEvent ( QKeyEvent * k )
 {
 	switch ( k->key() )  {
 		case Qt::Key_R:                               // reload
@@ -273,9 +283,9 @@ void RenderWidget0::keyPressEvent ( QKeyEvent * k )
 
 	}
 }
-void RenderWidget0::keyReleaseEvent ( QKeyEvent * e) 
+void RenderWidget0::keyReleaseEvent ( QKeyEvent * e)
 {
-	
+
 }
 
 

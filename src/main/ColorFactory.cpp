@@ -139,10 +139,10 @@ void ColorFactory::colorize(float *&colorArray,
 
 // Fills the color array with the given shade of color
 void ColorFactory::colorize(float *&colorArray, 
-								const int numElements, 
-								const float r, 
-								const float g, 
-								const float b) {
+                            const int numElements, 
+                            const float r, 
+                            const float g, 
+                            const float b) {
 	for (int i = 0; i < numElements; i++) {
 		switch (i % NUM_COMPONENTS_PER_COLOR) {
 			case 0:

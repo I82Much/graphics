@@ -57,6 +57,7 @@ private:
 	Object *bunny;
     Object *cube;
 	Object *dragon;
+    Object *sphere;
 	
 	// Hold the last mouse position
 	int lastX;
