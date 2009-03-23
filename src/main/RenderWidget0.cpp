@@ -82,7 +82,7 @@ void RenderWidget0::initSceneEvent()
 
     cube = sceneManager->createObject();
     GeometryFactory::createCube(cube);
-    cube->setTransformation(cube->getTransformation() * Matrix4::scale(10, 10, 50));
+    //cube->setTransformation(cube->getTransformation() * Matrix4::scale(10, 10, 50));
     
 
 
@@ -93,9 +93,9 @@ void RenderWidget0::initSceneEvent()
 
 
 
-	/*houses = sceneManager->createObject();
+	houses = sceneManager->createObject();
 	GeometryFactory::createHouses(houses);
-    */
+
 	// Trigger timer event every 5ms.
 	timerId = startTimer(5);
 
@@ -118,7 +118,7 @@ void RenderWidget0::timerEvent(QTimerEvent *t)
 	//object->setTransformation(Matrix4::rotateY(-0.05f * counter));
 	//camera->setViewMatrix(camera->getViewMatrix() * Matrix4::rotateY(-0.005f));
 
-    /*cube->setTransformation(cube->getTransformation() * Matrix4::rotateY(-0.05f) * Matrix4::rotateX(-0.05f));*/
+    cube->setTransformation(cube->getTransformation() * Matrix4::rotateY(-0.02f) * Matrix4::rotateX(-0.05f) * Matrix4::rotateZ(0.03f));
 
 	updateScene();
 
@@ -261,25 +261,33 @@ void RenderWidget0::toggleWireframe()
 void RenderWidget0::keyPressEvent ( QKeyEvent * k )
 {
 	switch ( k->key() )  {
-		case Qt::Key_R:                               // reload
-			camera->resetViewMatrix();
-            break;
-			// move forward
-		case Qt::Key_W:
-			camera->setViewMatrix(Matrix4::translate(0,0,1) * camera->getViewMatrix());
-			break;
-			// Move camera backwards
-		case Qt::Key_S:
-			camera->setViewMatrix(Matrix4::translate(0,0,-1) * camera->getViewMatrix());
-			break;
-			// Move camera left
-		case Qt::Key_A:
-			camera->setViewMatrix(Matrix4::translate(1,0,0) * camera->getViewMatrix());
-			break;
-			// Move camera right
-		case Qt::Key_D:
-			camera->setViewMatrix(Matrix4::translate(-1,0,0) * camera->getViewMatrix());
-			break;
+    case Qt::Key_R:                               // reload
+        camera->resetViewMatrix();
+        break;
+        // move forward
+    case Qt::Key_W:
+        camera->setViewMatrix(Matrix4::translate(0,0,1) * camera->getViewMatrix());
+        break;
+        // Move camera backwards
+    case Qt::Key_S:
+        camera->setViewMatrix(Matrix4::translate(0,0,-1) * camera->getViewMatrix());
+        break;
+        // Move camera left
+    case Qt::Key_A:
+        camera->setViewMatrix(Matrix4::translate(1,0,0) * camera->getViewMatrix());
+        break;
+        // Move camera right
+    case Qt::Key_D:
+        camera->setViewMatrix(Matrix4::translate(-1,0,0) * camera->getViewMatrix());
+        break;
+        // Start a timing suite
+    case Qt::Key_T:
+        int tileSizes[] = {2,4,8,16,32,64,128,256};
+        const int numTiles = sizeof(tileSizes) / sizeof(int);
+        std::cout << " Starting timing run" << std::endl;
+        for (int i = 0; i < numTiles; i++) {
+            std::cout << tileSizes[i] << std::endl;
+        }
 
 	}
 }

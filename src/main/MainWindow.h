@@ -10,6 +10,8 @@ class MainWindow : public QMainWindow
 
 public:
 	MainWindow();
+    static const int MAX_WIDTH;
+    static const int MAX_HEIGHT;
 
 private slots:
 	void startAnimation();

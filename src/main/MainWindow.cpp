@@ -1,14 +1,21 @@
 #include <QtGui>
 #include "MainWindow.h"
 
+const int MainWindow::MAX_WIDTH = 1024;
+const int MainWindow::MAX_HEIGHT = 768;
+
+
 MainWindow::MainWindow()
 {
 	createMenus();
 	setWindowTitle("CSCI330 Rendering Engine");
 
 	// the menu bar (21 pixels) is part of the widget size...
-	resize(512,512+21);	
-	
+    resize(512,512+21);
+
+    // Ensure that the window never gets bigger than this amount
+    setMaximumSize(MAX_WIDTH, MAX_HEIGHT);
+
 	renderWidget = new RenderWidget0();
 	setCentralWidget(renderWidget);
 }

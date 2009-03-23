@@ -1,21 +1,7 @@
 #include "SWZBuffer.h"
 #include <iostream>
-
+#include "MainWindow.h"
 using namespace RE167;
-
-/**
-* Some implementation details from 
-* http://www.sjbaker.org/steve/omniv/love_your_z_buffer.html
-* This class represents a z-buffer that gives more resolution near
-* the eye and less in the distance.
-*/
-
-// CONSTANTS
-// 8 bits per byte; sizeof returns number of bytes
-const int SWZBuffer::NUM_BITS_PRECISION = sizeof(int) * 8;
-
-// TODO : WTF?
-const int SWZBuffer::NUMBER_OF_BINS = 4;
 
 
 
@@ -25,11 +11,11 @@ SWZBuffer::SWZBuffer(int width, int height) {
 	this->width = width;
 	this->height = height;
 
-	createBuffer(width, height);
+	createBuffer(MainWindow::MAX_WIDTH, MainWindow::MAX_HEIGHT);
 }
 
 SWZBuffer::~SWZBuffer() {
-	deleteBuffer(width, height);
+	deleteBuffer(MainWindow::MAX_WIDTH, MainWindow::MAX_HEIGHT);
 }
 
 /**
@@ -37,10 +23,7 @@ SWZBuffer::~SWZBuffer() {
 * newHeight.
 */
 void SWZBuffer::setSize(int newWidth, int newHeight) {
-    std::cout << "setting size " << std::endl;
-
-	deleteBuffer(width, height);
-	createBuffer(newWidth, newHeight);
+    
 	this->width = newWidth;
 	this->height = newHeight;
 }
@@ -48,20 +31,19 @@ void SWZBuffer::setSize(int newWidth, int newHeight) {
 
 /**
 * Determines if this z coordinate is closer than the one previously stored in
-* the zbuffer data structure.  If so, overwrites the value in the zbuffer and
-* returns true; else false.
+* the zbuffer data structure.  
 * @param x x-coordinate in image (column)
 * @param y y-coordinate in image (row)
-* @param 
+* @param depth the depth of the pixel
 */
 bool SWZBuffer::isCloser(int x, int y, float depth) {
-    assert(zbuffer);
-    assert(zbuffer[y]);
+    assert(zbuffer != NULL);
+    assert(zbuffer[y] != NULL);
 
     assert(y <= (height - 1));
     assert(x <= (width - 1));
 
-    return depth > zbuffer[y][x];    
+    return depth > zbuffer[y][x];
 }
 
 void SWZBuffer::setPixel(int x, int y, float depth) {
@@ -76,7 +58,6 @@ void SWZBuffer::reset() {
     if (zbuffer != NULL) {
         fill();
     }
-    
 }
 
 
@@ -87,10 +68,17 @@ void SWZBuffer::reset() {
 
  */
 void SWZBuffer::createBuffer(int width, int height) {
-	// Initialize the zbuffer
+
+   	// Initialize the zbuffer
 	zbuffer = new float*[height];
 	assert(zbuffer != NULL);
 
+    for (int i = 0; i < height; i++) {
+        zbuffer[i] = new float[width];
+        assert(zbuffer[i]);
+    }
+    
+/*
     zbuffer[0] = new float[height * width];
     assert (zbuffer[0] != NULL);
     // Rather than manually calling "new" each time, we just take
@@ -98,7 +86,7 @@ void SWZBuffer::createBuffer(int width, int height) {
 	for (int i = 1; i < height; i++) {
 		zbuffer[i] = zbuffer[i-1] + width;
 		assert(zbuffer[i] != NULL);
-	}
+        }*/
 
 	// Initialize the buffer to hold the farthest value
 	// that can be represented.
@@ -111,20 +99,36 @@ void SWZBuffer::createBuffer(int width, int height) {
 */
 void SWZBuffer::fill() {
     assert(zbuffer);
+   
 	float maxDist = 0;
+    //std::fill(zbuffer[0], zbuffer[0] + width * height, maxDist);
+
 	for (int row = 0; row < height; row++) {
+        if (!zbuffer[row]) {
+            return;
+        }
+
+        assert(zbuffer[row]);
+
 		for (int col = 0; col < width; col++) {
 			zbuffer[row][col] = maxDist;
 		}
-	}
+    }
 }
 
 /**
 *
 */
 void SWZBuffer::deleteBuffer(int width, int height) {
+    std::cout << "Deleting buffer " << std:: endl;
+
 	if (zbuffer != NULL) {
+        for (int i = 0; i < height; i++) {
+            delete[] zbuffer[i];
+        }
+        delete [] zbuffer;
+        /*
         delete[] zbuffer[0];
-        delete[] zbuffer;
+        delete[] zbuffer;*/
     }
 }

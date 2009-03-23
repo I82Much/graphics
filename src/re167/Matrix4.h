@@ -12,7 +12,7 @@ namespace RE167
 
     class RE167_EXPORT Matrix4
     {
-		
+
 
     protected:
         union {

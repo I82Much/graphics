@@ -18,7 +18,7 @@ namespace RE167 {
 	*/
 
 	class SWWidget;
-		
+
 	class RE167_EXPORT SWRenderContext : public RenderContext
 	{
 	public:
@@ -43,7 +43,7 @@ namespace RE167 {
 	private:
 
         enum TriangleLocation {INSIDE, OUTSIDE, ON_EDGE};
-        enum TriangleEdge {AB, AC, BC };
+        enum TriangleEdge {AB, BC, CA};
 
 
 		SWWidget *mswWidget;
@@ -53,6 +53,8 @@ namespace RE167 {
 		Matrix4 modelview;
 		Matrix4 viewport;
 		Matrix4 total;
+
+        int tileSize;
 
         int width;
         int height;
@@ -65,10 +67,11 @@ namespace RE167 {
 
         SWZBuffer *buffer;
 
+        TriangleEdge findEdge(float alpha, float beta, float gamma);
         TriangleLocation fromBarycentric(float alpha, float beta, float gamma);
 
-        bool isOnLeftEdge(float alpha, float beta, float gamma, float vertices[3][2]);
-        bool isOnTopHorizontalEdge(float alpha, float beta, float gamma, float vertices[3][2]);
+        bool isLeftEdge(TriangleEdge edge, float vertices[3][2]);
+        bool isTopHorizontalEdge(TriangleEdge edge, float vertices[3][2]);
 
 
         QRgb linearInterpolation(float alpha, float beta, float gamma, float colors[3][4]);
