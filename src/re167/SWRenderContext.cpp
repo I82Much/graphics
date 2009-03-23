@@ -69,6 +69,7 @@ void SWRenderContext::endFrame()
 
     buffer->reset();
 
+    
     /*curFrameTime = clock->elapsed();
 
     // http://stackoverflow.com/questions/87304/calculating-frames-per-second-in-a-game
@@ -78,8 +79,6 @@ void SWRenderContext::endFrame()
     float avgSecondsPerFrame = avgTime / 1000.0f;
     float fps = 1.0f / avgSecondsPerFrame;
     std::cout << fps << std::endl;
-
-
     lastFrameTime = curFrameTime;*/
     numFramesRendered++;
 
@@ -223,9 +222,11 @@ void SWRenderContext::render(Object *object)
 }
 
 /**
-* @param p		Triangle vertex positions (x,y,z,w)
-* @param n		Triangle vertex normals (x,y,z)
-* @param c		Triangle vertex colors (r,g,b,a)
+ * Given a triangle in 4-space, its normals, and the colors at each
+ * vertex, draws it to the screen.
+ * @param p		Triangle vertex positions (x,y,z,w)
+ * @param n		Triangle vertex normals (x,y,z)
+ * @param c		Triangle vertex colors (r,g,b,a)
 */
 void SWRenderContext::rasterizeTriangle(float p[3][4], float n[3][3], float c[3][4])
 {
@@ -272,9 +273,6 @@ void SWRenderContext::rasterizeTriangle(float p[3][4], float n[3][3], float c[3]
     else if (normal == Vector3::ZERO_VECTOR) {
         return;
     }
-
-    // TODO:
-    // Insert clipping stuff here?
 
     // Isolate the x, y coordinates of each vertex so we avoid calling the
     // getter for each calculation
@@ -328,16 +326,12 @@ void SWRenderContext::rasterizeTriangle(float p[3][4], float n[3][3], float c[3]
     float triangleHeight = (yMax - yMin) + 1.0f;
 
 
-    if (triangleWidth <= 0) {
-        std::cout << xMin << ", " << xMax << std::endl;
-    }
     assert (triangleHeight > 0);
     assert (triangleWidth > 0);
 
     // Calculate how many tiles / partial tiles fit within the bounding box
     int numTileRows = static_cast<int>( std::ceil( triangleHeight/MAX_TILE_SIZE ) );
     int numTileCols = static_cast<int>( std::ceil( triangleWidth/MAX_TILE_SIZE ) );
-
 
     assert (numTileRows >= 1);
     assert (numTileCols >= 1);
@@ -390,6 +384,39 @@ bool SWRenderContext::offscreen(float left, float right, float top, float bottom
 
 
 /**
+ * Determines if the pixel corresponding to the coordinate in 
+ * barycentric coordinates should be drawn.  All pixels in the triangle
+ * should be drawn (with the caveat that they pass the depth buffer test)
+ * but none outside should be drawn.
+ */
+bool SWRenderContext::shouldDraw(float alpha, float beta, float gamma, float vertices[3][2]) {
+    SWRenderContext::TriangleLocation location = fromBarycentric(alpha, beta, gamma);
+
+    if (location == OUTSIDE) {
+        return false;
+    }
+
+    else if (location == INSIDE) {
+       return true;
+    }
+    // We will adopt an upper left fill convention, so only those edges that are
+    // horizontal top edges or edges on left of triangle are drawn
+    else if (location == ON_EDGE) {
+        // This is not quite working yet; for now don't draw edges
+        return false;
+        /*
+        SWRenderContext::TriangleEdge edge = findEdge(alpha, beta, gamma);
+        return isLeftEdge(edge, vertices) || isTopHorizontalEdge(edge, vertices);*/
+    }
+    else {
+        assert(false && "Fell through cases in shouldDraw");
+    }
+
+    return false;
+}
+
+
+/**
  * Determines if the given edge is on the left in this triangle.
  */
 bool SWRenderContext::isLeftEdge(SWRenderContext::TriangleEdge edge, float vertices[3][2]) {
@@ -428,12 +455,44 @@ bool SWRenderContext::isLeftEdge(SWRenderContext::TriangleEdge edge, float verti
 
 
 /**
- * Determines if the given point in barycentric coordinates is on the top horizontal
- * edge of a triangle
+ * Determines if the edge (AB, BC, or CA) is a top horizontal edge in our
+ * triangle.
  */
 bool SWRenderContext::isTopHorizontalEdge(SWRenderContext::TriangleEdge edge, float vertices[3][2]) {
+    const int Y_INDEX = 1;
+    float y1 = vertices[0][Y_INDEX];
+    float y2 = vertices[1][Y_INDEX];
+    float y3 = vertices[2][Y_INDEX];
 
-    return false;
+    float dy = 0;
+    bool oppositeVertexBelow = false;
+    // Calculate the vector defining the directed edge
+    switch (edge) {
+    // AB is between vertices [0] and [1]
+    case AB:
+        dy = y2 - y1;
+        oppositeVertexBelow = y3 > y1 && y3 > y2;
+        break;
+         // BC is between vertices [1] and [2]
+    case BC:
+        dy = y3 - y2;
+        oppositeVertexBelow = y1 > y3 && y1 > y2;
+        break;
+        // CA is between vertices [2] and [0]
+    case CA:
+        dy = y1 - y3;
+        oppositeVertexBelow = y2 > y1 && y2 > y1;
+        break;
+    default:
+        std::cerr << "Fell through switch in isLeftEdge" << std::endl;
+        assert(false);
+        break;
+    }
+
+    return dy == 0.0f && oppositeVertexBelow; //BasicMath::approxEqual(dy, 0.0f) && oppositeVertexBelow;
+
+
+
 }
 
 /**
@@ -454,6 +513,10 @@ SWRenderContext::TriangleEdge SWRenderContext::findEdge(float alpha, float beta,
 
 }
 
+/**
+ * Given a pair of barycentric coordinates, determines if the point 
+ * represented is inside, outside, or on an edge within the triangle.
+ */
 SWRenderContext::TriangleLocation SWRenderContext::fromBarycentric(float alpha, float beta, float gamma) {
 
     if ( (0 < alpha && alpha < 1) &&
@@ -473,6 +536,10 @@ SWRenderContext::TriangleLocation SWRenderContext::fromBarycentric(float alpha, 
 }
 
 
+/**
+ * Given a rectangular region of the screen, determines for each pixel whether
+ * it needs to be drawn, and if so in which color.
+ */
 void SWRenderContext::drawTile(int left, int right, int top, int bottom, float vertices[3][2], float c[3][4], float depths[3]) {
 
     assert(right <= width - 1);
@@ -496,16 +563,8 @@ void SWRenderContext::drawTile(int left, int right, int top, int bottom, float v
 			float beta = baryCoords.getY();
 			float gamma = baryCoords.getZ();
 
-			// Pixel is inside of the triangle.
-			if ( (0 < alpha && alpha < 1) &&
-				 (0 < beta && beta < 1) &&
-				 (0 < gamma && gamma < 1) || true
-                 // Pixel is on the left edge
-                 //isOnLeftEdge(alpha, beta, gamma, vertices) ||
-                 // Pixel is on top edge
-                 //isOnTopHorizontalEdge(alpha, beta, gamma, vertices)
-                )  {
-
+            // Those points outside of triangle should not be drawn
+            if (shouldDraw(alpha, beta, gamma, vertices)) {
 
                 // Linearly interpolate the z value so we can check if the point
                 // is visible
@@ -567,6 +626,11 @@ Vector3 SWRenderContext::barycentric(float point[2], float vertices[3][2]){
 	return Vector3(alpha, beta, gamma);
 }
 
+
+/**
+ * Given a bounding box, determine if it overlaps the triangle defined
+ * by the vertices float array.  
+ */
 bool SWRenderContext::tileOverlapsTriangle(int left,
                                            int right,
                                            int top,
@@ -614,6 +678,13 @@ bool SWRenderContext::tileOverlapsTriangle(int left,
 
 }
 
+/**
+ * Given coordinates in barycentric coordinate system and the colors of the 
+ * vertices of the triangle, calculates linear interpolation of the colors.
+ * Used to create a smooth shaded appearance. Note that this does not
+ * handle perspective correctly - must use perspectiveCorrectInterpolation
+ * for that
+ */
 QRgb SWRenderContext::linearInterpolation(float alpha, float beta, float gamma, float colors[3][4]) {
      // c(p) = alpha(p)c_a + beta(p)c_b + gamma(p)c_c
     float r = (alpha * colors[0][0]) + (beta * colors[1][0]) + (gamma * colors[2][0]);
@@ -630,6 +701,11 @@ QRgb SWRenderContext::linearInterpolation(float alpha, float beta, float gamma, 
     return qRgba(r,g,b,a);
 }
 
+/**
+ * Given coordinates in barycentric coordinate system, the colors of the 
+ * vertices of the triangle, and the depths of the same vertices, calculates
+ * the correct color for that coordinate given the perspective of the triangle.
+ */
 QRgb SWRenderContext::perspectiveCorrectInterpolation(float alpha, float beta, float gamma, float depths[3], float colors[3][4]) {
     float d1 = depths[0];
     float d2 = depths[1];

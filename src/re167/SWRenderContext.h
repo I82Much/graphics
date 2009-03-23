@@ -67,12 +67,13 @@ namespace RE167 {
 
         SWZBuffer *buffer;
 
+        bool shouldDraw(float alpha, float beta, float gamma, float vertices[3][2]);
+
         TriangleEdge findEdge(float alpha, float beta, float gamma);
         TriangleLocation fromBarycentric(float alpha, float beta, float gamma);
 
         bool isLeftEdge(TriangleEdge edge, float vertices[3][2]);
         bool isTopHorizontalEdge(TriangleEdge edge, float vertices[3][2]);
-
 
         QRgb linearInterpolation(float alpha, float beta, float gamma, float colors[3][4]);
         QRgb perspectiveCorrectInterpolation(float alpha, float beta, float gamma, float depths[3], float colors[3][4]);
