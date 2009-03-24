@@ -14,10 +14,10 @@ GLRenderContext& GLRenderContext::getSingleton(void)
 
 void GLRenderContext::init()
 {
+    std::cout<<"Initing"<< std::endl;
+    
 	assert(glewInit() == GLEW_OK);
 	assert(GL_VERSION_2_0);
-
-
 	
 	wireframe = false;
 
