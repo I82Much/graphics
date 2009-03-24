@@ -28,8 +28,8 @@
 
 RenderWidget0::RenderWidget0()
 {
-	RenderContext *rs = new SWRenderContext();
-    rs->init();
+	RenderContext *rs = new GLRenderContext();
+    //rs->init();
 
 
 	sceneManager = 0;
