@@ -17,6 +17,8 @@
 #include "BasicMath.h"
 
 #include "PGMReader.h"
+#include "Shader.h"
+
 
 /**
 * This class is an OpenGL window, with support for mouse dragging
@@ -47,6 +49,15 @@ RenderWidget0::~RenderWidget0()
 
 void RenderWidget0::initSceneEvent()
 {
+    
+    Shader *shader = new Shader("src/Shaders/simple.vert", "src/Shaders/simple.frag");
+    //Shader *shader = new Shader("src/Shaders/diffuse_shading.vert", "src/Shaders/diffuse_shading.frag");
+    //Shader *shader = new Shader("src/Shaders/texture2D.vert", "src/Shaders/texture2D.frag");
+    
+    shader->use();
+    
+    
+    
 	sceneManager = new SceneManager();
 
 	// Camera
@@ -73,28 +84,28 @@ void RenderWidget0::initSceneEvent()
 	GeometryFactory::createObject(dragon, "objects/dragon_smooth.obj");
 */
 
-	/*bunny = sceneManager->createObject();
-      GeometryFactory::createObject(bunny, "objects/bunny.obj");*/
+	bunny = sceneManager->createObject();
+      GeometryFactory::createObject(bunny, "objects/bunny.obj");
 /*
 	terrain = sceneManager->createObject();
 	GeometryFactory::createTerrainFromPGM(terrain, "objects/Heightmap.pgm");
 	*/
 
-    cube = sceneManager->createObject();
-    GeometryFactory::createCube(cube);
+    /*cube = sceneManager->createObject();
+    GeometryFactory::createCube(cube);*/
     //cube->setTransformation(cube->getTransformation() * Matrix4::scale(10, 10, 50));
     
 
 
 
-    /*sphere = sceneManager->createObject();
+sphere = sceneManager->createObject();
     GeometryFactory::createSphere(sphere);
-	*/
+	
 
 
 
-	houses = sceneManager->createObject();
-	GeometryFactory::createHouses(houses);
+	    /*houses = sceneManager->createObject();
+	GeometryFactory::createHouses(houses);*/
 
 	// Trigger timer event every 5ms.
 	timerId = startTimer(5);
@@ -118,7 +129,7 @@ void RenderWidget0::timerEvent(QTimerEvent *t)
 	//object->setTransformation(Matrix4::rotateY(-0.05f * counter));
 	//camera->setViewMatrix(camera->getViewMatrix() * Matrix4::rotateY(-0.005f));
 
-    cube->setTransformation(cube->getTransformation() * Matrix4::rotateY(-0.02f) * Matrix4::rotateX(-0.05f) * Matrix4::rotateZ(0.03f));
+    //cube->setTransformation(cube->getTransformation() * Matrix4::rotateY(-0.02f) * Matrix4::rotateX(-0.05f) * Matrix4::rotateZ(0.03f));
 
 	updateScene();
 

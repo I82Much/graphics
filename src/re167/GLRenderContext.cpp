@@ -1,5 +1,6 @@
 #include "GLRenderContext.h"
 
+
 using namespace RE167;
 
 GLRenderContext* GLRenderContext::getSingletonPtr(void)
@@ -139,4 +140,125 @@ void GLRenderContext::render(Object *object)
 	}
 
 	assert(glGetError()==GL_NO_ERROR);
+}
+
+// Add the following to GLRenderContext.cpp
+
+void GLRenderContext::setLights(const std::list<Light*> &lightList)
+{	
+	GLint lightIndex[] = {GL_LIGHT0, GL_LIGHT1, GL_LIGHT2, GL_LIGHT3, GL_LIGHT4, GL_LIGHT5, GL_LIGHT6, GL_LIGHT7};
+
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+
+	std::list<Light*>::const_iterator iter;
+
+	if(lightList.begin()!=lightList.end())
+	{
+		// Lighting
+		glEnable(GL_LIGHTING);
+
+		int i=0;
+		for (iter=lightList.begin(); iter!=lightList.end() && i<8; iter++)
+		{
+			i++;
+			Light *l = (*iter);
+
+			glEnable(lightIndex[i]);
+
+			if(l->getType() == Light::DIRECTIONAL)
+			{
+				float direction[4];
+				direction[0] = l->getDirection().getX();
+				direction[1] = l->getDirection().getY();
+				direction[2] = l->getDirection().getZ();
+				direction[3] = 0.f;
+				glLightfv(lightIndex[i], GL_POSITION, direction);
+			}
+			if(l->getType() == Light::POINT || l->getType() == Light::SPOT)
+			{
+				float position[4];
+				position[0] = l->getPosition().getX();
+				position[1] = l->getPosition().getY();
+				position[2] = l->getPosition().getZ();
+				position[3] = 1.f;
+				glLightfv(lightIndex[i], GL_POSITION, position);
+			}
+			if(l->getType() == Light::SPOT)
+			{
+				float spotDirection[3];
+				spotDirection[0] = l->getSpotDirection().getX();
+				spotDirection[1] = l->getSpotDirection().getY();
+				spotDirection[2] = l->getSpotDirection().getZ();
+				glLightfv(lightIndex[i], GL_SPOT_DIRECTION, spotDirection);
+				glLightf(lightIndex[i], GL_SPOT_EXPONENT, l->getSpotExponent());
+				glLightf(lightIndex[i], GL_SPOT_CUTOFF, l->getSpotCutoff());
+			}
+
+			float diffuse[4];
+			diffuse[0] = l->getDiffuseColor().getX();
+			diffuse[1] = l->getDiffuseColor().getY();
+			diffuse[2] = l->getDiffuseColor().getZ();
+			diffuse[3] = 1.f;
+			glLightfv(lightIndex[i], GL_DIFFUSE, diffuse);
+
+			float ambient[4];
+			ambient[0] = l->getAmbientColor().getX();
+			ambient[1] = l->getAmbientColor().getY();
+			ambient[2] = l->getAmbientColor().getZ();
+			ambient[3] = 0;
+			glLightfv(lightIndex[i], GL_AMBIENT, ambient);
+
+			float specular[4];
+			specular[0] = l->getSpecularColor().getX();
+			specular[1] = l->getSpecularColor().getY();
+			specular[2] = l->getSpecularColor().getZ();
+			specular[3] = 0;
+			glLightfv(lightIndex[i], GL_SPECULAR, specular);
+		}
+	}
+}
+
+void GLRenderContext::setMaterial(Material *m)
+{
+	if(m!=0)
+	{
+		float diffuse[4];
+		diffuse[0] = m->getDiffuse().getX();
+		diffuse[1] = m->getDiffuse().getY();
+		diffuse[2] = m->getDiffuse().getZ();
+		diffuse[3] = 1.f;
+		glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diffuse);
+
+		float ambient[4];
+		ambient[0] = m->getAmbient().getX();
+		ambient[1] = m->getAmbient().getY();
+		ambient[2] = m->getAmbient().getZ();
+		ambient[3] = 1.f;
+		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambient);
+
+		float specular[4];
+		specular[0] = m->getSpecular().getX();
+		specular[1] = m->getSpecular().getY();
+		specular[2] = m->getSpecular().getZ();
+		specular[3] = 1.f;
+		glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specular);
+
+		glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, m->getShininess());
+
+		Texture *tex = m->getTexture();
+		if(tex!=0)
+		{
+			glEnable(GL_TEXTURE_2D);
+			glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+			glBindTexture(GL_TEXTURE_2D, tex->getId());
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		}
+
+		if(m->getShader()!=0)
+		{
+			m->getShader()->use();
+		}
+	}
 }

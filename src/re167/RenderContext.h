@@ -7,6 +7,7 @@
 #include "Matrix4.h"
 #include "Object.h"
 #include <qwidget>
+#include "Light.h"
 
 namespace RE167 {
 
@@ -24,6 +25,7 @@ namespace RE167 {
 		virtual void endFrame() = 0;
 		virtual void setModelViewMatrix(const Matrix4 &m) = 0;
 		virtual void setProjectionMatrix(const Matrix4 &m) = 0;
+        virtual void setLights(const std::list<Light*> &lightList) = 0;
 		virtual void render(Object *object) = 0;
 	};
 

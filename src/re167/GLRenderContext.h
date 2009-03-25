@@ -7,6 +7,8 @@
 #include "RE167_global.h"
 #include "RenderContext.h"
 #include "VertexDeclaration.h"
+#include "Light.h"
+#include "Material.h"
 
 namespace RE167 {
 
@@ -23,6 +25,15 @@ namespace RE167 {
 		void init();
 		void toggleWireframe();
 		void setViewport(int width, int height);
+		/** This function needs to be called by the SceneManager once per 
+    		frame, before all objects are rendered. The function assumes 
+    		your light sources are stored in a std::list.
+
+    		NOTE: You also need to add this declaration to the base class 
+    		RenderContext.h so that the SceneManager can call it.
+    	*/
+    	void setLights(const std::list<Light*> &lightList);
+    	
 		void beginFrame();
 		void endFrame();
 		void setModelViewMatrix(const Matrix4 &m);
@@ -31,11 +42,15 @@ namespace RE167 {
 			OpenGL vertex arrays. See the OpenGL 2.0 book for details.
 		*/
 		void render(Object *object);
+		
 
 		static GLRenderContext& getSingleton(void);
         static GLRenderContext* getSingletonPtr(void);
 
 	private:
+	    /** This function needs to be called before rendering each object.
+    	*/
+    	void setMaterial(Material *material);
 		bool wireframe;
 	};
 

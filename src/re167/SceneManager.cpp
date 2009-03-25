@@ -31,6 +31,13 @@ Object* SceneManager::createObject()
 	return o;
 }
 
+Light* SceneManager::createLight()
+{
+    Light *l = new Light();
+    mLightList.push_back(l);
+    return l;
+}
+
 Camera* SceneManager::createCamera()
 {
 	mCamera = new Camera();
@@ -46,6 +53,9 @@ void SceneManager::renderScene()
 
 	if(mCamera!=0) 
 	{
+	    // Set up the lights
+        renderContext->setLights(mLightList);
+	    
 		renderContext->beginFrame();
 
 		renderContext->setProjectionMatrix(mCamera->getProjectionMatrix());

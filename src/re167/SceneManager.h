@@ -6,6 +6,7 @@
 #include "Object.h"
 #include "RenderContext.h"
 #include <list>
+#include "Light.h"
 
 namespace RE167 {
 
@@ -28,6 +29,12 @@ namespace RE167 {
 			stored in the scene manager.
 		*/
 		Object *createObject();
+		
+		/**
+		* This method creates a light and adds it to the list of light objects
+		* stored in the scene manager
+		*/
+        Light *createLight();
 
 		/** This method needs to be called in the renderSceneEvent
 			event handler of the RenderWidget. 
@@ -42,6 +49,7 @@ namespace RE167 {
 	private:
 		Camera *mCamera;
 		std::list<Object*> mObjectList;
+        std::list<Light*> mLightList;
 	};
 
 }

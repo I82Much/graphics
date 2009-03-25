@@ -4,6 +4,7 @@
 #include "RE167_global.h"
 #include "VertexData.h"
 #include "Matrix4.h"
+#include "Material.h"
 
 namespace RE167 {
 
@@ -20,11 +21,18 @@ namespace RE167 {
 		inline Matrix4 getTransformation() const { return mTransformation; }
 		VertexData vertexData;
 
+        inline void setMaterial(Material * m) { material = m; }
+        inline Material * getMaterial() { return material; }
+        
 	protected:
 		Object() { mTransformation = Matrix4::IDENTITY; }
 		Matrix4 mTransformation;
-
+        
 		friend class SceneManager;
+
+	private:
+	    Material * material;
+        
 	};
 
 }

@@ -813,9 +813,6 @@ void GeometryFactory::createTaperedCylinder(int numRows,
 	
 	// The bottom has exactly as many vertices as does the top
 	const int NUM_BOTTOM_VERTICES = NUM_TOP_VERTICES;
-
-	const int NUM_RECTANGULAR_FACES = numFacesPerRow * NUM_ROWS_VERTICES;
-	
 	const int NUM_MID_VERTICES =	numFacesPerRow * 
 									numRows * 
 									NUM_TRIANGLES_PER_RECTANGULAR_FACE * 
