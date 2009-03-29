@@ -8,7 +8,9 @@
 #include "Object.h"
 #include "Vector3.h"
 
+
 using namespace RE167;
+
 
 class RenderWidget0 : public GLRenderWidget
 {

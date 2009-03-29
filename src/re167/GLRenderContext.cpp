@@ -15,13 +15,14 @@ GLRenderContext& GLRenderContext::getSingleton(void)
 
 void GLRenderContext::init()
 {
-    std::cout<<"Initing"<< std::endl;
-    
 	assert(glewInit() == GLEW_OK);
 	assert(GL_VERSION_2_0);
 	
 	wireframe = false;
-
+    // Ensures that normal vectores will be scaled to unit length
+    glEnable(GL_NORMALIZE);
+    glLightModelf(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
+    
 	glShadeModel(GL_SMOOTH);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
@@ -69,6 +70,8 @@ void GLRenderContext::setProjectionMatrix(const Matrix4 &m)
 
 void GLRenderContext::render(Object *object)
 {
+    setMaterial(object->getMaterial());
+    
 	VertexData& vertexData = object->vertexData;
 	VertexDeclaration& vertexDeclaration = vertexData.vertexDeclaration;
 	VertexBufferBinding& vertexBufferBinding = vertexData.vertexBufferBinding;

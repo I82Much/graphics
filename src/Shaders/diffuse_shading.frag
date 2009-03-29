@@ -8,9 +8,19 @@
 // result is multiplied with the vertex color, which is 
 // accessed through a pre-defined varying variable.
 
-varying vec3 normal, lightDir;
+varying vec3 normal, lightDir, reflectionDir, position;
 
 void main()
 {		
-	gl_FragColor = gl_LightSource[0].diffuse * max(dot(normal, normalize(lightDir)),0.0) * gl_FrontMaterial.diffuse;		
+	// We are in eye coordinates, so (0,0,0) - position is eye direction
+	vec3 eyeDir = normalize(-position);
+
+	float phongExponent = 100.0;
+
+	//gl_FragColor = gl_LightSource[0].diffuse * pow(max(dot(normal, normalize(lightDir)),0.0), phongExponent) * gl_FrontMaterial.diffuse;	
+	gl_FragColor = gl_LightSource[0].diffuse * max(0.0, dot(normalize(eyeDir), normalize(reflectionDir) ) ) * 		
+					gl_FrontMaterial.diffuse;		
+					
+					
+					
 }

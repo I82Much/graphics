@@ -4,6 +4,9 @@
 
 using namespace RE167;
 
+
+const unsigned int SceneManager::MAX_NUM_LIGHTS;
+
 SceneManager::SceneManager()
 	: mCamera(0)
 {
@@ -15,11 +18,19 @@ SceneManager::~SceneManager()
 	{
 		delete mCamera;
 	}
+	// Free space of all objects
 	while(mObjectList.size() > 0)
 	{
 		Object *o = mObjectList.front();
 	    mObjectList.pop_front();
 		delete o;
+	}
+	// Free space of all lights
+	while (mLightList.size() > 0) 
+	{
+        Light *l = mLightList.front();
+        mLightList.pop_front();
+        delete l;
 	} 
 }
 
@@ -31,8 +42,27 @@ Object* SceneManager::createObject()
 	return o;
 }
 
+/**
+* Returns whether or not an additional light can be added.
+*/
+bool SceneManager::canCreateLight() 
+{
+    return mLightList.size() <= MAX_NUM_LIGHTS;
+}
+
+/**
+* Creates a light, adds it to internal data structure, and returns it.  If there
+* are too many lights (at least MAX_NUM_LIGHTS), prints error message and returns
+* NULL.
+*/
 Light* SceneManager::createLight()
 {
+    if (!canCreateLight()) {
+        std::cerr << "Error: Attempted to assign too many lights. " <<
+                    "Ignoring request." << std::endl;
+        return NULL;
+    }
+    
     Light *l = new Light();
     mLightList.push_back(l);
     return l;

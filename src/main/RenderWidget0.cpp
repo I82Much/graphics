@@ -50,11 +50,11 @@ RenderWidget0::~RenderWidget0()
 void RenderWidget0::initSceneEvent()
 {
     
-    Shader *shader = new Shader("src/Shaders/simple.vert", "src/Shaders/simple.frag");
-    //Shader *shader = new Shader("src/Shaders/diffuse_shading.vert", "src/Shaders/diffuse_shading.frag");
+    //Shader *shader = new Shader("src/Shaders/simple.vert", "src/Shaders/simple.frag");
+    Shader *shader = new Shader("src/Shaders/diffuse_shading.vert", "src/Shaders/diffuse_shading.frag");
     //Shader *shader = new Shader("src/Shaders/texture2D.vert", "src/Shaders/texture2D.frag");
     
-    shader->use();
+    //shader->use();
     
     
     
@@ -63,6 +63,19 @@ void RenderWidget0::initSceneEvent()
 	// Camera
 	camera = sceneManager->createCamera();
 
+    
+
+    // Light
+    /*
+    Light * light1 = sceneManager->createLight();
+    // Create a red light
+    light1->setDiffuseColor(Vector3(1,0,0));
+    */
+    
+    // Create a blue light
+    Light * light2 = sceneManager->createLight();
+    //light2->setDiffuseColor(Vector3(0,0,1));    
+    
 
 	Vector3 cameraCenter = Vector3(0,0,40);
 	Vector3 lookAtPoint = Vector3(0,0,0);
@@ -84,22 +97,40 @@ void RenderWidget0::initSceneEvent()
 	GeometryFactory::createObject(dragon, "objects/dragon_smooth.obj");
 */
 
-	bunny = sceneManager->createObject();
-      GeometryFactory::createObject(bunny, "objects/bunny.obj");
+/*	bunny = sceneManager->createObject();
+      GeometryFactory::createObject(bunny, "objects/bunny.obj");*/
 /*
 	terrain = sceneManager->createObject();
 	GeometryFactory::createTerrainFromPGM(terrain, "objects/Heightmap.pgm");
 	*/
+/*
+    cube = sceneManager->createObject();
+    GeometryFactory::createCube(cube);
+    
+    cube->setTransformation(cube->getTransformation() * Matrix4::translate(2, 0, 0));
+  */  
 
-    /*cube = sceneManager->createObject();
-    GeometryFactory::createCube(cube);*/
-    //cube->setTransformation(cube->getTransformation() * Matrix4::scale(10, 10, 50));
+    // Make a shiny blue material
+    Material * shiny = new Material;
+    shiny->setDiffuse(Vector3(0,0,1));
+    // Specular coefficient
+    shiny->setShininess(256.0f);
+
+    /*QImage *texImg = new QImage("interstate-76.jpg", "jpg");
+    
+    assert(texImg != NULL);
+    */
+//    Texture *picture = new Texture(texImg);
+    
+    //shiny->setTexture(picture);
+    
+    
     
 
-
-
-sphere = sceneManager->createObject();
+    sphere = sceneManager->createObject();
     GeometryFactory::createSphere(sphere);
+    sphere->setMaterial(shiny);
+    
 	
 
 
@@ -128,8 +159,10 @@ void RenderWidget0::timerEvent(QTimerEvent *t)
 	//dragon->setTransformation(Matrix4::translate(-1,0,0) * Matrix4::rotateY(-0.05f * counter));
 	//object->setTransformation(Matrix4::rotateY(-0.05f * counter));
 	//camera->setViewMatrix(camera->getViewMatrix() * Matrix4::rotateY(-0.005f));
-
+    
     //cube->setTransformation(cube->getTransformation() * Matrix4::rotateY(-0.02f) * Matrix4::rotateX(-0.05f) * Matrix4::rotateZ(0.03f));
+    //sphere->setTransformation(sphere->getTransformation() * Matrix4::rotateY(-0.02f) * Matrix4::rotateX(-0.05f) * Matrix4::rotateZ(0.03f));
+    
 
 	updateScene();
 
@@ -243,7 +276,6 @@ Vector3 RenderWidget0::mapToUnitSphere(int x, int y, int width, int height) {
 
 void RenderWidget0::mouseReleaseEvent(QMouseEvent *e)
 {
-	//object->resetTransformation();
 }
 
 
@@ -291,15 +323,6 @@ void RenderWidget0::keyPressEvent ( QKeyEvent * k )
     case Qt::Key_D:
         camera->setViewMatrix(Matrix4::translate(-1,0,0) * camera->getViewMatrix());
         break;
-        // Start a timing suite
-    case Qt::Key_T:
-        int tileSizes[] = {2,4,8,16,32,64,128,256};
-        const int numTiles = sizeof(tileSizes) / sizeof(int);
-        std::cout << " Starting timing run" << std::endl;
-        for (int i = 0; i < numTiles; i++) {
-            std::cout << tileSizes[i] << std::endl;
-        }
-
 	}
 }
 void RenderWidget0::keyReleaseEvent ( QKeyEvent * e)

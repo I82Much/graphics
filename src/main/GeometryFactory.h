@@ -20,6 +20,9 @@ public:
 	static void createObject(RE167::Object *o, char * filePath, bool normalize = true);
 	static void createTerrainFromPGM(RE167::Object *o, char * filepath, bool normalize = true);
 
+    static void createXYPlane(RE167::Object *o);
+    static void createXZPlane(RE167::Object *o);
+    static void createYZPlane(RE167::Object *o);
 
 
 	static void createSphere(RE167::Object *o, int numRows = 10, int numFacesPerRow = 20);

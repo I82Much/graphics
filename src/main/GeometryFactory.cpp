@@ -22,6 +22,8 @@
 #include "ObjReader.h"
 #include "PGMReader.h"
 
+
+
 using namespace RE167;
  
 //#include "BasicMath.h"
@@ -45,6 +47,15 @@ const int GeometryFactory::NUM_COMPONENTS_PER_RECTANGULAR_FACE =
 	GeometryFactory::NUM_VERTICES_PER_TRIANGLE * 
 	GeometryFactory::NUM_COMPONENTS_PER_VERTEX;
 
+
+/**
+* Creates unit square centered at origin in XY Plane.
+*/
+void GeometryFactory::createXYPlane(RE167::Object *o) {
+    assert (o != NULL);
+     
+    
+}
 
 
 /**
@@ -188,8 +199,9 @@ void GeometryFactory::createObject(RE167::Object *o, char * filepath, bool norma
 	}
 
 	float *colors = new float[3 * nVerts];
-	ColorFactory::matchNormalizedVertices(colors, vertices, 3 * nVerts);
-	
+	//ColorFactory::matchNormalizedVertices(colors, vertices, 3 * nVerts);
+	ColorFactory::randomlyColorize(colors, 3 * nVerts);
+    
 	
 
 	VertexData& vertexData = o->vertexData;
@@ -631,8 +643,8 @@ void GeometryFactory::createSphere(int numFaceRows,
     // a separate color
 	sizeOfColorsArray = NUM_VERTICES * ColorFactory::NUM_COMPONENTS_PER_COLOR;
     colors = new float[sizeOfColorsArray];
-    ColorFactory::randomlyColorize(colors, sizeOfColorsArray);
-
+    //ColorFactory::randomlyColorize(colors, sizeOfColorsArray);
+    std::fill(&colors[0], &colors[sizeOfColorsArray], 1.0f);
 
     // Create the connectivity array, which says how the vertices are
     // joined together to create faces.  This array is set up so that

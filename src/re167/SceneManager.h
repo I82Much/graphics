@@ -29,6 +29,8 @@ namespace RE167 {
 			stored in the scene manager.
 		*/
 		Object *createObject();
+
+        bool canCreateLight();
 		
 		/**
 		* This method creates a light and adds it to the list of light objects
@@ -46,10 +48,14 @@ namespace RE167 {
 		*/
 		void renderScene();
 
+
+
 	private:
 		Camera *mCamera;
 		std::list<Object*> mObjectList;
         std::list<Light*> mLightList;
+                
+        static const unsigned int MAX_NUM_LIGHTS = 8;
 	};
 
 }
