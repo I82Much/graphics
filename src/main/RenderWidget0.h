@@ -60,6 +60,8 @@ private:
     Object *cube;
 	Object *dragon;
     Object *sphere;
+    Object *teapot;
+    Object *buddha;
 	
 	// Hold the last mouse position
 	int lastX;
@@ -67,6 +69,10 @@ private:
 
 	int timerId;
 	int counter;
+	
+    void initCamera();
+    void initLights();
+    void initGeometry();
 };
 
 #endif // BASICAPP_H

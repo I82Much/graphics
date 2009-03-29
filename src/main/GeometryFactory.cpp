@@ -53,8 +53,7 @@ const int GeometryFactory::NUM_COMPONENTS_PER_RECTANGULAR_FACE =
 */
 void GeometryFactory::createXYPlane(RE167::Object *o) {
     assert (o != NULL);
-     
-    
+
 }
 
 
@@ -200,8 +199,8 @@ void GeometryFactory::createObject(RE167::Object *o, char * filepath, bool norma
 
 	float *colors = new float[3 * nVerts];
 	//ColorFactory::matchNormalizedVertices(colors, vertices, 3 * nVerts);
-	ColorFactory::randomlyColorize(colors, 3 * nVerts);
-    
+	//ColorFactory::randomlyColorize(colors, 3 * nVerts);
+    std::fill(&colors[0], &colors[3 * nVerts], 1.0f);
 	
 
 	VertexData& vertexData = o->vertexData;

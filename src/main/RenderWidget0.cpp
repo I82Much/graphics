@@ -47,37 +47,99 @@ RenderWidget0::~RenderWidget0()
 	}
 }
 
+
+
 void RenderWidget0::initSceneEvent()
 {
     
     //Shader *shader = new Shader("src/Shaders/simple.vert", "src/Shaders/simple.frag");
-    Shader *shader = new Shader("src/Shaders/diffuse_shading.vert", "src/Shaders/diffuse_shading.frag");
+    //Shader *shader = new Shader("src/Shaders/diffuse_shading.vert", "src/Shaders/diffuse_shading.frag");
     //Shader *shader = new Shader("src/Shaders/texture2D.vert", "src/Shaders/texture2D.frag");
-    
     //shader->use();
-    
-    
     
 	sceneManager = new SceneManager();
 
-	// Camera
-	camera = sceneManager->createCamera();
-
+    initCamera();
+    initLights();
+    initGeometry();
     
+	
+	// Trigger timer event every 5ms.
+	timerId = startTimer(5);
+}
 
-    // Light
+
+void RenderWidget0::initGeometry()
+{
+    float Brass[] = {
+           0.329412, 0.223529, 0.027451, 1.000000,
+           0.780392, 0.568627, 0.113725, 1.000000,
+           0.992157, 0.941176, 0.807843, 1.000000,
+           27.897400
+    };
+
+    Material * brass = new Material;
+    brass->setAmbient(Vector3(0.329412, 0.223529, 0.027451));
+    brass->setDiffuse(Vector3(0.780392, 0.568627, 0.113725));
+    brass->setSpecular(Vector3(0.329412, 0.223529, 0.027451));
+    brass->setShininess(45.0f);
+       
+       
+       
+    
     /*
-    Light * light1 = sceneManager->createLight();
-    // Create a red light
-    light1->setDiffuseColor(Vector3(1,0,0));
-    */
-    
-    // Create a blue light
-    Light * light2 = sceneManager->createLight();
-    //light2->setDiffuseColor(Vector3(0,0,1));    
-    
+    buddha = sceneManager->createObject();
+	GeometryFactory::createObject(buddha, "objects/buddha_smooth.obj");
+    buddha->setTransformation(Matrix4::scale(2,2,2));
+*/
 
-	Vector3 cameraCenter = Vector3(0,0,40);
+	bunny = sceneManager->createObject();
+    GeometryFactory::createObject(bunny, "objects/bunny.obj");
+        
+/*
+	terrain = sceneManager->createObject();
+	GeometryFactory::createTerrainFromPGM(terrain, "objects/Heightmap.pgm");
+	*/
+/*
+    cube = sceneManager->createObject();
+    GeometryFactory::createCube(cube);
+    
+    cube->setTransformation(cube->getTransformation() * Matrix4::translate(2, 0, 0));
+  */  
+    
+    //dragon->setMaterial(brass);
+    
+    
+    /*QImage *texImg = new QImage("interstate-76.jpg", "jpg");
+    
+    assert(texImg != NULL);
+    */
+//    Texture *picture = new Texture(texImg);
+    
+    //shiny->setTexture(picture);
+    /*
+    teapot = sceneManager->createObject();
+    GeometryFactory::createObject(teapot, "objects/teapot.obj");
+    teapot->setMaterial(brass);
+*/
+    //buddha->setMaterial(brass);
+    
+    //sphere = sceneManager->createObject();
+    
+    /*
+    GeometryFactory::createSphere(sphere);
+    sphere->setMaterial(shiny);*/
+    
+	houses = sceneManager->createObject();
+	GeometryFactory::createHouses(houses);
+    
+}
+
+
+
+void RenderWidget0::initCamera()
+{
+    Vector3 cameraCenter = Vector3(0,0,40);
 	Vector3 lookAtPoint = Vector3(0,0,0);
 	Vector3 upVector = Vector3(0,1,0);
 
@@ -91,58 +153,17 @@ void RenderWidget0::initSceneEvent()
 	//camera->changeSettings(cameraCenter2, lookAtPoint2, upVector2);
 
 	camera->setFrustum(1, 100, 1, BasicMath::radian(60));
-    
-/*
-	dragon = sceneManager->createObject();
-	GeometryFactory::createObject(dragon, "objects/dragon_smooth.obj");
-*/
-
-/*	bunny = sceneManager->createObject();
-      GeometryFactory::createObject(bunny, "objects/bunny.obj");*/
-/*
-	terrain = sceneManager->createObject();
-	GeometryFactory::createTerrainFromPGM(terrain, "objects/Heightmap.pgm");
-	*/
-/*
-    cube = sceneManager->createObject();
-    GeometryFactory::createCube(cube);
-    
-    cube->setTransformation(cube->getTransformation() * Matrix4::translate(2, 0, 0));
-  */  
-
-    // Make a shiny blue material
-    Material * shiny = new Material;
-    shiny->setDiffuse(Vector3(0,0,1));
-    // Specular coefficient
-    shiny->setShininess(256.0f);
-
-    /*QImage *texImg = new QImage("interstate-76.jpg", "jpg");
-    
-    assert(texImg != NULL);
-    */
-//    Texture *picture = new Texture(texImg);
-    
-    //shiny->setTexture(picture);
-    
-    
-    
-
-    sphere = sceneManager->createObject();
-    GeometryFactory::createSphere(sphere);
-    sphere->setMaterial(shiny);
-    
-	
-
-
-
-	    /*houses = sceneManager->createObject();
-	GeometryFactory::createHouses(houses);*/
-
-	// Trigger timer event every 5ms.
-	timerId = startTimer(5);
-
-
 }
+
+void RenderWidget0::initLights()
+{
+    // Create a blue light
+    Light * light2 = sceneManager->createLight();
+    light2->setAmbientColor(Vector3(0,0,0));
+    light2->setDiffuseColor(Vector3(1,1,1));
+    light2->setSpecularColor(Vector3(1,1,1));
+}
+
 
 void RenderWidget0::renderSceneEvent()
 {
