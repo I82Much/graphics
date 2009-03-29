@@ -55,6 +55,12 @@ void Shader::disable()
 	glUseProgram(0);
 }
 
+void Shader::restoreDefaultShader() 
+{
+    glUseProgram(0);
+}
+
+
 char *Shader::readSource(char *fn) {
 
 	FILE *fp;

@@ -19,6 +19,8 @@ namespace RE167 {
 		/** Disable the shader.
 		*/
 		void disable();
+		
+        static void restoreDefaultShader();
 
 	private:
 		char* readSource(char *fn);

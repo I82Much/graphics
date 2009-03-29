@@ -25,7 +25,8 @@ namespace RE167 {
         inline Material * getMaterial() { return material; }
         
 	protected:
-		Object() { mTransformation = Matrix4::IDENTITY; }
+		Object() : mTransformation(Matrix4::IDENTITY), material(NULL) {} 
+
 		Matrix4 mTransformation;
         
 		friend class SceneManager;

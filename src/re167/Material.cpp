@@ -7,6 +7,22 @@ Material::Material() : mDiffuse(Vector3(0.8,0.8,0.8)), mSpecular(Vector3(0,0,0))
 {
 }
 
+/**
+* Given a float array in the format specified in Materials.h,
+* create a material from it.
+* Skip the 4th, 8th, 12 ones because those are the alphas and we ignore that
+* parameter.  Furthermore, we skip the emissive light.
+*/
+Material::Material(float m[13]) :   mAmbient(Vector3(m[0], m[1], m[2])),
+                                    mDiffuse(m[4], m[5], m[6]),
+                                    mSpecular(m[8], m[9], m[10]),
+                                    mShininess(m[12]),
+                                    mTexture(NULL),
+                                    mShader(NULL)
+{}
+
+
+
 void Material::setDiffuse(const Vector3 &diffuse)
 {
 	mDiffuse = diffuse;

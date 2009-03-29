@@ -19,6 +19,8 @@
 #include "PGMReader.h"
 #include "Shader.h"
 
+#include "Materials.h"
+
 
 /**
 * This class is an OpenGL window, with support for mouse dragging
@@ -52,10 +54,7 @@ RenderWidget0::~RenderWidget0()
 void RenderWidget0::initSceneEvent()
 {
     
-    //Shader *shader = new Shader("src/Shaders/simple.vert", "src/Shaders/simple.frag");
-    //Shader *shader = new Shader("src/Shaders/diffuse_shading.vert", "src/Shaders/diffuse_shading.frag");
-    //Shader *shader = new Shader("src/Shaders/texture2D.vert", "src/Shaders/texture2D.frag");
-    //shader->use();
+    
     
 	sceneManager = new SceneManager();
 
@@ -68,22 +67,49 @@ void RenderWidget0::initSceneEvent()
 	timerId = startTimer(5);
 }
 
+void RenderWidget0::initMaterials()
+{}
 
 void RenderWidget0::initGeometry()
 {
-    float Brass[] = {
-           0.329412, 0.223529, 0.027451, 1.000000,
-           0.780392, 0.568627, 0.113725, 1.000000,
-           0.992157, 0.941176, 0.807843, 1.000000,
-           27.897400
-    };
-
-    Material * brass = new Material;
+    
+    Material * brass = new Material(Brass);
+    /*Material * brass = new Material;
     brass->setAmbient(Vector3(0.329412, 0.223529, 0.027451));
     brass->setDiffuse(Vector3(0.780392, 0.568627, 0.113725));
     brass->setSpecular(Vector3(0.329412, 0.223529, 0.027451));
     brass->setShininess(45.0f);
+    */
+    //Shader *shader = new Shader("src/Shaders/simple.vert", "src/Shaders/simple.frag");
+    //Shader *shader = new Shader("src/Shaders/diffuse_shading.vert", "src/Shaders/diffuse_shading.frag");
+    //Shader *shader = new Shader("src/Shaders/texture2D.vert", "src/Shaders/texture2D.frag");
+    //shader->use();
+    
+    
+    Material * emerald = new Material(Emerald);
+    emerald->setShader(new Shader("src/Shaders/simple.vert", "src/Shaders/simple.frag"));
+    
        
+    Object * pedestal1 = sceneManager->createObject();
+    GeometryFactory::createCylinder(pedestal1);
+    pedestal1->setTransformation(Matrix4::scale(1,2,1) * Matrix4::translate(-2,0,0));
+
+
+    Object * pedestal2 = sceneManager->createObject();
+    GeometryFactory::createCylinder(pedestal2);
+    pedestal2->setTransformation(Matrix4::scale(1,2,1) * Matrix4::translate(2,0,0));
+
+       
+    bunny = sceneManager->createObject();
+    GeometryFactory::createObject(bunny, "objects/bunny.obj");
+    bunny->setTransformation(Matrix4::translate(-2,2,0));
+    bunny->setMaterial(emerald);
+    
+    
+    Object * bunny2 = sceneManager->createObject();
+    GeometryFactory::createObject(bunny2, "objects/bunny.obj");
+    bunny2->setTransformation(Matrix4::translate(2,2,0));
+    bunny2->setMaterial(brass);
        
        
     
@@ -93,9 +119,7 @@ void RenderWidget0::initGeometry()
     buddha->setTransformation(Matrix4::scale(2,2,2));
 */
 
-	bunny = sceneManager->createObject();
-    GeometryFactory::createObject(bunny, "objects/bunny.obj");
-        
+	    
 /*
 	terrain = sceneManager->createObject();
 	GeometryFactory::createTerrainFromPGM(terrain, "objects/Heightmap.pgm");
@@ -130,8 +154,8 @@ void RenderWidget0::initGeometry()
     GeometryFactory::createSphere(sphere);
     sphere->setMaterial(shiny);*/
     
-	houses = sceneManager->createObject();
-	GeometryFactory::createHouses(houses);
+	/*houses = sceneManager->createObject();
+	GeometryFactory::createHouses(houses);*/
     
 }
 
@@ -139,7 +163,7 @@ void RenderWidget0::initGeometry()
 
 void RenderWidget0::initCamera()
 {
-    Vector3 cameraCenter = Vector3(0,0,40);
+    Vector3 cameraCenter = Vector3(0,0,10);
 	Vector3 lookAtPoint = Vector3(0,0,0);
 	Vector3 upVector = Vector3(0,1,0);
 

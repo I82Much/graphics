@@ -12,7 +12,8 @@ namespace RE167 {
 	{
 	public:
 		Material();
-		void setDiffuse(const Vector3 &diffuse);
+        Material(float materialDefinition[13]);
+        void setDiffuse(const Vector3 &diffuse);
 		const Vector3& getDiffuse() const;
 		void setSpecular(const Vector3 &specular);
 		const Vector3& getSpecular() const;

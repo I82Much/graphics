@@ -72,6 +72,7 @@ private:
 	
     void initCamera();
     void initLights();
+    void initMaterials();
     void initGeometry();
 };
 
