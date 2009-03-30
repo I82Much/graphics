@@ -48,13 +48,6 @@ const int GeometryFactory::NUM_COMPONENTS_PER_RECTANGULAR_FACE =
 	GeometryFactory::NUM_COMPONENTS_PER_VERTEX;
 
 
-/**
-* Creates unit square centered at origin in XY Plane.
-*/
-void GeometryFactory::createXYPlane(RE167::Object *o) {
-    assert (o != NULL);
-
-}
 
 
 /**
@@ -166,9 +159,12 @@ void GeometryFactory::createTerrainFromPGM(RE167::Object *o, char * filepath, bo
 	ColorFactory::colorTerrain(colors, vertices, numVertices);
 	ColorFactory::perturb(colors, numVertices * 3);
 
-	GeometryFactory::fillInObject(o, vertices, colors, indices,
-									numVertices * NUM_COMPONENTS_PER_VERTEX,
-									numVertices * ColorFactory::NUM_COMPONENTS_PER_COLOR,
+    // Calculate the normals
+    
+
+	GeometryFactory::fillInObject(  o, vertices, normals, 
+	                                colors, indices,
+									numVertices,
 									numVertices);
 	
 }
@@ -276,23 +272,28 @@ void GeometryFactory::createCube(Object *o) {
      int numNormalElements = 0;             
      calculateNormals(vertices, indices, normals, SIZE_OF_VERTICES_ARRAY, NUM_INDICES, numNormalElements);
      assert(normals);
+
+
      /*
      vertexData.vertexDeclaration.addElement(2, 0, 3, 3*sizeof(float), RE167::VES_NORMAL);		
      vertexData.createVertexBuffer(2, nVerts*3*sizeof(float), (unsigned char*)normals);
      */
-	 GeometryFactory::fillInObject(o, vertices, colors, indices,
-									SIZE_OF_VERTICES_ARRAY, SIZE_OF_VERTICES_ARRAY, NUM_INDICES);
-								
+	 GeometryFactory::fillInObject(o, vertices, normals, colors, indices,
+                                NUM_VERTICES, NUM_INDICES);
+									
+									
 
 }
 
 /**
 * Return vector that is the normal to the
-* triangle defined by v1, v2, v3
+* triangle defined by v1, v2, v3, as given by
+* the right hand rule.  In other words, the 
 */
-Vector3 GeometryFactory::calculateTriangleNormal(const Vector3 &v1, const Vector3 &v2, const Vector3 &v3) {
+Vector3 GeometryFactory::calculateTriangleNormal(const Vector3 &v1, 
+                                                const Vector3 &v2, 
+                                                const Vector3 &v3) {
     Vector3 normal = (v2 - v1).crossProduct(v3 - v1);
-    //return normal.normalize();
     return normal;
 }
 
@@ -570,15 +571,15 @@ void GeometryFactory::createSphere(RE167::Object *o, int numRows, int numFacesPe
 	float *vertices= NULL;
 	float *colors = NULL;
 	
-	int numIndexElements = 0;
-	int numVertexElements = 0;
+	int numIndices = 0;
+	int numVertices = 0;
 	int numColorElements = 0;
 	// Do the heavy lifting with a helper method
 	GeometryFactory::createSphere(numRows, numFacesPerRow, vertices, colors, indices, 
-								numVertexElements, numColorElements, numIndexElements);
+								numVertices, numColorElements, numIndices);
 
-	GeometryFactory::fillInObject(o, vertices, colors, indices, numVertexElements,
-									numColorElements, numIndexElements);
+	GeometryFactory::fillInObject(o, normals, vertices, colors, indices, numVertices,
+									numColorElements, numIndices);
 	
 	delete[] indices;
 	delete[] vertices;
@@ -597,11 +598,9 @@ void GeometryFactory::createSphere(RE167::Object *o, int numRows, int numFacesPe
 * @param indices			will be created within this method and filled
 *							with the connectivity information needed to render 
 *							the triangles
-* @param sizeOfVerticesArray	will be changed to reflect how many elements
-*							are stored within the vertices array
-* @param sizeOfColorsArray	will be changed to reflect how many elements
-*							are stored within the colors array
-* @param sizeOfIndicesArray will be changed to reflect how many elements
+* @param numVertices    	will be changed to reflect how many vertices there are
+*                           (size of vertices array will be 3 times this number)
+* @param numIndices         will be changed to reflect how many elements
 *							are stored within the indices array
 */
 void GeometryFactory::createSphere(int numFaceRows,
@@ -609,9 +608,8 @@ void GeometryFactory::createSphere(int numFaceRows,
                                    float *&vertices,
                                    float *&colors,
                                    int *&indices,
-                                   int &sizeOfVerticesArray,
-                                   int &sizeOfColorsArray,
-                                   int &sizeOfIndicesArray) {
+                                   int &numVertices,
+                                   int &numIndices) {
 
     
     assert(numFaceRows >= 1);
@@ -667,8 +665,8 @@ void GeometryFactory::createSphere(int numFaceRows,
             NUM_FACES * NUM_TRIANGLES_PER_RECTANGULAR_FACE * NUM_VERTICES_PER_TRIANGLE;
 
     // Caller needs to be able to assertain size of array we will create
-    sizeOfVerticesArray = NUM_VERTICES * NUM_COMPONENTS_PER_VERTEX;
-    vertices = new float[sizeOfVerticesArray];
+    numVertices = NUM_VERTICES;
+    vertices = new float[numVertices * NUM_COMPONENTS_PER_VERTEX];
 
     const int NUM_COMPONENTS_PER_ROW =
         NUM_COMPONENTS_PER_RECTANGULAR_FACE * numFacesPerRow;
@@ -742,7 +740,7 @@ void GeometryFactory::createSphere(int numFaceRows,
 
     // Create the color array.  Each triangle section of each face will be
     // a separate color
-	sizeOfColorsArray = NUM_VERTICES * ColorFactory::NUM_COMPONENTS_PER_COLOR;
+	int sizeOfColorsArray = NUM_VERTICES * ColorFactory::NUM_COMPONENTS_PER_COLOR;
     colors = new float[sizeOfColorsArray];
     //ColorFactory::randomlyColorize(colors, sizeOfColorsArray);
     std::fill(&colors[0], &colors[sizeOfColorsArray], 1.0f);
@@ -752,9 +750,9 @@ void GeometryFactory::createSphere(int numFaceRows,
     // if the first three elements of it are i1, i2, and i3, OpenGL will
     // create a triangular face from the i1th vertex, i2th vertex, and i3th
     // vertex as defined in the vertices array.
-    sizeOfIndicesArray = NUM_VERTICES;
-    indices = new int[sizeOfIndicesArray];
-    for (int i = 0; i < sizeOfIndicesArray; i++) {
+    numIndices = NUM_VERTICES;
+    indices = new int[numIndices];
+    for (int i = 0; i < numIndices; i++) {
         indices[i] = i;
     }
 }
@@ -1150,23 +1148,47 @@ void GeometryFactory::createTaperedCylinder(int numRows,
 /* Helper method to get vertexData, create buffers for the vertices, indices, colors, and then
  * fill them in
  * @param o
- * @param vertices			the (x,y,z) locations of all the vertices
+ * @param vertices			the (x,y,z) locations of all the vertices.  
+ *                          MUST NOT BE NULL
+ * @param normals           the unit vectors representing the normal at 
+ *                          corresponding vertex
  * @param colors			the (r,g,b) values at each vertex
- * @param indices			the indices into the vertices array that make up each triangular face
- * @param numVertexElements the size of the vertices array
- * @param numColorElements	the size of the colors array
- * @param numIndexElements	the size of the indices array
+ * @param indices			the indices into the vertices array that make up 
+ *                          each triangular face. MUST NOT BE NULL
+ * @param numVertices       the size of the vertices array
+ * @param numIndices    	the size of the indices array
  */
-void GeometryFactory::fillInObject(RE167::Object *o, float *vertices, float *colors, int *indices,
-								   int numVertexElements, int numColorElements, int numIndexElements) {
+void GeometryFactory::fillInObject(RE167::Object *o, 
+	                                float *vertices, 
+	                                float *normals, 
+	                                float *colors, 
+	                                int *indices,
+						            int numVertices, 
+                                    int numIndices) {
 	VertexData& vertexData = o->vertexData;
-	// one element for vertices
-	vertexData.vertexDeclaration.addElement(0, 0, 3, 3*sizeof(float), RE167::VES_POSITION);
-	// - one element for vertex colors
-	vertexData.vertexDeclaration.addElement(1, 0, 3, 3*sizeof(int), RE167::VES_DIFFUSE);
+	
+    assert(vertices != NULL);
 
-	vertexData.createVertexBuffer(0, numVertexElements * sizeof(float), (unsigned char*) vertices);
-	vertexData.createVertexBuffer(1, numColorElements * sizeof(float), (unsigned char*) colors);
+	// one element for vertices
+	vertexData.vertexDeclaration.addElement(0, 0, 3, 3*sizeof(float), 
+	                                        RE167::VES_POSITION);
+	vertexData.createVertexBuffer(0, 3 * numVertices * sizeof(float), 
+	                                (unsigned char*) vertices);
+    
+	if (colors != NULL) {
+		// - one element for vertex colors
+	    vertexData.vertexDeclaration.addElement(1, 0, 3, 3*sizeof(int), 
+	                                            RE167::VES_DIFFUSE);
+        vertexData.createVertexBuffer(1, 3 * numVertices * sizeof(float), 
+                                        (unsigned char*) colors);
+    }
+    
+    if (normals != NULL) {
+        vertexData.vertexDeclaration.addElement(2, 0, 3, 3*sizeof(float), 
+                                            RE167::VES_NORMAL);		
+        vertexData.createVertexBuffer(2, nVerts*3*sizeof(float), 
+                                    (unsigned char*)normals);
+    }
 
 	vertexData.createIndexBuffer(numIndexElements, indices);
 }

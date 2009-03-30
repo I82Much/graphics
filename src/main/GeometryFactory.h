@@ -20,61 +20,64 @@ public:
 	static void createObject(RE167::Object *o, char * filePath, bool normalize = true);
 	static void createTerrainFromPGM(RE167::Object *o, char * filepath, bool normalize = true);
 
-    static void createXYPlane(RE167::Object *o);
-    static void createXZPlane(RE167::Object *o);
-    static void createYZPlane(RE167::Object *o);
-
 
 	static void createSphere(RE167::Object *o, int numRows = 10, int numFacesPerRow = 20);
 
 	static void createSphere(int numRows, int numFacesPerRow,
                              float *&vertices,
+                             float *&normals,
                              float *&colors,
                              int *&indices,
-                             int &sizeOfVerticesArray,
-                             int &sizeOfColorsArray,
-                             int &sizeOfIndicesArray);
+                             int &numVertices,
+                             int &numVertices);
 
 
-	static void createTaperedCylinder(RE167::Object *o, int numHeightSegments = 1,
-								int numSlices = 20, float topRadius = 1.0f,
-								float bottomRadius = 1.0f);
+	static void createTaperedCylinder(RE167::Object *o, 
+	                                int numHeightSegments = 1,
+								    int numSlices = 20, 
+								    float topRadius = 1.0f,
+								    float bottomRadius = 1.0f);
 	
 	static void createTaperedCylinder(int numRows,
-								int numFacesPerRow,
-								float topRadius,
-								float bottomRadius,
-								float *&vertices,
-								float *&colors,
-								int *&indices,
-								int &sizeOfVerticesArray,
-								int &sizeOfColorsArray,
-								int &sizeOfIndicesArray);
+								    int numFacesPerRow,
+    								float topRadius,
+    								float bottomRadius,
+    								float *&vertices,
+    								float *&normals,
+    								float *&colors,
+    								int *&indices,
+    								int &numVertices,
+    								int &numIndices);
 
 
-	static void createCylinder(RE167::Object *o, int numHeightSegments = 1,
-								int numSlices = 20, float radius = 1.0f);
+	static void createCylinder(RE167::Object *o, 
+	                            int numHeightSegments = 1,
+								int numSlices = 20, 
+								float radius = 1.0f);
 
 
 	static void createCylinder(int numRows,
 								int numFacesPerRow,
 								float radius,
 								float *&vertices,
+								float *&normals,
 								float *&colors,
 								int *&indices,
-								int &sizeOfVerticesArray,
-								int &sizeOfColorsArray,
-								int &sizeOfIndicesArray);
+								int &numVertices,
+								int &numIndices);
 
 
-	static void createCone(RE167::Object *o, int numHeightSegments = 1,
-							int numSlices = 20, float bottomRadius = 1.0f);
+	static void createCone(RE167::Object *o, 
+	                        int numHeightSegments = 1,
+							int numSlices = 20, 
+							float bottomRadius = 1.0f);
 
 
 	static void createCone(int numRows,
 							int numFacesPerRow,
 							float bottomRadius,
 							float *&vertices,
+							float *&normals,
 							float *&colors,
 							int *&indices,
 							int &sizeOfVerticesArray,
@@ -105,8 +108,13 @@ public:
 
 
 private:
-	static void fillInObject(RE167::Object *o, float *vertices, float *colors, int *indices,
-						   int numVertexElements, int numColorElements, int numIndexElements);
+	static void fillInObject(RE167::Object *o, 
+	                        float *vertices, 
+	                        float *normals, 
+	                        float *colors, 
+	                        int *indices,
+						    int numVertices, 
+                            int numIndices);
 
 };
 
