@@ -225,6 +225,8 @@ void GeometryFactory::createObject(RE167::Object *o, char * filepath, bool norma
          vertexData.vertexDeclaration.addElement(2, 0, 3, 3*sizeof(float), RE167::VES_NORMAL);		
          vertexData.createVertexBuffer(2, nVerts*3*sizeof(float), (unsigned char*)normals);
         
+        
+         std::cout << "num vertices: " << nVerts << " num indices:" << nIndices << std::endl;
 	}
 
 	vertexData.createIndexBuffer(nIndices, indices);
@@ -234,6 +236,24 @@ void GeometryFactory::createObject(RE167::Object *o, char * filepath, bool norma
 	delete[] vertices;
 	delete[] indices;
 	delete[] colors;
+}
+
+
+
+void GeometryFactory::eliminateDuplicateVertices(float *vertices, 
+                                                int *indices, 
+                                                float *&outVertices,
+                                                int *&outIndices,
+                                                int &numVertices,
+                                                int &numIndices) {
+
+    // For each vertex in the triangular mesh
+        // Add it to a set 
+
+
+                                                    
+                                                    
+                                                    
 }
 
 /*

@@ -74,12 +74,13 @@ void RenderWidget0::initGeometry()
 {
     
     Material * brass = new Material(Brass);
-    /*Material * brass = new Material;
+    
+    
+    Material * b = new Material;
     brass->setAmbient(Vector3(0.329412, 0.223529, 0.027451));
     brass->setDiffuse(Vector3(0.780392, 0.568627, 0.113725));
     brass->setSpecular(Vector3(0.329412, 0.223529, 0.027451));
     brass->setShininess(45.0f);
-    */
     //Shader *shader = new Shader("src/Shaders/simple.vert", "src/Shaders/simple.frag");
     //Shader *shader = new Shader("src/Shaders/diffuse_shading.vert", "src/Shaders/diffuse_shading.frag");
     //Shader *shader = new Shader("src/Shaders/texture2D.vert", "src/Shaders/texture2D.frag");
@@ -97,26 +98,27 @@ void RenderWidget0::initGeometry()
     Object * pedestal1 = sceneManager->createObject();
     GeometryFactory::createCylinder(pedestal1);
     pedestal1->setTransformation(Matrix4::scale(1,2,1) * Matrix4::translate(-2,0,0));
-    pedestal1->setMaterial(pewter);
+    pedestal1->setMaterial(b);
     
 
     Object * pedestal2 = sceneManager->createObject();
     GeometryFactory::createCylinder(pedestal2);
     pedestal2->setTransformation(Matrix4::scale(1,2,1) * Matrix4::translate(2,0,0));
-    pedestal2->setMaterial(polishedSilver);
+    pedestal2->setMaterial(b);
 
-     /*
+     
     dragon = sceneManager->createObject();
     GeometryFactory::createObject(dragon, "objects/dragon_smooth.obj");
     dragon->setTransformation(Matrix4::translate(-2,2,0));
-    dragon->setMaterial(emerald);*/
-     
+    dragon->setMaterial(emerald);
+     /*
     Object * ball = sceneManager->createObject(); 
     GeometryFactory::createObject(ball, "objects/sphere.obj");
-    ball-> setTransformation(Matrix4::translate(-2,2,0));
-    ball->setMaterial(emerald);
-     
-       /*
+    ball->setTransformation(Matrix4::translate(-2,2,0));
+    ball->setMaterial(b);
+     */
+      
+      /* 
     bunny = sceneManager->createObject();
     GeometryFactory::createObject(bunny, "objects/bunny.obj");
     bunny->setTransformation(Matrix4::translate(-2,2,0));
@@ -127,7 +129,7 @@ void RenderWidget0::initGeometry()
     GeometryFactory::createObject(bunny2, "objects/bunny.obj");
     bunny2->setTransformation(Matrix4::translate(2,2,0));
     bunny2->setMaterial(brass);
-       
+      
        
        
        
@@ -143,9 +145,9 @@ void RenderWidget0::initGeometry()
 	terrain = sceneManager->createObject();
 	GeometryFactory::createTerrainFromPGM(terrain, "objects/Heightmap.pgm");
 	*/
-
+/*
     cube = sceneManager->createObject();
-    GeometryFactory::createCube(cube);
+    GeometryFactory::createCube(cube);*/
     /*
     cube->setTransformation(cube->getTransformation() * Matrix4::translate(2, 0, 0));
   */  
@@ -200,11 +202,26 @@ void RenderWidget0::initCamera()
 
 void RenderWidget0::initLights()
 {
-    // Create a blue light
-    Light * light2 = sceneManager->createLight();
-    light2->setAmbientColor(Vector3(0,0,0));
-    light2->setDiffuseColor(Vector3(1,1,1));
-    light2->setSpecularColor(Vector3(1,1,1));
+    
+    Light * blue = sceneManager->createLight();
+    blue->setAmbientColor(Vector3(0,0,1));
+    blue->setDiffuseColor(Vector3(0,0,1));
+    blue->setSpecularColor(Vector3(1,1,1));
+    
+    blue->setPosition(Vector3(1,0,0));
+    blue->setDirection(Vector3(1,0,0));
+    
+    
+    
+    // Create a white light
+    Light * white = sceneManager->createLight();
+    white->setAmbientColor(Vector3(0,0,0));
+    white->setDiffuseColor(Vector3(1,1,1));
+    white->setSpecularColor(Vector3(1,1,1));
+    
+
+    
+    
 }
 
 

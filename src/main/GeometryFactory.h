@@ -86,10 +86,17 @@ public:
 	static void printVectorArray(RE167::Vector3 *vectorArray, const int numElements, int entriesPerLine = 10);
 
 
+    static void eliminateDuplicateVertices(float *vertices, 
+                                            int *indices, 
+                                            float *&outVertices,
+                                            int *&outIndices,
+                                            int &numVertices,
+                                            int &numIndices);
+
 
     /**
     */
-    static void GeometryFactory::calculateNormals(float *vertices, int *indices, float *&normals,
+    static void calculateNormals(float *vertices, int *indices, float *&normals,
     								        int numVertexElements, int numIndexElements, 
                                             int &sizeOfNormalsArray);
     

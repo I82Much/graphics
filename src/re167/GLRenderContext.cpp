@@ -234,6 +234,9 @@ void GLRenderContext::setMaterial(const Material *m)
     }
     else 
 	{
+	    // Just in case they had used regular coloring previously.
+        glDisable(GL_COLOR_MATERIAL);
+	    
 		float diffuse[4];
 		diffuse[0] = m->getDiffuse().getX();
 		diffuse[1] = m->getDiffuse().getY();
@@ -256,6 +259,9 @@ void GLRenderContext::setMaterial(const Material *m)
 		glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specular);
 
 		glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, m->getShininess());
+
+
+
 
 		Texture *tex = m->getTexture();
 		if(tex!=0)
