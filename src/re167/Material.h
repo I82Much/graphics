@@ -13,6 +13,10 @@ namespace RE167 {
 	public:
 		Material();
         Material(float materialDefinition[13]);
+        Material(const Vector3 &diffuse, const Vector3 &specular,
+                const Vector3 &ambient, const float shininess,
+                Texture *texture, Shader *shader);
+                            
         void setDiffuse(const Vector3 &diffuse);
 		const Vector3& getDiffuse() const;
 		void setSpecular(const Vector3 &specular);
@@ -25,6 +29,8 @@ namespace RE167 {
 		Texture *getTexture() const;
 		void setShader(Shader *shader);
 		Shader *getShader() const;
+
+        static const Material OPEN_GL_DEFAULT; 
 
 	private:
 		Vector3 mDiffuse;

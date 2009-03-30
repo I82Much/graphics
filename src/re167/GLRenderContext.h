@@ -50,7 +50,7 @@ namespace RE167 {
 	private:
 	    /** This function needs to be called before rendering each object.
     	*/
-    	void setMaterial(Material *material);
+    	void setMaterial(const Material *material);
 		bool wireframe;
 	};
 

@@ -222,9 +222,17 @@ void GLRenderContext::setLights(const std::list<Light*> &lightList)
 	}
 }
 
-void GLRenderContext::setMaterial(Material *m)
+
+
+void GLRenderContext::setMaterial(const Material *m)
 {
-	if(m!=NULL)
+    // If there's no material, we need to ensure that
+    // material, texture, and shaders are all at default
+    // Do this by passing in the Default material
+    if (m==NULL) {
+        setMaterial(&Material::OPEN_GL_DEFAULT);
+    }
+    else 
 	{
 		float diffuse[4];
 		diffuse[0] = m->getDiffuse().getX();
@@ -257,6 +265,10 @@ void GLRenderContext::setMaterial(Material *m)
 			glBindTexture(GL_TEXTURE_2D, tex->getId());
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		}
+        // No texture
+		else {
+            glDisable(GL_TEXTURE_2D);
 		}
 
         // If the material does not include a texture, use the default OpenGL

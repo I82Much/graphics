@@ -200,20 +200,31 @@ void GeometryFactory::createObject(RE167::Object *o, char * filepath, bool norma
 	float *colors = new float[3 * nVerts];
 	//ColorFactory::matchNormalizedVertices(colors, vertices, 3 * nVerts);
 	//ColorFactory::randomlyColorize(colors, 3 * nVerts);
-    std::fill(&colors[0], &colors[3 * nVerts], 1.0f);
+    //std::fill(&colors[0], &colors[3 * nVerts], 1.0f);
 	
 
 	VertexData& vertexData = o->vertexData;
 	vertexData.vertexDeclaration.addElement(0, 0, 3, 3*sizeof(float), RE167::VES_POSITION);
 	vertexData.createVertexBuffer(0, nVerts*3*sizeof(float), (unsigned char*)vertices);
 
-	vertexData.vertexDeclaration.addElement(1, 0, 3, 3*sizeof(float), RE167::VES_DIFFUSE);
+	/*vertexData.vertexDeclaration.addElement(1, 0, 3, 3*sizeof(float), RE167::VES_DIFFUSE);
 	vertexData.createVertexBuffer(1, nVerts*3*sizeof(float), (unsigned char*)colors);
+    */
 
 	if(normals)
 	{
 		vertexData.vertexDeclaration.addElement(2, 0, 3, 3*sizeof(float), RE167::VES_NORMAL);		
 		vertexData.createVertexBuffer(2, nVerts*3*sizeof(float), (unsigned char*)normals);
+	}
+	// Calculate the normals since they weren't included on object
+	else {
+         int numNormalElements = 0;             
+         calculateNormals(vertices, indices, normals, 3*nVerts, nIndices, numNormalElements);
+         assert(normals);
+
+         vertexData.vertexDeclaration.addElement(2, 0, 3, 3*sizeof(float), RE167::VES_NORMAL);		
+         vertexData.createVertexBuffer(2, nVerts*3*sizeof(float), (unsigned char*)normals);
+        
 	}
 
 	vertexData.createIndexBuffer(nIndices, indices);
@@ -222,7 +233,7 @@ void GeometryFactory::createObject(RE167::Object *o, char * filepath, bool norma
 	if(texcoords) delete[] texcoords;
 	delete[] vertices;
 	delete[] indices;
-	//delete[] colors;
+	delete[] colors;
 }
 
 /*
@@ -259,10 +270,101 @@ void GeometryFactory::createCube(Object *o) {
 					 16,18,19, 16,17,18,	// top face
 					 20,22,23, 20,21,22};	// bottom face
 
-	GeometryFactory::fillInObject(o, vertices, colors, indices,
+
+             
+     float * normals = NULL;
+     int numNormalElements = 0;             
+     calculateNormals(vertices, indices, normals, SIZE_OF_VERTICES_ARRAY, NUM_INDICES, numNormalElements);
+     assert(normals);
+     /*
+     vertexData.vertexDeclaration.addElement(2, 0, 3, 3*sizeof(float), RE167::VES_NORMAL);		
+     vertexData.createVertexBuffer(2, nVerts*3*sizeof(float), (unsigned char*)normals);
+     */
+	 GeometryFactory::fillInObject(o, vertices, colors, indices,
 									SIZE_OF_VERTICES_ARRAY, SIZE_OF_VERTICES_ARRAY, NUM_INDICES);
 								
 
+}
+
+/**
+* Return vector that is the normal to the
+* triangle defined by v1, v2, v3
+*/
+Vector3 GeometryFactory::calculateTriangleNormal(const Vector3 &v1, const Vector3 &v2, const Vector3 &v3) {
+    Vector3 normal = (v2 - v1).crossProduct(v3 - v1);
+    //return normal.normalize();
+    return normal;
+}
+
+/**
+* Based on pseudocode from http://www.devmaster.net/forums/showthread.php?t=414
+*/
+void GeometryFactory::calculateNormals(float *vertices, int *indices, float *&normals,
+								        int numVertexElements, int numIndexElements, 
+								        int &sizeOfNormalsArray	        ) {
+    
+    // Create a normal array, all starting at (0,0,0)
+    Vector3 * vNormals = new Vector3[numVertexElements / 3];
+      
+    // for each face in our object, calculate the normal and add that vector
+    // to the corresponding normals of the three vertices
+    for (int i = 0; i < numIndexElements; i += 3) {
+        int index1 = indices[i];
+        int index2 = indices[i+1];
+        int index3 = indices[i+2];
+        
+        // Since our index refers to the nth triplet, we need to multiply
+        // by 3 to find corresponding place in array
+        int floatIndex1 = 3 * index1;
+        int floatIndex2 = 3 * index2;
+        int floatIndex3 = 3 * index3;
+        
+        // The current triangular face is defined by these three
+        // vertices.  
+        const Vector3 v1( vertices[floatIndex1    ], 
+                          vertices[floatIndex1 + 1],
+                          vertices[floatIndex1 + 2]);
+
+        const Vector3 v2( vertices[floatIndex2    ], 
+                          vertices[floatIndex2 + 1],
+                          vertices[floatIndex2 + 2]);
+
+        const Vector3 v3( vertices[floatIndex3    ], 
+                          vertices[floatIndex3 + 1],
+                          vertices[floatIndex3 + 2]);
+        
+        Vector3 normal = calculateTriangleNormal(v1,v2,v3);
+        
+        // Find the current normals associated with these vertices and
+        // add the new normal to them
+        vNormals[index1] += normal;
+        vNormals[index2] += normal;
+        vNormals[index3] += normal;
+        
+        /*std::cout<< "i1: " << index1 << " i2: " << index2 << " i3: " << index3 << std::endl;
+        std::cout<< "v1:" << v1 << " v2: " << v2 << " v3: " << v3 << " normal: " << normal << std::endl;*/
+        
+        
+    }
+    // Normalize the array of normals (make them unit length)
+    for (int i = 0; i < numVertexElements / 3; i++) {
+        vNormals[i] = vNormals[i].normalize();
+    }
+    
+    // Allocate enough space for the float array
+    sizeOfNormalsArray = numVertexElements;
+    normals = new float[sizeOfNormalsArray];
+    
+    // Switch from using our Vector3s to raw floats; that's what OpenGL needs
+    for (int i = 0; i < numVertexElements / 3; i++) {
+        int index = 3 * i;
+        normals[index] = vNormals[i].getX();
+        normals[index+1] = vNormals[i].getY();
+        normals[index+2] = vNormals[i].getZ();
+    }
+    
+    delete[] vNormals;
+        
 }
 
 
@@ -1027,7 +1129,9 @@ void GeometryFactory::createTaperedCylinder(int numRows,
 	}
 
 	// Fill in the color arrays
-	ColorFactory::colorize(colors, sizeOfColorsArray);
+	//ColorFactory::colorize(colors, sizeOfColorsArray);
+    std::fill(&colors[0], &colors[sizeOfColorsArray], 1.0f);
+	
 	
 	// Fill in the connectivity arrays
 	for (int i = 0; i < sizeOfIndicesArray; i++) {
@@ -1097,4 +1201,28 @@ void GeometryFactory::printVectorArray(Vector3 *vectorArray, const int numElemen
 		std::cout<< vectorArray[i];
 		count++;
 	}
+}
+
+void GeometryFactory::runTestSuite() {
+
+    std::cout<< "Running test suite of normalizatoin" << std::endl;
+    
+    Vector3 test1[] = {Vector3::ZERO_VECTOR, Vector3::ZERO_VECTOR, Vector3::ZERO_VECTOR, Vector3::ZERO_VECTOR};
+    Vector3 test2[] = {Vector3(1,0,0), Vector3(0,1,0), Vector3(0,0,0), Vector3(0,0,1)};
+    Vector3 test3[] = {Vector3(1.2, 13.5, -23.5), Vector3(100.5, 23.5, -32.553), Vector3(13.05f, 23, 0),
+        Vector3(99.3, 10, -9.053).crossProduct(Vector3(11.85, 9.5, 23.5))};
+        
+        
+    
+    
+    std::vector<Vector3*> tests;
+    tests.push_back(test1);
+    tests.push_back(test2);
+    tests.push_back(test3);
+    
+    for (int i = 0; i < tests.size(); i++) {
+        Vector3 * test = tests[i];
+        assert (calculateTriangleNormal(test[0], test[1], test[2]) == test[3]);
+    }
+      
 }

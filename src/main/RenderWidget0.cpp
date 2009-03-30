@@ -87,29 +87,48 @@ void RenderWidget0::initGeometry()
     
     
     Material * emerald = new Material(Emerald);
-    emerald->setShader(new Shader("src/Shaders/simple.vert", "src/Shaders/simple.frag"));
+    //emerald->setShader(new Shader("src/Shaders/simple.vert", "src/Shaders/simple.frag"));
     
+    Material * pewter = new Material(Pewter);
+    Material * polishedSilver = new Material(Polished_Silver);
+    
+       
        
     Object * pedestal1 = sceneManager->createObject();
     GeometryFactory::createCylinder(pedestal1);
     pedestal1->setTransformation(Matrix4::scale(1,2,1) * Matrix4::translate(-2,0,0));
-
+    pedestal1->setMaterial(pewter);
+    
 
     Object * pedestal2 = sceneManager->createObject();
     GeometryFactory::createCylinder(pedestal2);
     pedestal2->setTransformation(Matrix4::scale(1,2,1) * Matrix4::translate(2,0,0));
+    pedestal2->setMaterial(polishedSilver);
 
-       
+     /*
+    dragon = sceneManager->createObject();
+    GeometryFactory::createObject(dragon, "objects/dragon_smooth.obj");
+    dragon->setTransformation(Matrix4::translate(-2,2,0));
+    dragon->setMaterial(emerald);*/
+     
+    Object * ball = sceneManager->createObject(); 
+    GeometryFactory::createObject(ball, "objects/sphere.obj");
+    ball-> setTransformation(Matrix4::translate(-2,2,0));
+    ball->setMaterial(emerald);
+     
+       /*
     bunny = sceneManager->createObject();
     GeometryFactory::createObject(bunny, "objects/bunny.obj");
     bunny->setTransformation(Matrix4::translate(-2,2,0));
     bunny->setMaterial(emerald);
-    
+    */
     
     Object * bunny2 = sceneManager->createObject();
     GeometryFactory::createObject(bunny2, "objects/bunny.obj");
     bunny2->setTransformation(Matrix4::translate(2,2,0));
     bunny2->setMaterial(brass);
+       
+       
        
        
     
@@ -124,10 +143,10 @@ void RenderWidget0::initGeometry()
 	terrain = sceneManager->createObject();
 	GeometryFactory::createTerrainFromPGM(terrain, "objects/Heightmap.pgm");
 	*/
-/*
+
     cube = sceneManager->createObject();
     GeometryFactory::createCube(cube);
-    
+    /*
     cube->setTransformation(cube->getTransformation() * Matrix4::translate(2, 0, 0));
   */  
     

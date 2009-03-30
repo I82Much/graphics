@@ -2,8 +2,12 @@
 
 using namespace RE167;
 
-Material::Material() : mDiffuse(Vector3(0.8,0.8,0.8)), mSpecular(Vector3(0,0,0)),
- mAmbient(Vector3(0.2,0.2,0.2)), mShininess(0), mTexture(0), mShader(0)
+const Material Material::OPEN_GL_DEFAULT;
+
+Material::Material() :  mDiffuse(Vector3(0.8,0.8,0.8)),
+                        mSpecular(Vector3(0,0,0)),
+                        mAmbient(Vector3(0.2,0.2,0.2)), 
+                        mShininess(0), mTexture(0), mShader(0)
 {
 }
 
@@ -13,13 +17,25 @@ Material::Material() : mDiffuse(Vector3(0.8,0.8,0.8)), mSpecular(Vector3(0,0,0))
 * Skip the 4th, 8th, 12 ones because those are the alphas and we ignore that
 * parameter.  Furthermore, we skip the emissive light.
 */
-Material::Material(float m[13]) :   mAmbient(Vector3(m[0], m[1], m[2])),
-                                    mDiffuse(m[4], m[5], m[6]),
-                                    mSpecular(m[8], m[9], m[10]),
+Material::Material(float m[13]) :   
+                                    mDiffuse(Vector3(m[4], m[5], m[6])),
+                                    mSpecular(Vector3(m[8], m[9], m[10])),
+                                    mAmbient(Vector3(m[0], m[1], m[2])),
                                     mShininess(m[12]),
                                     mTexture(NULL),
                                     mShader(NULL)
 {}
+
+Material::Material(const Vector3 &diffuse, const Vector3 &specular,
+                    const Vector3 &ambient, const float shininess,
+                    Texture *texture, Shader *shader) :
+                    mDiffuse(diffuse),
+                    mSpecular(specular),
+                    mAmbient(ambient),
+                    mShininess(shininess),
+                    mTexture(texture),
+                    mShader(shader) {}
+                    
 
 
 
