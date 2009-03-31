@@ -93,6 +93,13 @@ public:
                                             int &numVertices,
                                             int &numIndices);
 
+    static void createSphericalCoordinates(float *vertices,
+                                            float *normals,
+                                            int *indices,
+                                            float *&texCoords,
+                                            int numVertices,
+                                            int numIndices);
+
 
     /**
     */

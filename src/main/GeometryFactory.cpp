@@ -240,12 +240,66 @@ void GeometryFactory::createObject(RE167::Object *o, char * filepath, bool norma
 
 
 
+/**
+* Given the geometry of an object, calculate the texture coordinates for
+* each vertex in the mesh.  Calling class is responsible for delete[]ing
+* the texCoords array that is allocated within this method.
+*
+*
+* {@link http://www.mvps.org/directx/articles/spheremap.htm}
+* @param vertices       an array representing the vertices of the mesh.
+*                       Must not be null.
+* @param normals        an array representing the unit normal vectors at
+*                       each vertex.  Must not be null.
+* @param indices        an array mapping the faces of mesh to the vertices.
+*                       Must not be null.
+* @param texCoords      the array that will be allocated within this method 
+*                       to hold all of the (u,v) texture coordinates for
+*                       each vertex in the mesh
+* @param numVertices    how many vertices are in the mesh (vertices array will
+*                       have 3 times this number worth of elements)
+* @param numIndices     the size of the indices array; there will be exactly
+*                       numIndices / 3 faces on the mesh
+*/
+void GeometryFactory::createSphericalCoordinates(float *vertices,
+                                                float *normals,
+                                                int *indices,
+                                                float *&texCoords,
+                                                int numVertices,
+                                                int numIndices) 
+{
+    assert(vertices != NULL);
+    assert(indices != NULL);
+    assert(normals != NULL);
+    
+    // Each texture coordinate is two dimensional
+    texCoords = new float[numIndices * 2];
+    
+    // For each vertex in the mesh, calculate 
+    for (int i = 0; i < numIndices; i++) {
+        int index = indices[i];
+        
+        float x = normals[index    ];
+        float y = normals[index + 1];
+        
+        float tu = asin(x)/PI + 0.5f;
+        float tv = asin(y)/PI + 0.5f;
+        
+        int textureIndex = 2 * i;
+        texCoords[textureIndex] = tu;
+        texCoords[textureIndex + 1] = tv;
+    }
+}
+
+
+
 void GeometryFactory::eliminateDuplicateVertices(float *vertices, 
                                                 int *indices, 
                                                 float *&outVertices,
                                                 int *&outIndices,
                                                 int &numVertices,
-                                                int &numIndices) {
+                                                int &numIndices) 
+{
 
     // For each vertex in the triangular mesh
         // Add it to a set 
@@ -1240,7 +1294,7 @@ void GeometryFactory::runTestSuite() {
     tests.push_back(test2);
     tests.push_back(test3);
     
-    for (int i = 0; i < tests.size(); i++) {
+    for (unsigned int i = 0; i < tests.size(); i++) {
         Vector3 * test = tests[i];
         assert (calculateTriangleNormal(test[0], test[1], test[2]) == test[3]);
     }
