@@ -26,6 +26,10 @@ namespace RE167 {
 			// Inequality operator
 			const bool operator!=(const Vector3 &other) const;
 			
+			// Less than operator (for weak ordering/sorting)
+            const bool operator<(const Vector3 &other) const;
+			
+			
 			// Addition operator for vectors
 			Vector3 & operator+=(const Vector3 &rhs);
 			const Vector3 operator+(const Vector3 &rhs) const;

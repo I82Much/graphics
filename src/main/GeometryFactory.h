@@ -113,7 +113,7 @@ public:
 /**
 */
     static void calculateNormals(float *vertices, int *indices, float *&normals,
-    								        int numVertexElements, int numIndexElements, 
+    								        int numVertices, int numIndices, 
                                             int &sizeOfNormalsArray);
     
     /**

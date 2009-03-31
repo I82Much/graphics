@@ -5,6 +5,7 @@
 #include <iostream>
 #include <math.h>
 #include <stdio.h>
+#include <map>
 
 
 using namespace RE167;
@@ -76,6 +77,27 @@ const bool Vector3::operator!=(const Vector3& other) const {
 	return !((*this) == other);
 }
 
+const bool Vector3::operator<(const Vector3& other) const {
+    
+//    std::cout << *this << ": " << other << std::endl;
+    
+    
+    /*
+    if (this->operator==(other)) {
+        return false;
+    }*/
+
+    // Order by x, then by y, then by z
+    if (x < other.x) {
+        return true;
+    }
+    else if (y < other.y) {
+        return true;
+    }
+    else {
+        return z < other.z;
+    }
+}
 
 
 /**
@@ -163,6 +185,8 @@ const Vector3 Vector3::normalize() const {
 * stdlib.h.  Else if one fails, returns EXIT_FAILURE.
 */
 int Vector3::runTestSuite() {
+    
+    
 	std::cout<< "Testing Vector3 functionality." <<std::endl;
 
 	const float X = 1.0f;
@@ -210,12 +234,12 @@ int Vector3::runTestSuite() {
 	std::cout<< "Testing scalar vector multiplication: " << std::endl;
 	
 	Vector3 c(5,-10,0);
-	assert(c.magnitude() == sqrt(125.0f));
+	assert(BasicMath::approxEqual(c.magnitude(), sqrt(125.0f)));
 
 	Vector3 d = c * -5;
 	// Make sure the multiplication didn't change the magnitude
-	assert(c.magnitude() == sqrt(125.0f));
-
+	assert(BasicMath::approxEqual(c.magnitude(), sqrt(125.0f)));
+    
 	Vector3 e = c * 14.3f;
 	
 	Vector3 realE(5 * 14.3f, -10 * 14.3f, 0 * 14.3f);
@@ -245,8 +269,8 @@ int Vector3::runTestSuite() {
 	assert(xVectorLength == 1.0f);
 	
 	Vector3 toMeasure(sqrt(5.0f), -sqrt(3.0f), 2);
-	assert(toMeasure.magnitude() == sqrt(12.0f));
-	
+	assert(BasicMath::approxEqual(toMeasure.magnitude(), sqrt(12.0f)));
+    
 
 	std::cout<< "Testing cross product: " << std::endl;
 	// Check cross product!
@@ -263,6 +287,67 @@ int Vector3::runTestSuite() {
 	Vector3 aCrossB = vec.crossProduct(addend);
 	Vector3 bCrossA = addend.crossProduct(vec);
 	assert(aCrossB == -bCrossA);
+	
+	
+	
+	
+    Vector3 y(1.54f, 12.42f, 1240.1f);
+    Vector3 z(1.540001f, 12.42f, 1240.10002f);
+	
+	
+	// Test the map functionality
+    std::map<Vector3, int> m;
+    
+    std::cout<<m.size() << std::endl;
+    
+    // aCrossB and -bCrossA are equal; the value that should be stored
+    // in map is 1923 and map should have only one entry
+    m[y] = 1923;
+    std::cout << "After adding a x b"<<m.size() << std::endl;
+    m[z] = 3105;
+    std::cout<< "after adding - b x a" <<m.size() << std::endl;
+    
+    assert(y == z);
+    
+    
+    m[Vector3()] = 4105;
+    std::cout<< "after adding Vector3()" <<m.size() << std::endl;
+    
+    m[Vector3::ZERO_VECTOR] = 19512;
+    std::cout<< "after adding ZERO_VECTOR" <<m.size() << std::endl;
+    
+    assert(Vector3() == Vector3::ZERO_VECTOR);
+    
+    
+    m[Vector3(-0.25, -0.866026, -0.433012)] = 19523;
+    
+    m[Vector3(-0.866026, 5.10342e-12, -0.5)] = 152-14;
+    
+    m[Vector3(0, -1, -0)] = 101;
+    
+    m[Vector3(-0.251, -0.8660263, -0.4330121)] = 19522;
+    
+    m[Vector3(0, -1, -0.00001)] = 102;
+    
+    
+    
+//    assert(m.size() == 5);
+
+    std::cout<<m.size() << std::endl;
+    /*
+    for( std::map<Vector3, int>::iterator ii=m.begin(); ii!=m.end(); ii++)
+    {
+           std::cout << (*ii).first << ": " << (*ii).second << std::endl;
+    }*/
+    
+    
+    std::map<Vector3,int>::iterator it;
+    it=m.find(Vector3::ZERO_VECTOR);
+    assert(it != m.end());
+    
+    it = m.find(y);
+    assert(it != m.end());
+       	
 	
 	return EXIT_SUCCESS;
 }

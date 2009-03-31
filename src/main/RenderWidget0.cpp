@@ -106,8 +106,8 @@ void RenderWidget0::initGeometry()
     pedestal2->setTransformation(Matrix4::scale(1,2,1) * Matrix4::translate(2,0,0));
     pedestal2->setMaterial(b);
 
-     /*
-    dragon = sceneManager->createObject();
+     
+    /*dragon = sceneManager->createObject();
     GeometryFactory::createObject(dragon, "objects/dragon_smooth.obj");
     dragon->setTransformation(Matrix4::translate(-2,2,0));
     dragon->setMaterial(emerald);*/
@@ -123,12 +123,12 @@ void RenderWidget0::initGeometry()
     bunny->setTransformation(Matrix4::translate(-2,2,0));
     bunny->setMaterial(emerald);
     */
-    
+    /*
     Object * bunny2 = sceneManager->createObject();
     GeometryFactory::createObject(bunny2, "objects/bunny.obj");
     bunny2->setTransformation(Matrix4::translate(2,2,0));
     bunny2->setMaterial(brass);
-      
+      */
        
        
        

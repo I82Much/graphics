@@ -164,7 +164,6 @@ void GLRenderContext::setLights(const std::list<Light*> &lightList)
 		int i=0;
 		for (iter=lightList.begin(); iter!=lightList.end() && i<8; iter++)
 		{
-			i++;
 			Light *l = (*iter);
 
 			glEnable(lightIndex[i]);
@@ -218,6 +217,9 @@ void GLRenderContext::setLights(const std::list<Light*> &lightList)
 			specular[2] = l->getSpecularColor().getZ();
 			specular[3] = 0;
 			glLightfv(lightIndex[i], GL_SPECULAR, specular);
+			
+			i++;
+            
 		}
 	}
 }

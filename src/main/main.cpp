@@ -7,7 +7,10 @@
 
 int main(int argc, char *argv[])
 {
-//	Vector3::runTestSuite();
+	Vector3::runTestSuite();
+	
+	
+	
 //	Matrix4::runTestSuite();
     RE167::GeometryFactory::runTestSuite();
 	QApplication app(argc, argv);

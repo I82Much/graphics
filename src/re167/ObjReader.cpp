@@ -231,6 +231,8 @@ void ObjReader::readObj(char* fileName, int &nVertices, float **vertices, float 
 	nVertices = ntriangles*3;
 	nIndices = ntriangles*3;
 
+
+    
 	for(int i=0; i<ntriangles; i++)
 	{
 		(*indices)[3*i] = 3*i;

@@ -21,8 +21,8 @@
 #include "ColorFactory.h"
 #include "ObjReader.h"
 #include "PGMReader.h"
-
-
+#include <map>
+#include <vector>
 
 using namespace RE167;
  
@@ -213,20 +213,38 @@ void GeometryFactory::createObject(RE167::Object *o, char * filepath, bool norma
 
 	if(normals)
 	{
+	    
+	    std::cout << "normals num vertices: " << nVerts << " num indices:" << nIndices << std::endl;
+	    
 		vertexData.vertexDeclaration.addElement(2, 0, 3, 3*sizeof(float), RE167::VES_NORMAL);		
 		vertexData.createVertexBuffer(2, nVerts*3*sizeof(float), (unsigned char*)normals);
 	}
 	// Calculate the normals since they weren't included on object
-	else {
-         int numNormalElements = 0;             
-         calculateNormals(vertices, indices, normals, 3*nVerts, nIndices, numNormalElements);
-         assert(normals);
+	else {/*
+        std::cout << "before: " << nVerts << " : " << nIndices << std::endl;
+        
+	    // In order to calculate the normals correctly, we need to do
+	    // a preprocessing step to eliminate duplicated vertices
+        float * vVertices;
+        int * vIndices;
+        
+        int oldVertices = nVerts;
+        
+        eliminateDuplicateVertices(vertices, indices, vVertices,
+                                                        vIndices,
+                                                        nVerts, 
+                                                        nIndices);
+	    
+        std::cout << "eliminated " << (oldVertices - nVerts) << " vertices" << std::endl;
+	    */
+        int numNormalElements = 0;             
+        calculateNormals(vertices, indices, normals, nVerts, nIndices, numNormalElements);
+        assert(normals);
 
-         vertexData.vertexDeclaration.addElement(2, 0, 3, 3*sizeof(float), RE167::VES_NORMAL);		
-         vertexData.createVertexBuffer(2, nVerts*3*sizeof(float), (unsigned char*)normals);
+        vertexData.vertexDeclaration.addElement(2, 0, 3, 3*sizeof(float), RE167::VES_NORMAL);		
+        vertexData.createVertexBuffer(2, nVerts*3*sizeof(float), (unsigned char*)normals);
         
-        
-         std::cout << "num vertices: " << nVerts << " num indices:" << nIndices << std::endl;
+        std::cout << "non normals num vertices: " << nVerts << " num indices:" << nIndices << std::endl;
 	}
 
     float * texCoords = NULL;
@@ -399,6 +417,25 @@ void GeometryFactory::calculateBoundingBox(float *vertices, int numVertices,
 }
 
 
+
+
+
+
+
+/**
+* Given a triangular mesh defined by vertices and indices where there
+* is a one to one correspondence between the vertices and the indices
+* (vertices that are shared by different faces are duplicated rather
+* than reused) this method determines which vertices are duplicates,
+* eliminates them, and updates the indices array such that the 
+* connectivity of the mesh is maintained.  Also assumes that the
+* indices array is created such that it's full of consecutive integers
+* (so face one is comprised of vertices 0, 1, 2, face 2 by 3, 4, 5, ...)
+*
+*
+* CALLER IS RESPONSIBLE FOR FREEING MEMORY ALLOCATED IN THIS METHOD
+* FOR outVertices and outIndices
+*/
 void GeometryFactory::eliminateDuplicateVertices(float *vertices, 
                                                 int *indices, 
                                                 float *&outVertices,
@@ -406,13 +443,100 @@ void GeometryFactory::eliminateDuplicateVertices(float *vertices,
                                                 int &numVertices,
                                                 int &numIndices) 
 {
+    
+    assert(vertices);
+    assert(indices);
+    // We only want to eliminate duplicate vertices in the case that
+    // the mesh was defined such that each vertex has one entry in index
+    // table
+    assert(numVertices == numIndices);
+    
+    // Create space for the new indices table
+    outIndices = new int[numIndices];
+    
+    
+    // Create a vector of Vector3s; will hold all of the unique vertices
+    // in the order in which we add them
+    std::vector<Vector3> uniqueSortedVertices;
 
-    // For each vertex in the triangular mesh
-        // Add it to a set 
+    // Create a map of Vector3s; will hold all of the unique vertices but
+    // with no particular useful order.  Holds the index where we first
+    // found the unique vertex
+    std::map<Vector3, int> uniqueVerticesMap;
+    
+    // Convert our float array into a Vector3 vector.
+    std::vector<Vector3> verticesVector;
+    for (int i = 0; i < numVertices; i++) {
+        int index = 3*i;
+        float x = vertices[index    ];
+        float y = vertices[index + 1];
+        float z = vertices[index + 2];
+        verticesVector.push_back(Vector3(x,y,z));
+        
+        std::cout << Vector3(x,y,z) << std::endl;
+        
+    }
+    
 
+    
+    
+    // Go through and determine the unique vertices.  At the same time
+    // keep track of the indices into our unique vertices vector.
+    for (unsigned int i = 0; i < verticesVector.size(); i++) {
+        Vector3 vertex = verticesVector[i];
+        // Search our map for this vertex
+        std::map<Vector3, int>::iterator v = uniqueVerticesMap.find(vertex);
+        
+        // The vertex has not yet been put in our map; add it to both
+        // the map and the uniqueSortedVertices vector
+        if (v == uniqueVerticesMap.end()) {
+            
+            
+            int indexInUniqueVertices = uniqueSortedVertices.size();
+            // Store the index in the map for later retrieval
+            uniqueVerticesMap[vertex] = indexInUniqueVertices;
+            uniqueSortedVertices.push_back(vertex);
+            // Keep track in our new indices array where in our unique
+            outIndices[i] = indexInUniqueVertices;
+        }
+        // The vertex has already been placed into both our map and
+        // our uniqueSortedVertices vector; therefore we just need to
+        // retrieve the correct index and place it in the outIndices
+        else {
+            std::cout << "vertex " << vertex << "is a duplicate." << std::endl;
+            
+            
+            // The map stores (vertex, index)
+            outIndices[i] = v->second;
+        }
+    }
+    
+    std::cout << "Size of map: " << uniqueVerticesMap.size() << std::endl;
+    std::cout << "Size of vector: " << uniqueSortedVertices.size() << std::endl;
+    
+    
+    for( std::map<Vector3, int>::iterator ii=uniqueVerticesMap.begin(); ii!=uniqueVerticesMap.end(); ii++)
+    {
+           std::cout << (*ii).first << ": " << (*ii).second << std::endl;
+    }
+    
+    assert(uniqueSortedVertices.size() <= numVertices);
 
-                                                    
-                                                    
+    // Change the parameter to reflect the new number of vertices;
+    // note that the number of indices does not change
+    numVertices = uniqueSortedVertices.size();
+        
+    // At this point we have our unique vertices as well as our
+    // indices.  Now all we need to do is convert from our Vector3 vector
+    // into a float array.
+    outVertices = new float[3 * numVertices];
+    for (int i = 0; i < uniqueSortedVertices.size(); i++) {
+        int index = 3 * i;
+        outVertices[index    ] = uniqueSortedVertices[i].getX();
+        outVertices[index + 1] = uniqueSortedVertices[i].getY();
+        outVertices[index + 2] = uniqueSortedVertices[i].getZ();
+    }
+                                                
                                                     
 }
 
@@ -450,11 +574,14 @@ void GeometryFactory::createCube(Object *o) {
 					 16,18,19, 16,17,18,	// top face
 					 20,22,23, 20,21,22};	// bottom face
 
+                 
+
+                 
 
              
      float * normals = NULL;
      int numNormalElements = 0;             
-     calculateNormals(vertices, indices, normals, SIZE_OF_VERTICES_ARRAY, NUM_INDICES, numNormalElements);
+     calculateNormals(vertices, indices, normals, NUM_VERTICES, NUM_INDICES, numNormalElements);
      assert(normals);
      /*
      vertexData.vertexDeclaration.addElement(2, 0, 3, 3*sizeof(float), RE167::VES_NORMAL);		
@@ -480,11 +607,11 @@ Vector3 GeometryFactory::calculateTriangleNormal(const Vector3 &v1, const Vector
 * Based on pseudocode from http://www.devmaster.net/forums/showthread.php?t=414
 */
 void GeometryFactory::calculateNormals(float *vertices, int *indices, float *&normals,
-								        int numVertexElements, int numIndexElements, 
+								        int numVertices, int numIndexElements, 
 								        int &sizeOfNormalsArray	        ) {
     
     // Create a normal array, all starting at (0,0,0)
-    Vector3 * vNormals = new Vector3[numVertexElements / 3];
+    Vector3 * vNormals = new Vector3[numVertices];
       
     // for each face in our object, calculate the normal and add that vector
     // to the corresponding normals of the three vertices
@@ -527,16 +654,16 @@ void GeometryFactory::calculateNormals(float *vertices, int *indices, float *&no
         
     }
     // Normalize the array of normals (make them unit length)
-    for (int i = 0; i < numVertexElements / 3; i++) {
+    for (int i = 0; i < numVertices; i++) {
         vNormals[i] = vNormals[i].normalize();
     }
     
     // Allocate enough space for the float array
-    sizeOfNormalsArray = numVertexElements;
+    sizeOfNormalsArray = numVertices * 3;
     normals = new float[sizeOfNormalsArray];
     
     // Switch from using our Vector3s to raw floats; that's what OpenGL needs
-    for (int i = 0; i < numVertexElements / 3; i++) {
+    for (int i = 0; i < numVertices; i++) {
         int index = 3 * i;
         normals[index] = vNormals[i].getX();
         normals[index+1] = vNormals[i].getY();
@@ -1385,15 +1512,14 @@ void GeometryFactory::printVectorArray(Vector3 *vectorArray, const int numElemen
 
 void GeometryFactory::runTestSuite() {
 
-    std::cout<< "Running test suite of normalizatoin" << std::endl;
+    std::cout<< "Running test suite of normalization" << std::endl;
     
     Vector3 test1[] = {Vector3::ZERO_VECTOR, Vector3::ZERO_VECTOR, Vector3::ZERO_VECTOR, Vector3::ZERO_VECTOR};
     Vector3 test2[] = {Vector3(1,0,0), Vector3(0,1,0), Vector3(0,0,0), Vector3(0,0,1)};
     Vector3 test3[] = {Vector3(1.2, 13.5, -23.5), Vector3(100.5, 23.5, -32.553), Vector3(13.05f, 23, 0),
         Vector3(99.3, 10, -9.053).crossProduct(Vector3(11.85, 9.5, 23.5))};
         
-        
-    
+            
     
     std::vector<Vector3*> tests;
     tests.push_back(test1);
