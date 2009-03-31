@@ -4,7 +4,8 @@
 #include <math.h>
 #include <iostream>
 #include <algorithm>
-
+#include "GeometryFactory.h"
+#include "Vector3.h"
 /**
 * This class provides static methods to read triangle mesh data from files.
 * Furthermore, it allows user to normalize vertices of an object to make it
@@ -54,32 +55,18 @@ void ObjReader::get_indices(char *word, int *vindex, int *tindex, int *nindex)
 */
 void ObjReader::normalize(float *vertices, int numVertices) 
 {
-	float xMin, yMin, zMin;
-	float xMax, yMax, zMax;
+    Vector3 vMin;
+    Vector3 vMax;
 
-	// Initialize the mins/maxes 
-	xMin = xMax = vertices[0];
-	yMin = yMax = vertices[1];
-	zMin = zMax = vertices[2];
+    GeometryFactory::calculateBoundingBox(vertices, numVertices, vMin, vMax);
+    
+    float xMin = vMin.getX();
+    float yMin = vMin.getY();
+    float zMin = vMin.getZ();
 
-	
-	// Each vertex consists of 3 floats, (x,y,z)
-	for (int i = 0; i < numVertices; i++) {
-		int startIndex = 3 * i;
-
-		float x = vertices[startIndex];
-		float y = vertices[startIndex + 1];
-		float z = vertices[startIndex + 2];
-
-		if (x < xMin) { xMin = x; }
-		if (y < yMin) { yMin = y; }
-		if (z < zMin) { zMin = z; }
-
-		if (x > xMax) { xMax = x; }
-		if (y > yMax) { yMax = y; }
-		if (z > zMax) { zMax = z; }
-
-	}
+    float xMax = vMax.getX();
+    float yMax = vMax.getY();
+    float zMax = vMax.getZ();
 	
 	float xLength = xMax - xMin;
 	float yLength = yMax - yMin;

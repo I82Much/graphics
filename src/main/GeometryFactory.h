@@ -3,9 +3,11 @@
 
 #include "Vector3.h"
 #include "Object.h"
+#include "RE167_global.h"
 
+namespace RE167 {
 
-class GeometryFactory
+class RE167_EXPORT GeometryFactory 
 {
 public:
 
@@ -85,6 +87,10 @@ public:
 	static void printVerticesArray(float *verticesArray, const int numElements, int entriesPerLine = 10);
 	static void printVectorArray(RE167::Vector3 *vectorArray, const int numElements, int entriesPerLine = 10);
 
+    static void calculateBoundingBox(float *vertices, int numVertices,
+        RE167::Vector3 &vMin, RE167::Vector3 &vMax);
+
+    
 
     static void eliminateDuplicateVertices(float *vertices, 
                                             int *indices, 
@@ -99,10 +105,13 @@ public:
                                             float *&texCoords,
                                             int numVertices,
                                             int numIndices);
-
-
-    /**
-    */
+    static void createPositionalSphericalCoordinates(float *vertices,
+                                                int *indices,
+                                                float *&texCoords,
+                                                int numVertices,
+                                                int numIndices);
+/**
+*/
     static void calculateNormals(float *vertices, int *indices, float *&normals,
     								        int numVertexElements, int numIndexElements, 
                                             int &sizeOfNormalsArray);
@@ -123,5 +132,7 @@ private:
 						   int numVertexElements, int numColorElements, int numIndexElements);
 
 };
+
+}
 
 #endif

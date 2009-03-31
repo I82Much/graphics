@@ -229,6 +229,17 @@ void GeometryFactory::createObject(RE167::Object *o, char * filepath, bool norma
          std::cout << "num vertices: " << nVerts << " num indices:" << nIndices << std::endl;
 	}
 
+    float * texCoords = NULL;
+//    createSphericalCoordinates(vertices, normals, indices, texCoords, nVerts, nIndices);
+    createPositionalSphericalCoordinates(vertices, indices, texCoords, nVerts, nIndices);
+    assert(texCoords != NULL);
+        
+    vertexData.vertexDeclaration.addElement(3, 0, 2, 2*sizeof(float),
+        RE167::VES_TEXTURE_COORDINATES);
+    vertexData.createVertexBuffer(3, nVerts * 2*sizeof(float), (unsigned char*) texCoords);
+        
+        
+
 	vertexData.createIndexBuffer(nIndices, indices);
 
 	if(normals) delete[] normals;
@@ -291,6 +302,101 @@ void GeometryFactory::createSphericalCoordinates(float *vertices,
     }
 }
 
+/**
+* Used when the the object in question has large flat faces.
+* http://www.mvps.org/directx/articles/spheremap.htm
+*/
+void GeometryFactory::createPositionalSphericalCoordinates(float *vertices,
+                                                    int *indices,
+                                                    float *&texCoords,
+                                                    int numVertices,
+                                                    int numIndices) 
+{                    
+    assert(vertices != NULL);
+    assert(indices != NULL);
+    
+                                    
+    // Calculate the bounding box around the object
+    RE167::Vector3 vMin;
+    RE167::Vector3 vMax;
+    
+    calculateBoundingBox(vertices, numVertices, vMin, vMax);
+    
+    
+    // Calculate the center; just the average of the bounding box
+    // coordinates
+    RE167::Vector3 center = 0.5f * (vMax + vMin);
+            
+    
+    // Each texture coordinate is two dimensional
+    texCoords = new float[numIndices * 2];
+    
+    // For each vertex in the mesh, calculate the unit vector from
+    // center of object to vertex.  Use x and y coordinates of this
+    // to calculate the texture coordinates.
+    for (int i = 0; i < numIndices; i++) {
+        int index = indices[i];
+
+        float x = vertices[index    ];
+        float y = vertices[index + 1];
+        float z = vertices[index + 2];
+        
+        Vector3 position(x,y,z);
+        
+        // Calculate the vector from the center to this point on the 
+        // object
+        Vector3 offset = (position - center).normalize();
+                
+        float tu = asin(offset.getX())/PI + 0.5f;
+        float tv = asin(offset.getY())/PI + 0.5f;
+        
+        int textureIndex = 2 * i;
+        texCoords[textureIndex] = tu;
+        texCoords[textureIndex + 1] = tv;
+    }    
+        
+}
+
+/**
+*/
+void GeometryFactory::calculateBoundingBox(float *vertices, int numVertices,
+                                            RE167::Vector3 &vMin, 
+                                            RE167::Vector3 &vMax)
+{
+    float xMin, yMin, zMin;
+	float xMax, yMax, zMax;
+
+	// Initialize the mins/maxes 
+	xMin = xMax = vertices[0];
+	yMin = yMax = vertices[1];
+	zMin = zMax = vertices[2];
+
+	
+	// Each vertex consists of 3 floats, (x,y,z)
+	for (int i = 0; i < numVertices; i++) {
+		int startIndex = 3 * i;
+
+		float x = vertices[startIndex];
+		float y = vertices[startIndex + 1];
+		float z = vertices[startIndex + 2];
+
+		if (x < xMin) { xMin = x; }
+		if (y < yMin) { yMin = y; }
+		if (z < zMin) { zMin = z; }
+
+		if (x > xMax) { xMax = x; }
+		if (y > yMax) { yMax = y; }
+		if (z > zMax) { zMax = z; }
+
+	}
+    vMin.setX(xMin);
+    vMin.setY(yMin);
+    vMin.setZ(zMin);
+
+    vMax.setX(xMax);
+    vMax.setY(yMax);
+    vMax.setZ(zMax);
+}
 
 
 void GeometryFactory::eliminateDuplicateVertices(float *vertices, 

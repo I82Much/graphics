@@ -106,17 +106,16 @@ void RenderWidget0::initGeometry()
     pedestal2->setTransformation(Matrix4::scale(1,2,1) * Matrix4::translate(2,0,0));
     pedestal2->setMaterial(b);
 
-     
+     /*
     dragon = sceneManager->createObject();
     GeometryFactory::createObject(dragon, "objects/dragon_smooth.obj");
     dragon->setTransformation(Matrix4::translate(-2,2,0));
-    dragon->setMaterial(emerald);
-     /*
+    dragon->setMaterial(emerald);*/
+    
     Object * ball = sceneManager->createObject(); 
     GeometryFactory::createObject(ball, "objects/sphere.obj");
     ball->setTransformation(Matrix4::translate(-2,2,0));
-    ball->setMaterial(b);
-     */
+    ball->setMaterial(brass);
       
       /* 
     bunny = sceneManager->createObject();
@@ -155,11 +154,12 @@ void RenderWidget0::initGeometry()
     //dragon->setMaterial(brass);
     
     
-    /*QImage *texImg = new QImage("interstate-76.jpg", "jpg");
+    QImage *texImg = new QImage("sph_sky.jpg", "jpg");
     
     assert(texImg != NULL);
-    */
-//    Texture *picture = new Texture(texImg);
+    
+    Texture *picture = new Texture(texImg);
+    brass->setTexture(picture);
     
     //shiny->setTexture(picture);
     /*
