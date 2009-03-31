@@ -7,7 +7,7 @@
 #include "SceneManager.h"
 #include "Object.h"
 #include "Vector3.h"
-
+#include "FirstPersonCamera.h"
 
 using namespace RE167;
 
@@ -51,7 +51,9 @@ protected:
 
 private:
 	SceneManager *sceneManager;
-	Camera *camera;
+	//FirstPersonCamera *camera;
+    Camera *camera;
+
 
 	Object *object;
 	Object *houses;

@@ -70,7 +70,7 @@ Light* SceneManager::createLight()
 
 Camera* SceneManager::createCamera()
 {
-	mCamera = new Camera();
+    mCamera = new Camera();
 	return mCamera;
 }
 

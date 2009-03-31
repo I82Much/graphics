@@ -1,7 +1,9 @@
 #include "Vector4.h"
+#include "Vector3.h"
 #include <assert.h>
 #include <stdlib.h>
 #include "BasicMath.h"
+
 
 using namespace RE167;
 
@@ -18,6 +20,13 @@ Vector4::Vector4(float x_, float y_, float z_, float w_) :
 Vector4::~Vector4() {}
 
 const Vector4 Vector4::ZERO_VECTOR(0, 0, 0, 0);
+
+/**
+* Constructor that makes a Vector4 from a Vector3
+*/
+Vector4::Vector4(const Vector3 &val) : x(val.getX()), y(val.getY()), z(val.getZ()), w(1) {}
+
+
 
 // Addition operator for vectors
 Vector4 & Vector4::operator+=(const Vector4 &rhs) {

@@ -18,7 +18,9 @@ namespace RE167 {
 	public:
 		Camera() : v(1,0,0,0, 0,1,0,0, 0,0,1,-10, 0,0,0,1) {};
 
-		Camera(Vector3 center, Vector3 lookAt, Vector3 up) : 
+		Camera(const Vector3 &center, 
+		        const Vector3 &lookAt, 
+		        const Vector3 &up) : 
 			centerOfProjection(center), lookAtPoint(lookAt), upVector(up) {
 			updateViewMatrix();
 		};

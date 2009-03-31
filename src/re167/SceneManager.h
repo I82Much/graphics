@@ -7,6 +7,7 @@
 #include "RenderContext.h"
 #include <list>
 #include "Light.h"
+#include "FirstPersonCamera.h"
 
 namespace RE167 {
 

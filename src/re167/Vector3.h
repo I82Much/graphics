@@ -5,7 +5,6 @@
 #include <iostream>
 
 
-
 namespace RE167 {
 
 	class RE167_EXPORT Vector3 {
@@ -14,6 +13,7 @@ namespace RE167 {
 			// Default constructor; creates 0 vector
 			Vector3(void);
 			Vector3(float x, float y, float z);
+			
 			~Vector3();
 
             static const Vector3 ZERO_VECTOR;

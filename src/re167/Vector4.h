@@ -3,7 +3,7 @@
 
 #include "RE167_global.h"
 #include <iostream>
-
+#include "Vector3.h"
 
 namespace RE167 {
 
@@ -13,6 +13,8 @@ namespace RE167 {
 			// Default constructor; creates 0 vector
 			Vector4(void);
 			Vector4(float x, float y, float z, float w);
+
+            Vector4(const Vector3 &val);
 			~Vector4();
 
             static const Vector4 ZERO_VECTOR;

@@ -159,7 +159,7 @@ void RenderWidget0::initGeometry()
     assert(texImg != NULL);
     
     Texture *picture = new Texture(texImg);
-    brass->setTexture(picture);
+   // brass->setTexture(picture);
     
     //shiny->setTexture(picture);
     /*
@@ -185,17 +185,11 @@ void RenderWidget0::initGeometry()
 void RenderWidget0::initCamera()
 {
     Vector3 cameraCenter = Vector3(0,0,10);
-	Vector3 lookAtPoint = Vector3(0,0,0);
+	Vector3 lookAtPoint = Vector3(0,0,-1);
 	Vector3 upVector = Vector3(0,1,0);
 
 	camera = sceneManager->createCamera();
 	camera->changeSettings(cameraCenter, lookAtPoint, upVector);
-
-	Vector3 cameraCenter2 = Vector3(-10, 40, 40);
-	Vector3 lookAtPoint2 = Vector3(-5,0,0);
-	Vector3 upVector2 = Vector3(0, 1, 0);
-
-	//camera->changeSettings(cameraCenter2, lookAtPoint2, upVector2);
 
 	camera->setFrustum(1, 100, 1, BasicMath::radian(60));
 }
@@ -265,6 +259,7 @@ void RenderWidget0::mouseMoveEvent(QMouseEvent *e)
 	int x = e->x();
 	int y = e->y();
 
+    
 	int canvasWidth = this->width();
 	int canvasHeight = this->height();
 
@@ -298,7 +293,22 @@ void RenderWidget0::mouseMoveEvent(QMouseEvent *e)
 
 	// Apply transformation to the camera
 	camera->setViewMatrix(camera->getViewMatrix() * rotation);
-
+    
+    
+    /*
+    int dx = lastX - x;
+    int dy = lastY - y;
+    
+    static const float scale = 0.5;
+    
+    float oldYaw = camera->getYaw();
+    float oldPitch = camera->getPitch();
+    
+    camera->setYaw(oldYaw + (dx * scale));
+    camera->setPitch(oldPitch + (dy * scale));
+    */
+    
+    
 	// Current points are now old points.
 	lastX = e->x();
 	lastY = e->y();
@@ -385,24 +395,34 @@ void RenderWidget0::toggleWireframe()
 void RenderWidget0::keyPressEvent ( QKeyEvent * k )
 {
 	switch ( k->key() )  {
-    case Qt::Key_R:                               // reload
+    // reload
+    case Qt::Key_R:                               
         camera->resetViewMatrix();
         break;
-        // move forward
+    // move forward
     case Qt::Key_W:
         camera->setViewMatrix(Matrix4::translate(0,0,1) * camera->getViewMatrix());
         break;
-        // Move camera backwards
+    // Move camera backwards
     case Qt::Key_S:
         camera->setViewMatrix(Matrix4::translate(0,0,-1) * camera->getViewMatrix());
         break;
-        // Move camera left
+    // Move camera left
     case Qt::Key_A:
         camera->setViewMatrix(Matrix4::translate(1,0,0) * camera->getViewMatrix());
         break;
-        // Move camera right
+    // Move camera right
     case Qt::Key_D:
         camera->setViewMatrix(Matrix4::translate(-1,0,0) * camera->getViewMatrix());
+        break;
+    
+    // Move camera up
+    case Qt::Key_Q:
+        camera->setViewMatrix(Matrix4::translate(0,-1,0) * camera->getViewMatrix());
+        break;
+    // Move camera down
+    case Qt::Key_Z:
+        camera->setViewMatrix(Matrix4::translate(0,1,0) * camera->getViewMatrix());
         break;
 	}
 }
