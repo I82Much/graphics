@@ -59,7 +59,8 @@ void GeometryFactory::createXYPlane(RE167::Object *o) {
 
 /**
 * Creates a terrain from a PGM file and stores it in this 
-*/
+* object
+**/
 void GeometryFactory::createTerrainFromPGM(RE167::Object *o, char * filepath, bool normalize) {
 	
 	assert(o != NULL);
@@ -181,7 +182,7 @@ void GeometryFactory::createTerrainFromPGM(RE167::Object *o, char * filepath, bo
 * @param o			the Object to fill with vertex data
 * @param filePath	the path to the .obj file
 * @param normalize	whether or not to make the object fit into unit cube centered at origin
-*/
+**/
 void GeometryFactory::createObject(RE167::Object *o, char * filepath, bool normalize) {
 	int nVerts;
 	float *vertices;
@@ -289,7 +290,7 @@ void GeometryFactory::createObject(RE167::Object *o, char * filepath, bool norma
 *                       have 3 times this number worth of elements)
 * @param numIndices     the size of the indices array; there will be exactly
 *                       numIndices / 3 faces on the mesh
-*/
+**/
 void GeometryFactory::createSphericalCoordinates(float *vertices,
                                                 float *normals,
                                                 int *indices,
@@ -321,9 +322,26 @@ void GeometryFactory::createSphericalCoordinates(float *vertices,
 }
 
 /**
+* Given the geometry of an object, calculate the texture coordinates for
+* each vertex in the mesh.  Calling class is responsible for delete[]ing
+* the texCoords array that is allocated within this method.
 * Used when the the object in question has large flat faces.
-* http://www.mvps.org/directx/articles/spheremap.htm
-*/
+* 
+* {@link http://www.mvps.org/directx/articles/spheremap.htm}
+* @param vertices       an array representing the vertices of the mesh.
+*                       Must not be null.
+* @param normals        an array representing the unit normal vectors at
+*                       each vertex.  Must not be null.
+* @param indices        an array mapping the faces of mesh to the vertices.
+*                       Must not be null.
+* @param texCoords      the array that will be allocated within this method 
+*                       to hold all of the (u,v) texture coordinates for
+*                       each vertex in the mesh
+* @param numVertices    how many vertices are in the mesh (vertices array will
+*                       have 3 times this number worth of elements)
+* @param numIndices     the size of the indices array; there will be exactly
+*                       numIndices / 3 faces on the mesh
+**/
 void GeometryFactory::createPositionalSphericalCoordinates(float *vertices,
                                                     int *indices,
                                                     float *&texCoords,
@@ -871,7 +889,7 @@ float vertices[] = {-4+6,-4, 4+6,   4+6,-4, 4+6,   4+6, 4, 4+6,  -4+6, 4, 4+6,  
 * @param o
 * @param numRows			how many rows of faces to make
 * @param numFacesPerRow		the number of faces per row 
-*/
+**/
 void GeometryFactory::createSphere(RE167::Object *o, int numRows, int numFacesPerRow) {
 	int *indices = NULL;
 	float *vertices= NULL;
@@ -910,7 +928,7 @@ void GeometryFactory::createSphere(RE167::Object *o, int numRows, int numFacesPe
 *							are stored within the colors array
 * @param sizeOfIndicesArray will be changed to reflect how many elements
 *							are stored within the indices array
-*/
+**/
 void GeometryFactory::createSphere(int numFaceRows,
 								   int numFacesPerRow,
                                    float *&vertices,

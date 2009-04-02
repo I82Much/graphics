@@ -37,7 +37,9 @@ SOURCES += src/re167/BasicMath.cpp \
  src/re167/Texture.cpp \
  src/re167/Light.cpp \
  src/re167/Material.cpp \
- src/re167/Shader.cpp
+ src/re167/Shader.cpp \
+ src/re167/FirstPersonCamera.cpp
+
 
  
 
@@ -77,6 +79,8 @@ HEADERS += src/re167/BasicMath.h \
  src/re167/Light.h \
  src/re167/Texture.h \
  src/re167/Material.h \
- src/re167/Shader.h
+ src/re167/Materials.h \
+ src/re167/Shader.h \
+ src/re167/FirstPersonCamera.h
 	
 #FORMS += ui/basicapp.ui

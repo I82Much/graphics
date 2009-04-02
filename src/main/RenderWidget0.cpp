@@ -89,6 +89,8 @@ void RenderWidget0::initGeometry()
     
     Material * emerald = new Material(Emerald);
     //emerald->setShader(new Shader("src/Shaders/simple.vert", "src/Shaders/simple.frag"));
+    emerald->setShader(new Shader("src/Shaders/texture2D.vert", "src/Shaders/texture2D.frag"));
+    
     
     Material * pewter = new Material(Pewter);
     Material * polishedSilver = new Material(Polished_Silver);
@@ -106,16 +108,26 @@ void RenderWidget0::initGeometry()
     pedestal2->setTransformation(Matrix4::scale(1,2,1) * Matrix4::translate(2,0,0));
     pedestal2->setMaterial(b);
 
-     
-    /*dragon = sceneManager->createObject();
+     /*
+    dragon = sceneManager->createObject();
     GeometryFactory::createObject(dragon, "objects/dragon_smooth.obj");
-    dragon->setTransformation(Matrix4::translate(-2,2,0));
-    dragon->setMaterial(emerald);*/
+    dragon->setTransformation(Matrix4::translate(2,2,0));
+    dragon->setMaterial(pewter);
+*/
     
     Object * ball = sceneManager->createObject(); 
     GeometryFactory::createObject(ball, "objects/sphere.obj");
     ball->setTransformation(Matrix4::translate(-2,2,0));
-    ball->setMaterial(brass);
+    ball->setMaterial(polishedSilver);
+      
+    QImage *texImg = new QImage("stripes2.jpg", "jpg");
+    assert(texImg != NULL);
+    Texture *picture = new Texture(texImg);
+    polishedSilver->setTexture(picture);
+      
+    b->setTexture(picture);
+    
+      
       
       /* 
     bunny = sceneManager->createObject();
@@ -154,12 +166,8 @@ void RenderWidget0::initGeometry()
     //dragon->setMaterial(brass);
     
     
-    QImage *texImg = new QImage("sph_sky.jpg", "jpg");
+//    QImage *texImg = new QImage("sph_sky.jpg", "jpg");
     
-    assert(texImg != NULL);
-    
-    Texture *picture = new Texture(texImg);
-   // brass->setTexture(picture);
     
     //shiny->setTexture(picture);
     /*
@@ -196,7 +204,7 @@ void RenderWidget0::initCamera()
 
 void RenderWidget0::initLights()
 {
-    
+    /*
     Light * blue = sceneManager->createLight();
     blue->setAmbientColor(Vector3(0,0,1));
     blue->setDiffuseColor(Vector3(0,0,1));
@@ -204,7 +212,7 @@ void RenderWidget0::initLights()
     
     blue->setPosition(Vector3(1,0,0));
     blue->setDirection(Vector3(1,0,0));
-    
+    */
     
     
     // Create a white light
