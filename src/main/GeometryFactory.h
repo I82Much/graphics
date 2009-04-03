@@ -16,29 +16,28 @@ public:
 	static const int NUM_COMPONENTS_PER_VERTEX;
 	static const int NUM_COMPONENTS_PER_RECTANGULAR_FACE;
 
-	static void createCube(RE167::Object *o);
-	static void createHouses(RE167::Object *object);
+	static void createCube(Object *o);
+	static void createHouses(Object *object);
 
-	static void createObject(RE167::Object *o, char * filePath, bool normalize = true);
-	static void createTerrainFromPGM(RE167::Object *o, char * filepath, bool normalize = true);
+	static void createObject(Object *o, char * filePath, bool normalize = true);
+	static void createTerrainFromPGM(Object *o, char * filepath, bool normalize = true);
 
-    static void createXYPlane(RE167::Object *o);
-    static void createXZPlane(RE167::Object *o);
-    static void createYZPlane(RE167::Object *o);
+    static void createXYPlane(Object *o);
+    static void createXZPlane(Object *o);
+    static void createYZPlane(Object *o);
 
 
-	static void createSphere(RE167::Object *o, int numRows = 10, int numFacesPerRow = 20);
+	static void createSphere(Object *o, int numRows = 10, int numFacesPerRow = 20);
 
 	static void createSphere(int numRows, int numFacesPerRow,
                              float *&vertices,
                              float *&colors,
                              int *&indices,
-                             int &sizeOfVerticesArray,
-                             int &sizeOfColorsArray,
-                             int &sizeOfIndicesArray);
+                             int &numVertices,
+                             int &numIndices);
 
 
-	static void createTaperedCylinder(RE167::Object *o, int numHeightSegments = 1,
+	static void createTaperedCylinder(Object *o, int numHeightSegments = 1,
 								int numSlices = 20, float topRadius = 1.0f,
 								float bottomRadius = 1.0f);
 	
@@ -49,12 +48,11 @@ public:
 								float *&vertices,
 								float *&colors,
 								int *&indices,
-								int &sizeOfVerticesArray,
-								int &sizeOfColorsArray,
-								int &sizeOfIndicesArray);
+								int &numVertices,
+								int &numIndices);
 
 
-	static void createCylinder(RE167::Object *o, int numHeightSegments = 1,
+	static void createCylinder(Object *o, int numHeightSegments = 1,
 								int numSlices = 20, float radius = 1.0f);
 
 
@@ -64,12 +62,11 @@ public:
 								float *&vertices,
 								float *&colors,
 								int *&indices,
-								int &sizeOfVerticesArray,
-								int &sizeOfColorsArray,
-								int &sizeOfIndicesArray);
+								int &numVertices,
+								int &numIndices);
 
 
-	static void createCone(RE167::Object *o, int numHeightSegments = 1,
+	static void createCone(Object *o, int numHeightSegments = 1,
 							int numSlices = 20, float bottomRadius = 1.0f);
 
 
@@ -79,18 +76,15 @@ public:
 							float *&vertices,
 							float *&colors,
 							int *&indices,
-							int &sizeOfVerticesArray,
-							int &sizeOfColorsArray,
-							int &sizeOfIndicesArray);
+							int &numVertices,
+							int &numIndices);
 
 
 	static void printVerticesArray(float *verticesArray, const int numElements, int entriesPerLine = 10);
-	static void printVectorArray(RE167::Vector3 *vectorArray, const int numElements, int entriesPerLine = 10);
+	static void printVectorArray(Vector3 *vectorArray, const int numElements, int entriesPerLine = 10);
 
     static void calculateBoundingBox(float *vertices, int numVertices,
-        RE167::Vector3 &vMin, RE167::Vector3 &vMax);
-
-    
+        Vector3 &vMin, Vector3 &vMax);
 
     static void eliminateDuplicateVertices(float *vertices, 
                                             int *indices, 
@@ -105,6 +99,7 @@ public:
                                             float *&texCoords,
                                             int numVertices,
                                             int numIndices);
+    
     static void createPositionalSphericalCoordinates(float *vertices,
                                                 int *indices,
                                                 float *&texCoords,
@@ -113,23 +108,23 @@ public:
 /**
 */
     static void calculateNormals(float *vertices, int *indices, float *&normals,
-    								        int numVertices, int numIndices, 
-                                            int &sizeOfNormalsArray);
+        int numVertices, int numIndices);
+
     
     /**
     * Return a unit vector that is the normal to the
     * triangle defined by v1, v2, v3
     */
-    static RE167::Vector3 calculateTriangleNormal(const RE167::Vector3 &v1, 
-                                                const RE167::Vector3 &v2, 
-                                                const RE167::Vector3 &v3);
+    static Vector3 calculateTriangleNormal(const Vector3 &v1, 
+                                            const Vector3 &v2, 
+                                            const Vector3 &v3);
     
     static void runTestSuite();
 
 
 private:
-	static void fillInObject(RE167::Object *o, float *vertices, float *colors, int *indices,
-						   int numVertexElements, int numColorElements, int numIndexElements);
+	static void fillInObject(Object *o, float *vertices, float *normals, float *colors, int *indices,
+						   int numVertices, int numIndices);
 
 };
 

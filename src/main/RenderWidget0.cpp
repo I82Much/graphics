@@ -103,8 +103,9 @@ void RenderWidget0::initGeometry()
     pedestal1->setMaterial(b);
     
 
+
     Object * pedestal2 = sceneManager->createObject();
-    GeometryFactory::createCylinder(pedestal2);
+    GeometryFactory::createCube(pedestal2);
     pedestal2->setTransformation(Matrix4::scale(1,2,1) * Matrix4::translate(2,0,0));
     pedestal2->setMaterial(b);
 

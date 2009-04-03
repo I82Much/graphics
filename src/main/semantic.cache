@@ -1,0 +1,13 @@
+;; Object semantic.cache
+;; SEMANTICDB Tags save file
+(semanticdb-project-database "semantic.cache"
+  :file "semantic.cache"
+  :tables (list 
+   (semanticdb-table "MainWidget.cpp"
+    :file "MainWidget.cpp"
+    :pointmax 304
+    :major-mode 'c++-mode
+    :tokens '(("MainWidget.h" include nil nil nil [1 24]) ("MainWidget" function ("MainWidget" type "class") (("parent" variable ("QWidget" type "class") nil ((pointer . 1)) nil nil [49 65]) ("flags" variable ("Qt::WFlags" type "class") nil nil nil nil [66 83])) ((parent . "MainWidget") (constructor . t)) nil nil [26 121]) ("sizePolicy" function ("QSizePolicy" type "class") nil ((parent . "MainWidget")) nil nil [123 228]) ("resizeEvent" function ("void") (("event" variable ("QResizeEvent" type "class") nil ((pointer . 1)) nil nil [259 280])) ((parent . "MainWidget")) nil nil [230 304]))
+    )
+   )
+  )

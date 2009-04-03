@@ -25,7 +25,7 @@
 #include <vector>
 
 using namespace RE167;
- 
+
 //#include "BasicMath.h"
 
 // HACK: CANNOT GET BasicMath to work right
@@ -43,26 +43,19 @@ const int GeometryFactory::NUM_TRIANGLES_PER_RECTANGULAR_FACE = 2;
 const int GeometryFactory::NUM_VERTICES_PER_TRIANGLE = 3;
 const int GeometryFactory::NUM_COMPONENTS_PER_VERTEX = 3;
 const int GeometryFactory::NUM_COMPONENTS_PER_RECTANGULAR_FACE =
-	GeometryFactory::NUM_TRIANGLES_PER_RECTANGULAR_FACE * 
-	GeometryFactory::NUM_VERTICES_PER_TRIANGLE * 
+	GeometryFactory::NUM_TRIANGLES_PER_RECTANGULAR_FACE *
+	GeometryFactory::NUM_VERTICES_PER_TRIANGLE *
 	GeometryFactory::NUM_COMPONENTS_PER_VERTEX;
 
 
-/**
-* Creates unit square centered at origin in XY Plane.
-*/
-void GeometryFactory::createXYPlane(RE167::Object *o) {
-    assert (o != NULL);
-
-}
 
 
 /**
-* Creates a terrain from a PGM file and stores it in this 
+* Creates a terrain from a PGM file and stores it in this
 * object
 **/
 void GeometryFactory::createTerrainFromPGM(RE167::Object *o, char * filepath, bool normalize) {
-	
+
 	assert(o != NULL);
 	int imageWidth = 0;
 	int imageHeight = 0;
@@ -75,8 +68,8 @@ void GeometryFactory::createTerrainFromPGM(RE167::Object *o, char * filepath, bo
 
 	// The value at image[i * imageHeight + j] is the height of the pixel at row i, column j in image.
 	// Each value is in the range 0-255.  Let's just use the raw values and go from there.
-	
-	
+
+
 	// If you imagine the image viewed from the top, each group of 4 adjacent pixels form a square.
 	int numSquareFaces = (imageWidth - 1) * (imageHeight - 1);
 	int numTriangles = numSquareFaces * NUM_TRIANGLES_PER_RECTANGULAR_FACE;
@@ -90,7 +83,7 @@ void GeometryFactory::createTerrainFromPGM(RE167::Object *o, char * filepath, bo
 	assert(colors);
 	assert(indices);
 
-	
+
 	// Go through and create the triangles.  Note that the height (the values stored
 	// in image) goes in the y axis, the x axis is for the columns of image,
 	// and z axis is for rows
@@ -101,7 +94,7 @@ void GeometryFactory::createTerrainFromPGM(RE167::Object *o, char * filepath, bo
 			// Create the two triangles tesselating the region formed from
 			// pixel[i][j], pixel[i][j+1], pixel[i+1][j], and pixel[i+1][j+1]
 
-			// Triangle 1:  Formed from pixel[i][j], pixel[i+1][j+1], pixel[i][j+1] 
+			// Triangle 1:  Formed from pixel[i][j], pixel[i+1][j+1], pixel[i][j+1]
 			// (upper right triangle when viewed from above)
 			float x1 = static_cast<float> (j);
 			float y1 = static_cast<float> (image[(i * imageHeight) + j]);
@@ -167,11 +160,10 @@ void GeometryFactory::createTerrainFromPGM(RE167::Object *o, char * filepath, bo
 	ColorFactory::colorTerrain(colors, vertices, numVertices);
 	ColorFactory::perturb(colors, numVertices * 3);
 
-	GeometryFactory::fillInObject(o, vertices, colors, indices,
-									numVertices * NUM_COMPONENTS_PER_VERTEX,
-									numVertices * ColorFactory::NUM_COMPONENTS_PER_COLOR,
+	GeometryFactory::fillInObject(o, vertices, NULL, colors, indices,
+									numVertices
 									numVertices);
-	
+
 }
 
 
@@ -184,14 +176,14 @@ void GeometryFactory::createTerrainFromPGM(RE167::Object *o, char * filepath, bo
 * @param normalize	whether or not to make the object fit into unit cube centered at origin
 **/
 void GeometryFactory::createObject(RE167::Object *o, char * filepath, bool normalize) {
-	int nVerts;
+	int numVertices;
 	float *vertices;
 	float *normals;
 	float *texcoords;
-	int nIndices;
+	int numIndices;
 	int *indices;
 
-	ObjReader::readObj(filepath, nVerts, &vertices, &normals, &texcoords, nIndices, &indices);
+	ObjReader::readObj(filepath, numVertices, &vertices, &normals, &texcoords, numIndices, &indices);
 
 	if (normalize) {
 		// Scale all the vertices to fit within the space.
@@ -202,11 +194,11 @@ void GeometryFactory::createObject(RE167::Object *o, char * filepath, bool norma
 	//ColorFactory::matchNormalizedVertices(colors, vertices, 3 * nVerts);
 	//ColorFactory::randomlyColorize(colors, 3 * nVerts);
     //std::fill(&colors[0], &colors[3 * nVerts], 1.0f);
-	
+
 
 	VertexData& vertexData = o->vertexData;
 	vertexData.vertexDeclaration.addElement(0, 0, 3, 3*sizeof(float), RE167::VES_POSITION);
-	vertexData.createVertexBuffer(0, nVerts*3*sizeof(float), (unsigned char*)vertices);
+	vertexData.createVertexBuffer(0, numVertices*3*sizeof(float), (unsigned char*)vertices);
 
 	/*vertexData.vertexDeclaration.addElement(1, 0, 3, 3*sizeof(float), RE167::VES_DIFFUSE);
 	vertexData.createVertexBuffer(1, nVerts*3*sizeof(float), (unsigned char*)colors);
@@ -214,50 +206,50 @@ void GeometryFactory::createObject(RE167::Object *o, char * filepath, bool norma
 
 	if(normals)
 	{
-	    
+
 	    std::cout << "normals num vertices: " << nVerts << " num indices:" << nIndices << std::endl;
-	    
-		vertexData.vertexDeclaration.addElement(2, 0, 3, 3*sizeof(float), RE167::VES_NORMAL);		
-		vertexData.createVertexBuffer(2, nVerts*3*sizeof(float), (unsigned char*)normals);
+
+		vertexData.vertexDeclaration.addElement(2, 0, 3, 3*sizeof(float), RE167::VES_NORMAL);
+		vertexData.createVertexBuffer(2, numVertices *3*sizeof(float), (unsigned char*)normals);
 	}
 	// Calculate the normals since they weren't included on object
 	else {/*
         std::cout << "before: " << nVerts << " : " << nIndices << std::endl;
-        
+
 	    // In order to calculate the normals correctly, we need to do
 	    // a preprocessing step to eliminate duplicated vertices
         float * vVertices;
         int * vIndices;
-        
+
         int oldVertices = nVerts;
-        
+
         eliminateDuplicateVertices(vertices, indices, vVertices,
                                                         vIndices,
-                                                        nVerts, 
+                                                        nVerts,
                                                         nIndices);
-	    
+
         std::cout << "eliminated " << (oldVertices - nVerts) << " vertices" << std::endl;
 	    */
-        int numNormalElements = 0;             
-        calculateNormals(vertices, indices, normals, nVerts, nIndices, numNormalElements);
+        int numNormals = 0;
+        calculateNormals(vertices, indices, normals, numVertices, numIndices, numNormals);
         assert(normals);
 
-        vertexData.vertexDeclaration.addElement(2, 0, 3, 3*sizeof(float), RE167::VES_NORMAL);		
-        vertexData.createVertexBuffer(2, nVerts*3*sizeof(float), (unsigned char*)normals);
-        
-        std::cout << "non normals num vertices: " << nVerts << " num indices:" << nIndices << std::endl;
+        vertexData.vertexDeclaration.addElement(2, 0, 3, 3*sizeof(float), RE167::VES_NORMAL);
+        vertexData.createVertexBuffer(2, numVertices * 3 * sizeof(float), (unsigned char*)normals);
+
+        std::cout << "non normals num vertices: " << numVertices << " num indices:" << numIndices << std::endl;
 	}
 
     float * texCoords = NULL;
 //    createSphericalCoordinates(vertices, normals, indices, texCoords, nVerts, nIndices);
-    createPositionalSphericalCoordinates(vertices, indices, texCoords, nVerts, nIndices);
+    createPositionalSphericalCoordinates(vertices, indices, texCoords, numVertices, numIndices);
     assert(texCoords != NULL);
-        
+
     vertexData.vertexDeclaration.addElement(3, 0, 2, 2*sizeof(float),
         RE167::VES_TEXTURE_COORDINATES);
     vertexData.createVertexBuffer(3, nVerts * 2*sizeof(float), (unsigned char*) texCoords);
-        
-        
+
+
 
 	vertexData.createIndexBuffer(nIndices, indices);
 
@@ -283,7 +275,7 @@ void GeometryFactory::createObject(RE167::Object *o, char * filepath, bool norma
 *                       each vertex.  Must not be null.
 * @param indices        an array mapping the faces of mesh to the vertices.
 *                       Must not be null.
-* @param texCoords      the array that will be allocated within this method 
+* @param texCoords      the array that will be allocated within this method
 *                       to hold all of the (u,v) texture coordinates for
 *                       each vertex in the mesh
 * @param numVertices    how many vertices are in the mesh (vertices array will
@@ -296,25 +288,25 @@ void GeometryFactory::createSphericalCoordinates(float *vertices,
                                                 int *indices,
                                                 float *&texCoords,
                                                 int numVertices,
-                                                int numIndices) 
+                                                int numIndices)
 {
     assert(vertices != NULL);
     assert(indices != NULL);
     assert(normals != NULL);
-    
+
     // Each texture coordinate is two dimensional
     texCoords = new float[numIndices * 2];
-    
-    // For each vertex in the mesh, calculate 
+
+    // For each vertex in the mesh, calculate
     for (int i = 0; i < numIndices; i++) {
         int index = indices[i];
-        
+
         float x = normals[index    ];
         float y = normals[index + 1];
-        
+
         float tu = asin(x)/PI + 0.5f;
         float tv = asin(y)/PI + 0.5f;
-        
+
         int textureIndex = 2 * i;
         texCoords[textureIndex] = tu;
         texCoords[textureIndex + 1] = tv;
@@ -326,7 +318,7 @@ void GeometryFactory::createSphericalCoordinates(float *vertices,
 * each vertex in the mesh.  Calling class is responsible for delete[]ing
 * the texCoords array that is allocated within this method.
 * Used when the the object in question has large flat faces.
-* 
+*
 * {@link http://www.mvps.org/directx/articles/spheremap.htm}
 * @param vertices       an array representing the vertices of the mesh.
 *                       Must not be null.
@@ -334,7 +326,7 @@ void GeometryFactory::createSphericalCoordinates(float *vertices,
 *                       each vertex.  Must not be null.
 * @param indices        an array mapping the faces of mesh to the vertices.
 *                       Must not be null.
-* @param texCoords      the array that will be allocated within this method 
+* @param texCoords      the array that will be allocated within this method
 *                       to hold all of the (u,v) texture coordinates for
 *                       each vertex in the mesh
 * @param numVertices    how many vertices are in the mesh (vertices array will
@@ -346,27 +338,27 @@ void GeometryFactory::createPositionalSphericalCoordinates(float *vertices,
                                                     int *indices,
                                                     float *&texCoords,
                                                     int numVertices,
-                                                    int numIndices) 
-{                    
+                                                    int numIndices)
+{
     assert(vertices != NULL);
     assert(indices != NULL);
-    
-                                    
+
+
     // Calculate the bounding box around the object
     RE167::Vector3 vMin;
     RE167::Vector3 vMax;
-    
+
     calculateBoundingBox(vertices, numVertices, vMin, vMax);
-    
-    
+
+
     // Calculate the center; just the average of the bounding box
     // coordinates
     RE167::Vector3 center = 0.5f * (vMax + vMin);
-            
-    
+
+
     // Each texture coordinate is two dimensional
     texCoords = new float[numIndices * 2];
-    
+
     // For each vertex in the mesh, calculate the unit vector from
     // center of object to vertex.  Use x and y coordinates of this
     // to calculate the texture coordinates.
@@ -376,38 +368,38 @@ void GeometryFactory::createPositionalSphericalCoordinates(float *vertices,
         float x = vertices[index    ];
         float y = vertices[index + 1];
         float z = vertices[index + 2];
-        
+
         Vector3 position(x,y,z);
-        
-        // Calculate the vector from the center to this point on the 
+
+        // Calculate the vector from the center to this point on the
         // object
         Vector3 offset = (position - center).normalize();
-                
+
         float tu = asin(offset.getX())/PI + 0.5f;
         float tv = asin(offset.getY())/PI + 0.5f;
-        
+
         int textureIndex = 2 * i;
         texCoords[textureIndex] = tu;
         texCoords[textureIndex + 1] = tv;
-    }    
-        
+    }
+
 }
 
 /**
 */
 void GeometryFactory::calculateBoundingBox(float *vertices, int numVertices,
-                                            RE167::Vector3 &vMin, 
+                                            RE167::Vector3 &vMin,
                                             RE167::Vector3 &vMax)
 {
     float xMin, yMin, zMin;
 	float xMax, yMax, zMax;
 
-	// Initialize the mins/maxes 
+	// Initialize the mins/maxes
 	xMin = xMax = vertices[0];
 	yMin = yMax = vertices[1];
 	zMin = zMax = vertices[2];
 
-	
+
 	// Each vertex consists of 3 floats, (x,y,z)
 	for (int i = 0; i < numVertices; i++) {
 		int startIndex = 3 * i;
@@ -445,7 +437,7 @@ void GeometryFactory::calculateBoundingBox(float *vertices, int numVertices,
 * is a one to one correspondence between the vertices and the indices
 * (vertices that are shared by different faces are duplicated rather
 * than reused) this method determines which vertices are duplicates,
-* eliminates them, and updates the indices array such that the 
+* eliminates them, and updates the indices array such that the
 * connectivity of the mesh is maintained.  Also assumes that the
 * indices array is created such that it's full of consecutive integers
 * (so face one is comprised of vertices 0, 1, 2, face 2 by 3, 4, 5, ...)
@@ -454,25 +446,25 @@ void GeometryFactory::calculateBoundingBox(float *vertices, int numVertices,
 * CALLER IS RESPONSIBLE FOR FREEING MEMORY ALLOCATED IN THIS METHOD
 * FOR outVertices and outIndices
 */
-void GeometryFactory::eliminateDuplicateVertices(float *vertices, 
-                                                int *indices, 
+void GeometryFactory::eliminateDuplicateVertices(float *vertices,
+                                                int *indices,
                                                 float *&outVertices,
                                                 int *&outIndices,
                                                 int &numVertices,
-                                                int &numIndices) 
+                                                int &numIndices)
 {
-    
+
     assert(vertices);
     assert(indices);
     // We only want to eliminate duplicate vertices in the case that
     // the mesh was defined such that each vertex has one entry in index
     // table
     assert(numVertices == numIndices);
-    
+
     // Create space for the new indices table
     outIndices = new int[numIndices];
-    
-    
+
+
     // Create a vector of Vector3s; will hold all of the unique vertices
     // in the order in which we add them
     std::vector<Vector3> uniqueSortedVertices;
@@ -481,7 +473,7 @@ void GeometryFactory::eliminateDuplicateVertices(float *vertices,
     // with no particular useful order.  Holds the index where we first
     // found the unique vertex
     std::map<Vector3, int> uniqueVerticesMap;
-    
+
     // Convert our float array into a Vector3 vector.
     std::vector<Vector3> verticesVector;
     for (int i = 0; i < numVertices; i++) {
@@ -490,26 +482,26 @@ void GeometryFactory::eliminateDuplicateVertices(float *vertices,
         float y = vertices[index + 1];
         float z = vertices[index + 2];
         verticesVector.push_back(Vector3(x,y,z));
-        
-        std::cout << Vector3(x,y,z) << std::endl;
-        
-    }
-    
 
-    
-    
+        std::cout << Vector3(x,y,z) << std::endl;
+
+    }
+
+
+
+
     // Go through and determine the unique vertices.  At the same time
     // keep track of the indices into our unique vertices vector.
     for (unsigned int i = 0; i < verticesVector.size(); i++) {
         Vector3 vertex = verticesVector[i];
         // Search our map for this vertex
         std::map<Vector3, int>::iterator v = uniqueVerticesMap.find(vertex);
-        
+
         // The vertex has not yet been put in our map; add it to both
         // the map and the uniqueSortedVertices vector
         if (v == uniqueVerticesMap.end()) {
-            
-            
+
+
             int indexInUniqueVertices = uniqueSortedVertices.size();
             // Store the index in the map for later retrieval
             uniqueVerticesMap[vertex] = indexInUniqueVertices;
@@ -522,28 +514,28 @@ void GeometryFactory::eliminateDuplicateVertices(float *vertices,
         // retrieve the correct index and place it in the outIndices
         else {
             std::cout << "vertex " << vertex << "is a duplicate." << std::endl;
-            
-            
+
+
             // The map stores (vertex, index)
             outIndices[i] = v->second;
         }
     }
-    
+
     std::cout << "Size of map: " << uniqueVerticesMap.size() << std::endl;
     std::cout << "Size of vector: " << uniqueSortedVertices.size() << std::endl;
-    
-    
+
+
     for( std::map<Vector3, int>::iterator ii=uniqueVerticesMap.begin(); ii!=uniqueVerticesMap.end(); ii++)
     {
            std::cout << (*ii).first << ": " << (*ii).second << std::endl;
     }
-    
+
     assert(uniqueSortedVertices.size() <= numVertices);
 
     // Change the parameter to reflect the new number of vertices;
     // note that the number of indices does not change
     numVertices = uniqueSortedVertices.size();
-        
+
     // At this point we have our unique vertices as well as our
     // indices.  Now all we need to do is convert from our Vector3 vector
     // into a float array.
@@ -554,8 +546,8 @@ void GeometryFactory::eliminateDuplicateVertices(float *vertices,
         outVertices[index + 1] = uniqueSortedVertices[i].getY();
         outVertices[index + 2] = uniqueSortedVertices[i].getZ();
     }
-                                                
-                                                    
+
+
 }
 
 /*
@@ -564,9 +556,9 @@ void GeometryFactory::eliminateDuplicateVertices(float *vertices,
 * @param o the Object with which to fill with vertex and color data
 */
 void GeometryFactory::createCube(Object *o) {
-	// 3 per 
+	// 3 per
 	const int NUM_VERTICES = 24;
-	const int SIZE_OF_VERTICES_ARRAY = NUM_VERTICES * NUM_COMPONENTS_PER_VERTEX; 
+	const int SIZE_OF_VERTICES_ARRAY = NUM_VERTICES * NUM_COMPONENTS_PER_VERTEX;
 	float vertices[] = {-1,-1,1, 1,-1,1, 1,1,1, -1,1,1,		// front face
 						-1,-1,-1, -1,-1,1, -1,1,1, -1,1,-1, // left face
 						1,-1,-1,-1,-1,-1, -1,1,-1, 1,1,-1,  // back face
@@ -574,7 +566,7 @@ void GeometryFactory::createCube(Object *o) {
 						1,1,1, 1,1,-1, -1,1,-1, -1,1,1,		// top face
 						-1,-1,1, -1,-1,-1, 1,-1,-1, 1,-1,1};// bottom face
 
-	
+
 	float colors[]= {	1,0,0, 1,0,0, 1,0,0, 1,0,0,
 						//0,1,0, 0,1,0, 0,1,0, 0,1,0,
                         0,0,1, 1,0,0, 1,0,0, 0,0,1,
@@ -592,22 +584,22 @@ void GeometryFactory::createCube(Object *o) {
 					 16,18,19, 16,17,18,	// top face
 					 20,22,23, 20,21,22};	// bottom face
 
-                 
 
-                 
 
-             
+
+
+
      float * normals = NULL;
-     int numNormalElements = 0;             
+     int numNormalElements = 0;
      calculateNormals(vertices, indices, normals, NUM_VERTICES, NUM_INDICES, numNormalElements);
      assert(normals);
      /*
-     vertexData.vertexDeclaration.addElement(2, 0, 3, 3*sizeof(float), RE167::VES_NORMAL);		
+     vertexData.vertexDeclaration.addElement(2, 0, 3, 3*sizeof(float), RE167::VES_NORMAL);
      vertexData.createVertexBuffer(2, nVerts*3*sizeof(float), (unsigned char*)normals);
      */
 	 GeometryFactory::fillInObject(o, vertices, colors, indices,
 									SIZE_OF_VERTICES_ARRAY, SIZE_OF_VERTICES_ARRAY, NUM_INDICES);
-								
+
 
 }
 
@@ -623,63 +615,62 @@ Vector3 GeometryFactory::calculateTriangleNormal(const Vector3 &v1, const Vector
 
 /**
 * Based on pseudocode from http://www.devmaster.net/forums/showthread.php?t=414
-*/
+**/
 void GeometryFactory::calculateNormals(float *vertices, int *indices, float *&normals,
-								        int numVertices, int numIndexElements, 
-								        int &sizeOfNormalsArray	        ) {
-    
+								        int numVertices, int numIndexElements)
+{
+
     // Create a normal array, all starting at (0,0,0)
     Vector3 * vNormals = new Vector3[numVertices];
-      
+
     // for each face in our object, calculate the normal and add that vector
     // to the corresponding normals of the three vertices
     for (int i = 0; i < numIndexElements; i += 3) {
         int index1 = indices[i];
         int index2 = indices[i+1];
         int index3 = indices[i+2];
-        
+
         // Since our index refers to the nth triplet, we need to multiply
         // by 3 to find corresponding place in array
         int floatIndex1 = 3 * index1;
         int floatIndex2 = 3 * index2;
         int floatIndex3 = 3 * index3;
-        
+
         // The current triangular face is defined by these three
-        // vertices.  
-        const Vector3 v1( vertices[floatIndex1    ], 
+        // vertices.
+        const Vector3 v1( vertices[floatIndex1    ],
                           vertices[floatIndex1 + 1],
                           vertices[floatIndex1 + 2]);
 
-        const Vector3 v2( vertices[floatIndex2    ], 
+        const Vector3 v2( vertices[floatIndex2    ],
                           vertices[floatIndex2 + 1],
                           vertices[floatIndex2 + 2]);
 
-        const Vector3 v3( vertices[floatIndex3    ], 
+        const Vector3 v3( vertices[floatIndex3    ],
                           vertices[floatIndex3 + 1],
                           vertices[floatIndex3 + 2]);
-        
+
         Vector3 normal = calculateTriangleNormal(v1,v2,v3);
-        
+
         // Find the current normals associated with these vertices and
         // add the new normal to them
         vNormals[index1] += normal;
         vNormals[index2] += normal;
         vNormals[index3] += normal;
-        
+
         /*std::cout<< "i1: " << index1 << " i2: " << index2 << " i3: " << index3 << std::endl;
         std::cout<< "v1:" << v1 << " v2: " << v2 << " v3: " << v3 << " normal: " << normal << std::endl;*/
-        
-        
+
+
     }
     // Normalize the array of normals (make them unit length)
     for (int i = 0; i < numVertices; i++) {
         vNormals[i] = vNormals[i].normalize();
     }
-    
+
     // Allocate enough space for the float array
-    sizeOfNormalsArray = numVertices * 3;
-    normals = new float[sizeOfNormalsArray];
-    
+    normals = new float[numVertices * 3];
+
     // Switch from using our Vector3s to raw floats; that's what OpenGL needs
     for (int i = 0; i < numVertices; i++) {
         int index = 3 * i;
@@ -687,13 +678,10 @@ void GeometryFactory::calculateNormals(float *vertices, int *indices, float *&no
         normals[index+1] = vNormals[i].getY();
         normals[index+2] = vNormals[i].getZ();
     }
-    
+
     delete[] vNormals;
-        
+
 }
-
-
-
 
 
 
@@ -703,7 +691,8 @@ void GeometryFactory::calculateNormals(float *vertices, int *indices, float *&no
 /**
 * Snipped provided by Prof. Palacio
 */
-void GeometryFactory::createHouses(Object *object) {
+void GeometryFactory::createHouses(Object *object)
+{
 	// quad houses
 int nVerts = 42 + (24 + 14) * 3;
 float vertices[] = {-4+6,-4, 4+6,   4+6,-4, 4+6,   4+6, 4, 4+6,  -4+6, 4, 4+6,  // front face
@@ -718,45 +707,45 @@ float vertices[] = {-4+6,-4, 4+6,   4+6,-4, 4+6,   4+6, 4, 4+6,  -4+6, 4, 4+6,  
                     -4+6,4, 4+6,   4+6,4, 4+6,  0+6,8, 4+6,                     // the roof
                      4+6,4, 4+6,   4+6,4,-4+6,  0+6,8,-4+6,   0+6,8, 4+6,
                     -4+6,4, 4+6,   0+6,8, 4+6,  0+6,8,-4+6,  -4+6,4,-4+6,
-                     4+6,4,-4+6,  -4+6,4,-4+6,  0+6,8,-4+6, 
-	
+                     4+6,4,-4+6,  -4+6,4,-4+6,  0+6,8,-4+6,
+
                     -4+6,-4, 4-6,   4+6,-4, 4-6,   4+6, 4, 4-6,  -4+6, 4, 4-6,  // front face
                     -4+6,-4,-4-6,  -4+6,-4, 4-6,  -4+6, 4, 4-6,  -4+6, 4,-4-6,  // left face
                      4+6,-4,-4-6,  -4+6,-4,-4-6,  -4+6, 4,-4-6,   4+6, 4,-4-6,  // back face
                      4+6,-4, 4-6,   4+6,-4,-4-6,   4+6, 4,-4-6,   4+6, 4, 4-6,  // right face
                      4+6, 4, 4-6,   4+6, 4,-4-6,  -4+6, 4,-4-6,  -4+6, 4, 4-6,  // top face
                     -4+6,-4, 4-6,  -4+6,-4,-4-6,   4+6,-4,-4-6,   4+6,-4, 4-6,  // bottom face
-					
+
                     -4+6,4, 4-6,   4+6,4, 4-6,  0+6,8, 4-6,                     // the roof
                      4+6,4, 4-6,   4+6,4,-4-6,  0+6,8,-4-6,  0+6,8, 4-6,
                     -4+6,4, 4-6,   0+6,8, 4-6,  0+6,8,-4-6, -4+6,4,-4-6,
-                     4+6,4,-4-6,  -4+6,4,-4-6,  0+6,8,-4-6, 
-					
+                     4+6,4,-4-6,  -4+6,4,-4-6,  0+6,8,-4-6,
+
                     -4-6,-4, 4-6,   4-6,-4, 4-6,   4-6, 4, 4-6,  -4-6, 4, 4-6,  // front face
                     -4-6,-4,-4-6,  -4-6,-4, 4-6,  -4-6, 4, 4-6,  -4-6, 4,-4-6,  // left face
                      4-6,-4,-4-6,  -4-6,-4,-4-6,  -4-6, 4,-4-6,   4-6, 4,-4-6,  // back face
                      4-6,-4, 4-6,   4-6,-4,-4-6,   4-6, 4,-4-6,   4-6, 4, 4-6,  // right face
                      4-6, 4, 4-6,   4-6, 4,-4-6,  -4-6, 4,-4-6,  -4-6, 4, 4-6,  // top face
                     -4-6,-4, 4-6,  -4-6,-4,-4-6,   4-6,-4,-4-6,   4-6,-4, 4-6,  // bottom face
-					
+
                     -4-6,4, 4-6,   4-6,4, 4-6,  0-6,8, 4-6,                     // the roof
                      4-6,4, 4-6,   4-6,4,-4-6,  0-6,8,-4-6,  0-6,8, 4-6,
                     -4-6,4, 4-6,   0-6,8, 4-6,  0-6,8,-4-6, -4-6,4,-4-6,
-                     4-6,4,-4-6,  -4-6,4,-4-6,  0-6,8,-4-6, 
-					
-					
+                     4-6,4,-4-6,  -4-6,4,-4-6,  0-6,8,-4-6,
+
+
                     -4-6,-4, 4+6,   4-6,-4, 4+6,   4-6, 4, 4+6,  -4-6, 4, 4+6,  // front face
                     -4-6,-4,-4+6,  -4-6,-4, 4+6,  -4-6, 4, 4+6,  -4-6, 4,-4+6,  // left face
                      4-6,-4,-4+6,  -4-6,-4,-4+6,  -4-6, 4,-4+6,   4-6, 4,-4+6,  // back face
                      4-6,-4, 4+6,   4-6,-4,-4+6,   4-6, 4,-4+6,   4-6, 4, 4+6,  // right face
                      4-6, 4, 4+6,   4-6, 4,-4+6,  -4-6, 4,-4+6,  -4-6, 4, 4+6,  // top face
                     -4-6,-4, 4+6,  -4-6,-4,-4+6,   4-6,-4,-4+6,   4-6,-4, 4+6,  // bottom face
-					
+
                     -4-6,4, 4+6,   4-6,4, 4+6,  0-6,8, 4+6,                     // the roof
                      4-6,4, 4+6,   4-6,4,-4+6,  0-6,8,-4+6,  0-6,8, 4+6,
                     -4-6,4, 4+6,   0-6,8, 4+6,  0-6,8,-4+6, -4-6,4,-4+6,
-                     4-6,4,-4+6,  -4-6,4,-4+6,  0-6,8,-4+6, 
-	
+                     4-6,4,-4+6,  -4-6,4,-4+6,  0-6,8,-4+6,
+
                    };
 
 	float colors[] = {1,0,0, 1,1,0, 1,0,0, 1,0,1,
@@ -765,13 +754,13 @@ float vertices[] = {-4+6,-4, 4+6,   4+6,-4, 4+6,   4+6, 4, 4+6,  -4+6, 4, 4+6,  
                       1,1,0, 0,1,0, 0,1,1, 0,1,0,
                       0,0,1, 1,0,1, 0,0,1, 0,1,1,
                       1,0,1, 0,1,1, 0,0,1, 0,0,1,
-	
+
                       0,0,0, 0,1,0, 1,1,0, 1,0,0,  // ground floor
 
                       0,1,1, 0,0,1, 1,0,1,         // roof
                       1,0,0, 1,0,1, 1,0,0, 1,1,0,
                       1,1,0, 0,1,0, 1,1,0, 0,1,0,
-                      0,1,1, 0,0,1, 1,0,1, 
+                      0,1,1, 0,0,1, 1,0,1,
 
                       1,0,0, 1,1,0, 1,0,0, 1,0,1,
                       0,1,0, 0,1,0, 0,1,1, 0,1,0,
@@ -779,19 +768,19 @@ float vertices[] = {-4+6,-4, 4+6,   4+6,-4, 4+6,   4+6, 4, 4+6,  -4+6, 4, 4+6,  
                       1,1,0, 0,1,0, 0,1,1, 0,1,0,
                       0,0,1, 1,0,1, 0,0,1, 0,1,1,
                       1,0,1, 0,1,1, 0,0,1, 0,0,1,
-	
+
                       0,1,1, 0,0,1, 1,0,1,         // roof
                       1,0,0, 1,0,1, 1,0,0, 1,1,0,
                       1,1,0, 0,1,0, 1,1,0, 0,1,0,
-                      0,1,1, 0,0,1, 1,0,1, 
-	
+                      0,1,1, 0,0,1, 1,0,1,
+
                       1,0,0, 1,1,0, 1,0,0, 1,0,1,
                       0,1,0, 0,1,0, 0,1,1, 0,1,0,
                       1,0,1, 1,0,0, 1,0,1, 1,0,0,
                       1,1,0, 0,1,0, 0,1,1, 0,1,0,
                       0,0,1, 1,0,1, 0,0,1, 0,1,1,
                       1,0,1, 0,1,1, 0,0,1, 0,0,1,
-	
+
                       0,1,1, 0,0,1, 1,0,1,         // roof
                       1,0,0, 1,0,1, 1,0,0, 1,1,0,
                       1,1,0, 0,1,0, 1,1,0, 0,1,0,
@@ -819,7 +808,7 @@ float vertices[] = {-4+6,-4, 4+6,   4+6,-4, 4+6,   4+6, 4, 4+6,  -4+6, 4, 4+6,  
 	vertexData.vertexDeclaration.addElement(0, 0, 3, 3*sizeof(float), RE167::VES_POSITION);
 	// - one element for vertex colors
 	vertexData.vertexDeclaration.addElement(1, 0, 3, 3*sizeof(float), RE167::VES_DIFFUSE);
-	
+
 	// Create the buffers and load the data
 	vertexData.createVertexBuffer(0, nVerts*3*sizeof(float), (unsigned char*)vertices);
 	vertexData.createVertexBuffer(1, nVerts*3*sizeof(float), (unsigned char*)colors);
@@ -831,50 +820,50 @@ float vertices[] = {-4+6,-4, 4+6,   4+6,-4, 4+6,   4+6, 4, 4+6,  -4+6, 4, 4+6,  
 	                 12,14,15, 12,13,14,   // right face
 	                 16,18,19, 16,17,18,   // top face
 	                 20,22,23, 20,21,22,   // bottom face
-					
+
 	                 24,26,27, 24,25,26,   // ground floor
-					
+
 	                 28,29,30,             // roof
 	                 31,33,34, 31,32,33,
 	                 35,37,38, 35,36,37,
-	                 39,40,41, 
-					
+	                 39,40,41,
+
 	                 0+42, 2+42, 3+42,  0+42, 1+42, 2+42,   // front face
 	                 4+42, 6+42, 7+42,  4+42, 5+42, 6+42,   // left face
 	                 8+42,10+42,11+42,  8+42, 9+42,10+42,   // back face
 	                 12+42,14+42,15+42, 12+42,13+42,14+42,  // right face
 	                 16+42,18+42,19+42, 16+42,17+42,18+42,  // top face
 	                 20+42,22+42,23+42, 20+42,21+42,22+42,  // bottom face
-					
+
 	                 28+42-28+24,29+42-28+24,30+42-28+24,   // roof
 	                 31+42-28+24,33+42-28+24,34+42-28+24, 31+42-28+24,32+42-28+24,33+42-28+24,
 	                 35+42-28+24,37+42-28+24,38+42-28+24, 35+42-28+24,36+42-28+24,37+42-28+24,
-	                 39+42-28+24,40+42-28+24,41+42-28+24, 
-					
+	                 39+42-28+24,40+42-28+24,41+42-28+24,
+
 	                 0+80,2+80,3+80, 0+80,1+80,2+80,        // front face
 	                 4+80,6+80,7+80, 4+80,5+80,6+80,        // left face
 	                 8+80,10+80,11+80, 8+80,9+80,10+80,     // back face
 	                 12+80,14+80,15+80, 12+80,13+80,14+80,  // right face
 	                 16+80,18+80,19+80, 16+80,17+80,18+80,  // top face
 	                 20+80,22+80,23+80, 20+80,21+80,22+80,  // bottom face
-					
+
 	                 28+80-4,29+80-4,30+80-4,               // roof
 	                 31+80-4,33+80-4,34+80-4, 31+80-4,32+80-4,33+80-4,
 	                 35+80-4,37+80-4,38+80-4, 35+80-4,36+80-4,37+80-4,
-	                 39+80-4,40+80-4,41+80-4, 
-					
+	                 39+80-4,40+80-4,41+80-4,
+
 	                 0+118,2+118,3+118, 0+118,1+118,2+118,        // front face
 	                 4+118,6+118,7+118, 4+118,5+118,6+118,        // left face
 	                 8+118,10+118,11+118, 8+118,9+118,10+118,     // back face
 	                 12+118,14+118,15+118, 12+118,13+118,14+118,  // right face
 	                 16+118,18+118,19+118, 16+118,17+118,18+118,  // top face
 	                 20+118,22+118,23+118, 20+118,21+118,22+118,  // bottom face
-					
+
 	                 28+118-4,29+118-4,30+118-4,                  // roof
 	                 31+118-4,33+118-4,34+118-4, 31+118-4,32+118-4,33+118-4,
 	                 35+118-4,37+118-4,38+118-4, 35+118-4,36+118-4,37+118-4,
-	                 39+118-4,40+118-4,41+118-4, 
-					};	
+	                 39+118-4,40+118-4,41+118-4,
+					};
 
 	vertexData.createIndexBuffer(60 + (36 + 18) * 3, indices);
 
@@ -888,23 +877,24 @@ float vertices[] = {-4+6,-4, 4+6,   4+6,-4, 4+6,   4+6, 4, 4+6,  -4+6, 4, 4+6,  
 * vertex buffers etc. of the Object.
 * @param o
 * @param numRows			how many rows of faces to make
-* @param numFacesPerRow		the number of faces per row 
+* @param numFacesPerRow		the number of faces per row
 **/
 void GeometryFactory::createSphere(RE167::Object *o, int numRows, int numFacesPerRow) {
 	int *indices = NULL;
 	float *vertices= NULL;
 	float *colors = NULL;
-	
-	int numIndexElements = 0;
-	int numVertexElements = 0;
-	int numColorElements = 0;
+    
+	int numIndices = 0;
+	int numVertices = 0;
 	// Do the heavy lifting with a helper method
-	GeometryFactory::createSphere(numRows, numFacesPerRow, vertices, colors, indices, 
-								numVertexElements, numColorElements, numIndexElements);
+	GeometryFactory::createSphere(numRows, numFacesPerRow, vertices, colors, indices,
+        numVertices, numIndices);
 
-	GeometryFactory::fillInObject(o, vertices, colors, indices, numVertexElements,
-									numColorElements, numIndexElements);
-	
+    
+
+	GeometryFactory::fillInObject(o, vertices, normals, colors, indices, 
+        numVertexElements, numIndices);
+
 	delete[] indices;
 	delete[] vertices;
 	delete[] colors;
@@ -915,18 +905,16 @@ void GeometryFactory::createSphere(RE167::Object *o, int numRows, int numFacesPe
 * @param numFaceRows		how many rows of faces will appear in the sphere
 * @param numFacesPerRow		how many faces will appear per row
 * @param vertices			the float pointer that will be allocated
-*							and filled in with the vertices of the faces 
+*							and filled in with the vertices of the faces
 *							in this method
 * @param colors				the float pointer that will be allocated and
 *							filled in with the colors of the vertices
 * @param indices			will be created within this method and filled
-*							with the connectivity information needed to render 
+*							with the connectivity information needed to render
 *							the triangles
-* @param sizeOfVerticesArray	will be changed to reflect how many elements
+* @param numVertices    	will be changed to reflect how many elements
 *							are stored within the vertices array
-* @param sizeOfColorsArray	will be changed to reflect how many elements
-*							are stored within the colors array
-* @param sizeOfIndicesArray will be changed to reflect how many elements
+* @param numIndices         will be changed to reflect how many elements
 *							are stored within the indices array
 **/
 void GeometryFactory::createSphere(int numFaceRows,
@@ -934,11 +922,10 @@ void GeometryFactory::createSphere(int numFaceRows,
                                    float *&vertices,
                                    float *&colors,
                                    int *&indices,
-                                   int &sizeOfVerticesArray,
-                                   int &sizeOfColorsArray,
-                                   int &sizeOfIndicesArray) {
+                                   int &numVertices,
+                                   int &numIndices) {
 
-    
+
     assert(numFaceRows >= 1);
 	assert(numFacesPerRow >= 3);
 
@@ -950,7 +937,7 @@ void GeometryFactory::createSphere(int numFaceRows,
     Vector3 * tempVertices = new Vector3[(NUM_VERTICES_ROWS + 1) *
                                          NUM_VERTICES_PER_ROW];
 
-   
+
     // Here is the idea:  We will calculate where all the vertices in the
     // sphere are by "cutting" the sphere parallel to the xy plane and looking
     // at the level curves (circles) at each point.
@@ -965,7 +952,7 @@ void GeometryFactory::createSphere(int numFaceRows,
 		float alpha = PI/2 + PI * percent;
 		float y = sin(alpha);
 
-		
+
         // The radius of the circle formed by cutting the sphere at this
         // height is also constant
         float radius = static_cast<float>( cos( asin(y) ) );
@@ -1003,7 +990,7 @@ void GeometryFactory::createSphere(int numFaceRows,
     // faces.  Since we need to deal with triangular faces, each rectangular
     // face will be subdivided into two triangles.  Note that since each
     // pass deals with the current row of vertices and one below it, we stop
-    // one row from the end 
+    // one row from the end
     for (int row = 0; row < numFaceRows; row++) {
 
         for (int face = 0; face < numFacesPerRow; face++) {
@@ -1013,11 +1000,11 @@ void GeometryFactory::createSphere(int numFaceRows,
             // vertex on level "row" + 1.
             // We need to be careful to declare our vertices in counter
             // clockwise order
-			
+
 			// Face 1: The upper right triangle of the rectangular face
             // Vertex 1: Upper left corner
             Vector3 f1_1 = tempVertices[row * NUM_VERTICES_PER_ROW + face];
-            // Vertex 2: Lower right corner.  
+            // Vertex 2: Lower right corner.
             Vector3 f1_2 = tempVertices[(row + 1) * NUM_VERTICES_PER_ROW + ((face + 1) % NUM_VERTICES_PER_ROW)];
             // Vertex 3: Upper right corner
 			Vector3 f1_3 = tempVertices[(row * NUM_VERTICES_PER_ROW) + ((face + 1) % NUM_VERTICES_PER_ROW)];
@@ -1035,7 +1022,7 @@ void GeometryFactory::createSphere(int numFaceRows,
             // 6 vertices, for a total of 18 floats added to the array per
             // iteration of this inner loop
             int startIndex = (row * NUM_COMPONENTS_PER_ROW) + (NUM_COMPONENTS_PER_RECTANGULAR_FACE * face);
-   
+
             vertices[startIndex]     = f1_1.getX();
             vertices[startIndex + 1] = f1_1.getY();
             vertices[startIndex + 2] = f1_1.getZ();
@@ -1061,7 +1048,7 @@ void GeometryFactory::createSphere(int numFaceRows,
             vertices[startIndex + 17] = f2_3.getZ();
 		}
     }
-   
+
     // Our vertices array is fully filled in; no need for the temporary one
     delete[] tempVertices;
 
@@ -1125,7 +1112,7 @@ void GeometryFactory::createCylinder(int numRows,
 
 void GeometryFactory::createCone(RE167::Object *o, int numRows,
 								 int numFacesPerRow, float bottomRadius) {
-	
+
 	GeometryFactory::createTaperedCylinder(o, numRows, numFacesPerRow, 0, bottomRadius);
 }
 
@@ -1157,7 +1144,7 @@ void GeometryFactory::createCone(int numRows,
 * Fills in Object o with the geometry and colors of the tapered cylinder
 * created from its arguments.
 * @param o				the object to fill in
-* @param numRows		the number of rows 
+* @param numRows		the number of rows
 * @param numFacesPerRow	number of faces per row
 * @param topRadius		radius of top of cylinder
 * @param bottomRadius	radius of bottom of cylinder
@@ -1169,25 +1156,28 @@ void GeometryFactory::createTaperedCylinder(RE167::Object *o, int numRows,
 	int *indices = NULL;
 	float *vertices= NULL;
 	float *colors = NULL;
-	
-	int numIndexElements = 0;
-	int numVertexElements = 0;
-	int numColorElements = 0;
-	// Do the heavy lifting with a helper method
-	GeometryFactory::createTaperedCylinder(numRows, 
-									numFacesPerRow, 
-									topRadius, 
-									bottomRadius, 
-									vertices, 
-									colors, 
-									indices, 
-									numVertexElements, 
-									numColorElements, 
-									numIndexElements);
 
-	GeometryFactory::fillInObject(o, vertices, colors, indices, numVertexElements,
-									numColorElements, numIndexElements);
-	
+	int numIndices = 0;
+	int numVertices = 0;
+	// Do the heavy lifting with a helper method
+	GeometryFactory::createTaperedCylinder(numRows,
+									numFacesPerRow,
+									topRadius,
+									bottomRadius,
+									vertices,
+									colors,
+									indices,
+									numVertexElements,
+									numColorElements,
+									numIndexElements);
+									
+    float * normals = NULL;
+    calculateNormals(vertices, indices, normals, numVertices, numIndices);								
+    assert(normals);
+    
+	GeometryFactory::fillInObject(o, vertices, normals, colors, indices, numVertices,
+								numIndices);
+
 	delete[] indices;
 	delete[] vertices;
 	delete[] colors;
@@ -1207,7 +1197,7 @@ void GeometryFactory::createTaperedCylinder(RE167::Object *o, int numRows,
 *					filled in
 * @param colors		the array of colors that will be allocated and filled
 *					in
-* @param indices	the array of indices that will be allocated and 
+* @param indices	the array of indices that will be allocated and
 *					filled in; represents the connectivity of the
 *					vertices
 * @param sizeOfVerticesArray	will be changed to reflect the length
@@ -1216,7 +1206,7 @@ void GeometryFactory::createTaperedCylinder(RE167::Object *o, int numRows,
 *					of the colors array
 * @param sizeOfIndicesArray	will be changed to reflect the length
 *					of the indices array
-*/
+**/
 void GeometryFactory::createTaperedCylinder(int numRows,
 									int numFacesPerRow,
 									float topRadius,
@@ -1226,7 +1216,8 @@ void GeometryFactory::createTaperedCylinder(int numRows,
 									int *&indices,
 									int &sizeOfVerticesArray,
 									int &sizeOfColorsArray,
-									int &sizeOfIndicesArray) {
+									int &sizeOfIndicesArray)
+{
 
 	// We need at least one row
 	assert(numRows >= 1);
@@ -1248,19 +1239,19 @@ void GeometryFactory::createTaperedCylinder(int numRows,
 	// Each vertex along the top must be included twice - once
 	// for each triangular face that shares it
 	const int NUM_TOP_VERTICES = NUM_CENTER_POINTS + 2 * numFacesPerRow;
-	
+
 	// The bottom has exactly as many vertices as does the top
 	const int NUM_BOTTOM_VERTICES = NUM_TOP_VERTICES;
-	const int NUM_MID_VERTICES =	numFacesPerRow * 
-									numRows * 
-									NUM_TRIANGLES_PER_RECTANGULAR_FACE * 
+	const int NUM_MID_VERTICES =	numFacesPerRow *
+									numRows *
+									NUM_TRIANGLES_PER_RECTANGULAR_FACE *
 									NUM_VERTICES_PER_TRIANGLE;
-	
-	const int TOTAL_NUM_VERTICES =	NUM_TOP_VERTICES + 
-									NUM_MID_VERTICES + 
+
+	const int TOTAL_NUM_VERTICES =	NUM_TOP_VERTICES +
+									NUM_MID_VERTICES +
 									NUM_BOTTOM_VERTICES;
 
-	
+
 	const int NUM_COMPONENTS_PER_ROW =
         NUM_COMPONENTS_PER_RECTANGULAR_FACE * numFacesPerRow;
 
@@ -1313,16 +1304,16 @@ void GeometryFactory::createTaperedCylinder(int numRows,
 		}
 	}
 
-	// From the vertices we have calculated, we need to duplicate some since 
-	// multiple faces have vertices in common and we want to be able to 
+	// From the vertices we have calculated, we need to duplicate some since
+	// multiple faces have vertices in common and we want to be able to
 	// set each face's color individually
-	
+
 	// The top of the cylindrical column
 	for (int i = 0; i < numFacesPerRow; i++) {
 		// Need to make sure we go counterclockwise.
 		int tempVertex1Index = i;
 		int tempVertex2Index = (i + 1) % numFacesPerRow;
-		
+
 		Vector3 vertex1 = tempVertices[tempVertex1Index];
 		Vector3 vertex2 = tempVertices[tempVertex2Index];
 		Vector3 center  = Vector3(0, HIGHEST_Y_VALUE, 0);
@@ -1355,7 +1346,7 @@ void GeometryFactory::createTaperedCylinder(int numRows,
 	// a single band of faces (rectangular faces that have
 	// been triangulated)
 	for (int row = 0; row < numRows; row++) {
-		
+
 
 		// The "face"th and ("face"+1)%numFacesPerRow vertices in row "row"
 		// form a rectangular face with the "face"th and ("face"+1)%numFacesPerRow
@@ -1365,7 +1356,7 @@ void GeometryFactory::createTaperedCylinder(int numRows,
 			// Face 1: The upper right triangle of the rectangular face
             // Vertex 1: Upper left corner
             Vector3 f1_1 = tempVertices[(row * numFacesPerRow) + face];
-            // Vertex 2: Lower right corner.  
+            // Vertex 2: Lower right corner.
             Vector3 f1_2 = tempVertices[((row + 1) * numFacesPerRow) + ((face + 1) % numFacesPerRow)];
             // Vertex 3: Upper right corner
 			Vector3 f1_3 = tempVertices[(row * numFacesPerRow) + ((face + 1) % numFacesPerRow)];
@@ -1385,7 +1376,7 @@ void GeometryFactory::createTaperedCylinder(int numRows,
             // iteration of this inner loop.  We also need to note that we
 			// have added a bunch of elements already due to the top of the cylinder
             int startIndex = (row * NUM_COMPONENTS_PER_ROW) + (NUM_COMPONENTS_PER_RECTANGULAR_FACE * face)
-							+ topOffset; 
+							+ topOffset;
 
             vertices[startIndex]     = f1_1.getX();
             vertices[startIndex + 1] = f1_1.getY();
@@ -1456,8 +1447,8 @@ void GeometryFactory::createTaperedCylinder(int numRows,
 	// Fill in the color arrays
 	//ColorFactory::colorize(colors, sizeOfColorsArray);
     std::fill(&colors[0], &colors[sizeOfColorsArray], 1.0f);
-	
-	
+
+
 	// Fill in the connectivity arrays
 	for (int i = 0; i < sizeOfIndicesArray; i++) {
 		indices[i] = i;
@@ -1472,37 +1463,51 @@ void GeometryFactory::createTaperedCylinder(int numRows,
 // HELPER METHODS
 
 
-/* Helper method to get vertexData, create buffers for the vertices, indices, colors, and then
+/** Helper method to get vertexData, create buffers for the vertices, indices, colors, and then
  * fill them in
  * @param o
- * @param vertices			the (x,y,z) locations of all the vertices
+ * @param vertices			the (x,y,z) locations of all the vertices.  MUST NOT BE NULL
+ * @param normals           the vector for normals at each vertex
  * @param colors			the (r,g,b) values at each vertex
  * @param indices			the indices into the vertices array that make up each triangular face
- * @param numVertexElements the size of the vertices array
- * @param numColorElements	the size of the colors array
- * @param numIndexElements	the size of the indices array
- */
-void GeometryFactory::fillInObject(RE167::Object *o, float *vertices, float *colors, int *indices,
-								   int numVertexElements, int numColorElements, int numIndexElements) {
-	VertexData& vertexData = o->vertexData;
+ * @param numVertices       how many vertices, size of vertices array is 3 * numVertices
+ * @param numIndices    	the size of the indices array
+**/
+void GeometryFactory::fillInObject(RE167::Object *o, float *vertices, float *normals, float *colors, int *indices,
+								   int numVertices, int numIndices) 
+{
+    VertexData& vertexData = o->vertexData;
+
+    assert (vertices != NULL);
+
 	// one element for vertices
 	vertexData.vertexDeclaration.addElement(0, 0, 3, 3*sizeof(float), RE167::VES_POSITION);
-	// - one element for vertex colors
-	vertexData.vertexDeclaration.addElement(1, 0, 3, 3*sizeof(int), RE167::VES_DIFFUSE);
+	vertexData.createVertexBuffer(0, 3 * numVertices * sizeof(float), (unsigned char*) vertices);
+	
+	if (colors != null)
+	{
+	    // - one element for vertex colors
+    	vertexData.vertexDeclaration.addElement(1, 0, 3, 3*sizeof(int), RE167::VES_DIFFUSE);
+    	vertexData.createVertexBuffer(1, 3 * numVertices * sizeof(float), (unsigned char*) colors);
+	}
 
-	vertexData.createVertexBuffer(0, numVertexElements * sizeof(float), (unsigned char*) vertices);
-	vertexData.createVertexBuffer(1, numColorElements * sizeof(float), (unsigned char*) colors);
-
-	vertexData.createIndexBuffer(numIndexElements, indices);
+    if (normals != NULL)
+    {
+        // one element for normals
+        vertexData.vertexDeclaration.addElement(2, 0, 3, 3*sizeof(float), RE167::VES_NORMAL);
+        vertexData.createVertexBuffer(2, 3 * numVertices * sizeof(float), (unsigned char*) normals);
+    }
+        
+	vertexData.createIndexBuffer(numIndices, indices);
 }
 
 /** Debugging method that prints all the vertices out neatly
 * @param verticesArray	the vertices to print
 * @param numElements	the length of the verticesArray
 * @param entriesPerLine	how many entries to print per line
-*/
+**/
 void GeometryFactory::printVerticesArray(float *verticesArray, const int numElements, const int entriesPerLine) {
-	
+
 	for (int i = 0, count = 0; i < numElements/3; i++) {
 		if (i % entriesPerLine == 0) {
 			std::cout<<std::endl;
@@ -1517,7 +1522,7 @@ void GeometryFactory::printVerticesArray(float *verticesArray, const int numElem
 * @param vectorArray	the vertices to print
 * @param numElements	the length of the verticesArray
 * @param entriesPerLine	how many entries to print per line
-*/
+**/
 void GeometryFactory::printVectorArray(Vector3 *vectorArray, const int numElements, int entriesPerLine) {
 	for (int i = 0, count = 0; i < numElements; i++) {
 		if (i % entriesPerLine == 0) {
@@ -1528,25 +1533,26 @@ void GeometryFactory::printVectorArray(Vector3 *vectorArray, const int numElemen
 	}
 }
 
+
 void GeometryFactory::runTestSuite() {
 
     std::cout<< "Running test suite of normalization" << std::endl;
-    
+
     Vector3 test1[] = {Vector3::ZERO_VECTOR, Vector3::ZERO_VECTOR, Vector3::ZERO_VECTOR, Vector3::ZERO_VECTOR};
     Vector3 test2[] = {Vector3(1,0,0), Vector3(0,1,0), Vector3(0,0,0), Vector3(0,0,1)};
     Vector3 test3[] = {Vector3(1.2, 13.5, -23.5), Vector3(100.5, 23.5, -32.553), Vector3(13.05f, 23, 0),
         Vector3(99.3, 10, -9.053).crossProduct(Vector3(11.85, 9.5, 23.5))};
-        
-            
-    
+
+
+
     std::vector<Vector3*> tests;
     tests.push_back(test1);
     tests.push_back(test2);
     tests.push_back(test3);
-    
+
     for (unsigned int i = 0; i < tests.size(); i++) {
         Vector3 * test = tests[i];
         assert (calculateTriangleNormal(test[0], test[1], test[2]) == test[3]);
     }
-      
+
 }
