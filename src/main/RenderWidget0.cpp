@@ -75,13 +75,7 @@ void RenderWidget0::initGeometry()
     
     Material * brass = new Material(Brass);
     
-    
-    Material * b = new Material;
-    brass->setAmbient(Vector3(0.329412, 0.223529, 0.027451));
-    brass->setDiffuse(Vector3(0.780392, 0.568627, 0.113725));
-    brass->setSpecular(Vector3(0.329412, 0.223529, 0.027451));
-    brass->setShininess(45.0f);
-    //Shader *shader = new Shader("src/Shaders/simple.vert", "src/Shaders/simple.frag");
+      //Shader *shader = new Shader("src/Shaders/simple.vert", "src/Shaders/simple.frag");
     //Shader *shader = new Shader("src/Shaders/diffuse_shading.vert", "src/Shaders/diffuse_shading.frag");
     //Shader *shader = new Shader("src/Shaders/texture2D.vert", "src/Shaders/texture2D.frag");
     //shader->use();
@@ -89,69 +83,94 @@ void RenderWidget0::initGeometry()
     
     Material * emerald = new Material(Emerald);
     //emerald->setShader(new Shader("src/Shaders/simple.vert", "src/Shaders/simple.frag"));
-    emerald->setShader(new Shader("src/Shaders/texture2D.vert", "src/Shaders/texture2D.frag"));
+    //emerald->setShader(new Shader("src/Shaders/texture2D.vert", "src/Shaders/texture2D.frag"));
     
     
     Material * pewter = new Material(Pewter);
     Material * polishedSilver = new Material(Polished_Silver);
-    
+    Material * blackRubber = new Material(Black_Rubber);
+    Material * ruby = new Material(Ruby);
+    Material * turquoise = new Material(Turquoise);   
        
+    Material * defaultMat = new Material();
        
-    Object * pedestal1 = sceneManager->createObject();
-    GeometryFactory::createCylinder(pedestal1);
-    pedestal1->setTransformation(Matrix4::scale(1,2,1) * Matrix4::translate(-2,0,0));
-    pedestal1->setMaterial(b);
-    
-
-
-    Object * pedestal2 = sceneManager->createObject();
-    GeometryFactory::createCube(pedestal2);
-    pedestal2->setTransformation(Matrix4::scale(1,2,1) * Matrix4::translate(2,0,0));
-    pedestal2->setMaterial(b);
-
+    // Object * pedestal1 = sceneManager->createObject();
+    //  GeometryFactory::createCylinder(pedestal1, 1, 40, 1.0f);
+    //  pedestal1->setTransformation(Matrix4::scale(1,2,1) * Matrix4::translate(-2,0,0));
+    //  pedestal1->setMaterial(brass);
+    //  
+    // 
+    // 
+    //  Object * pedestal2 = sceneManager->createObject();
+    //  GeometryFactory::createCylinder(pedestal2, 1, 40, 1.0f);
+    //  pedestal2->setTransformation(Matrix4::scale(1,2,1) * Matrix4::translate(2,0,0));
+    //  pedestal2->setMaterial(polishedSilver);
+    // 
+    //  
      /*
     dragon = sceneManager->createObject();
     GeometryFactory::createObject(dragon, "objects/dragon_smooth.obj");
-    dragon->setTransformation(Matrix4::translate(2,2,0));
-    dragon->setMaterial(pewter);
+    dragon->setMaterial(emerald);
 */
     
+    /*
     Object * ball = sceneManager->createObject(); 
     GeometryFactory::createObject(ball, "objects/sphere.obj");
     ball->setTransformation(Matrix4::translate(-2,2,0));
-    ball->setMaterial(polishedSilver);
+    ball->setMaterial(polishedSilver);*/
+    
+    Object * sphere2 = sceneManager->createObject();
+    GeometryFactory::createSphere(sphere2, 30, 30);
+//    sphere2->setTransformation(Matrix4::translate(2,2,0));
+    sphere2->setMaterial(defaultMat);
+    
+    /*
+    Object * cube = sceneManager->createObject();
+    GeometryFactory::createCube(cube);
+    cube->setTransformation(Matrix4::translate(0,2,0));
+    cube->setMaterial(defaultMat);
+    */
+    
+    
+    // Object * cone = sceneManager->createObject();
+    //     GeometryFactory::createCone(cone);
+    //     cone->setMaterial(ruby);
+    //     
       
-    QImage *texImg = new QImage("stripes2.jpg", "jpg");
+    // http://friday.westnet.com/~crywalt/dymaxion_2003/earthmap10k.reduced.jpg
+    QImage *texImg = new QImage("earthmap.jpg", "jpg");
     assert(texImg != NULL);
     Texture *picture = new Texture(texImg);
-    polishedSilver->setTexture(picture);
-      
-    b->setTexture(picture);
+    defaultMat->setTexture(picture);
     
       
       
-      /* 
-    bunny = sceneManager->createObject();
-    GeometryFactory::createObject(bunny, "objects/bunny.obj");
-    bunny->setTransformation(Matrix4::translate(-2,2,0));
-    bunny->setMaterial(emerald);
-    */
+    // bunny = sceneManager->createObject();
+    //     GeometryFactory::createObject(bunny, "objects/bunny.obj");
+    //     bunny->setTransformation(Matrix4::translate(0,4,0));
+    //     bunny->setMaterial(turquoise);
+    
+    
+    // Make a back wall behind all the objects
+    // Object * backWall = sceneManager->createObject();
+    //     GeometryFactory::createCube(backWall);
+    //     backWall->setTransformation(Matrix4::scale(20,20,1) * 
+    //         Matrix4::translate(0,0,-10));
+    //     backWall->setMaterial(defaultMat);    
+    
+    
     /*
     Object * bunny2 = sceneManager->createObject();
     GeometryFactory::createObject(bunny2, "objects/bunny.obj");
     bunny2->setTransformation(Matrix4::translate(2,2,0));
     bunny2->setMaterial(brass);
       */
-       
-       
-       
-    
+   
     /*
     buddha = sceneManager->createObject();
 	GeometryFactory::createObject(buddha, "objects/buddha_smooth.obj");
     buddha->setTransformation(Matrix4::scale(2,2,2));
 */
-
 	    
 /*
 	terrain = sceneManager->createObject();
@@ -163,15 +182,11 @@ void RenderWidget0::initGeometry()
     /*
     cube->setTransformation(cube->getTransformation() * Matrix4::translate(2, 0, 0));
   */  
-    
+  
     //dragon->setMaterial(brass);
     
     
-//    QImage *texImg = new QImage("sph_sky.jpg", "jpg");
-    
-    
-    //shiny->setTexture(picture);
-    /*
+   /* QImage *texImg = new QImage("sph_sky.jpg", "jpg");
     teapot = sceneManager->createObject();
     GeometryFactory::createObject(teapot, "objects/teapot.obj");
     teapot->setMaterial(brass);
@@ -222,9 +237,26 @@ void RenderWidget0::initLights()
     white->setDiffuseColor(Vector3(1,1,1));
     white->setSpecularColor(Vector3(1,1,1));
     
-
-    
-    
+/*
+    // Make a red spotlight shining from the front side of screen
+    Light * red = sceneManager->createLight();
+    red->setAmbientColor(Vector3(0,0,0));
+    red->setDiffuseColor(Vector3(1,0,0));
+    red->setSpecularColor(Vector3(1,1,1));
+    red->setType(Light::SPOT);
+    red->setPosition(Vector3(0,0,5));
+    red->setDirection(Vector3(0,0,-5));
+  */  
+    /*
+    // Make a blue point light on left
+    Light * blue = sceneManager->createLight();
+    blue->setAmbientColor(Vector3(0,0,0));
+    blue->setDiffuseColor(Vector3(0,0,1));
+    blue->setSpecularColor(Vector3(1,1,1));
+    blue->setType(Light::POINT);
+    blue->setPosition(Vector3(-5,0,0));
+    blue->setDirection(Vector3(5,0,0));
+    */
 }
 
 
@@ -239,15 +271,8 @@ void RenderWidget0::resizeRenderWidgetEvent(const QSize &s)
 
 void RenderWidget0::timerEvent(QTimerEvent *t)
 {
-	//bunny->setTransformation(Matrix4::translate(1,0,0) * Matrix4::rotateY(0.05f * counter));
-	//dragon->setTransformation(Matrix4::translate(-1,0,0) * Matrix4::rotateY(-0.05f * counter));
-	//object->setTransformation(Matrix4::rotateY(-0.05f * counter));
-	//camera->setViewMatrix(camera->getViewMatrix() * Matrix4::rotateY(-0.005f));
-    
-    //cube->setTransformation(cube->getTransformation() * Matrix4::rotateY(-0.02f) * Matrix4::rotateX(-0.05f) * Matrix4::rotateZ(0.03f));
-    //sphere->setTransformation(sphere->getTransformation() * Matrix4::rotateY(-0.02f) * Matrix4::rotateX(-0.05f) * Matrix4::rotateZ(0.03f));
-    
 
+	
 	updateScene();
 
 	counter++;

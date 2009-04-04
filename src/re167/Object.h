@@ -21,6 +21,11 @@ namespace RE167 {
 		inline Matrix4 getTransformation() const { return mTransformation; }
 		VertexData vertexData;
 
+        void setVertices(float * vertices, int numVertices);
+        void setColors(float * colors, int numVertices);
+        void setNormals(float * normals, int numNormals);
+        void setIndices(int * indices, int numIndices);
+
         inline void setMaterial(Material * m) { material = m; }
         inline Material * getMaterial() { return material; }
         

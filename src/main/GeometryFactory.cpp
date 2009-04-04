@@ -238,8 +238,8 @@ void GeometryFactory::createObject(RE167::Object *o, char * filepath, bool norma
 	}
 
     float * texCoords = NULL;
-//    createSphericalCoordinates(vertices, normals, indices, texCoords, numVertices, numIndices);
-    createPositionalSphericalCoordinates(vertices, indices, texCoords, numVertices, numIndices);
+    createSphericalCoordinates(vertices, normals, indices, texCoords, numVertices, numIndices);
+    //createPositionalSphericalCoordinates(vertices, indices, texCoords, numVertices, numIndices);
     assert(texCoords != NULL);
 
     vertexData.vertexDeclaration.addElement(3, 0, 2, 2*sizeof(float),
@@ -298,11 +298,13 @@ void GeometryFactory::createSphericalCoordinates(float *vertices,
     for (int i = 0; i < numIndices; i++) {
         int index = indices[i];
 
-        float x = normals[index    ];
-        float y = normals[index + 1];
+        float x = normals[3 * index    ];
+        float y = normals[3 * index + 1];
 
         float tu = asin(x)/PI + 0.5f;
         float tv = asin(y)/PI + 0.5f;
+
+        std::cout << "(" << x << "," << y << "): " << tu << " , " << tv << std::endl;
 
         int textureIndex = 2 * i;
         texCoords[textureIndex] = tu;
@@ -347,24 +349,28 @@ void GeometryFactory::createPositionalSphericalCoordinates(float *vertices,
 
     calculateBoundingBox(vertices, numVertices, vMin, vMax);
 
+    std::cout << vMin << vMax << std::endl;
 
     // Calculate the center; just the average of the bounding box
     // coordinates
     RE167::Vector3 center = 0.5f * (vMax + vMin);
 
+    std::cout << "Center: " << center << std::endl;
 
     // Each texture coordinate is two dimensional
     texCoords = new float[numIndices * 2];
 
+    std::cout << "numindices: " << numIndices << std::endl;
+
     // For each vertex in the mesh, calculate the unit vector from
     // center of object to vertex.  Use x and y coordinates of this
     // to calculate the texture coordinates.
-    for (int i = 0; i < numIndices; i++) {
+    for (int i = 0, counter = 0; i < numIndices; i++) {
         int index = indices[i];
-
-        float x = vertices[index    ];
-        float y = vertices[index + 1];
-        float z = vertices[index + 2];
+        
+        float x = vertices[3 * index    ];
+        float y = vertices[3 * index + 1];
+        float z = vertices[3 * index + 2];
 
         Vector3 position(x,y,z);
 
@@ -375,9 +381,12 @@ void GeometryFactory::createPositionalSphericalCoordinates(float *vertices,
         float tu = asin(offset.getX())/PI + 0.5f;
         float tv = asin(offset.getY())/PI + 0.5f;
 
-        int textureIndex = 2 * i;
-        texCoords[textureIndex] = tu;
-        texCoords[textureIndex + 1] = tv;
+        texCoords[counter++] = tu;
+        texCoords[counter++] = tv;
+        
+/*        std::cout << "Index " << i << ": " << index << std::endl;
+        std::cout << position << offset << "(" << tu << ", " << tv << ")" << std::endl;*/
+            std::cout << counter << std::endl;
     }
 
 }
@@ -593,6 +602,8 @@ void GeometryFactory::createCube(Object *o) {
 	 GeometryFactory::fillInObject(o, vertices, normals, colors, indices,
 									SIZE_OF_VERTICES_ARRAY, NUM_INDICES);
 
+                                
+
 
 }
 
@@ -658,7 +669,14 @@ void GeometryFactory::calculateNormals(float *vertices, int *indices, float *&no
     }
     // Normalize the array of normals (make them unit length)
     for (int i = 0; i < numVertices; i++) {
-        vNormals[i] = vNormals[i].normalize();
+        // For some reason some of the vectors are zero.  Ensure we don't
+        // try to normalize them.
+        if (vNormals[i] == Vector3::ZERO_VECTOR) {
+            //std::cout<< "Error: the normal at index " << i <<  " was of zero length" << std::endl;
+        }
+        else {
+            vNormals[i] = vNormals[i].normalize();
+        }
     }
 
     // Allocate enough space for the float array
@@ -884,6 +902,11 @@ void GeometryFactory::createSphere(RE167::Object *o, int numRows, int numFacesPe
         numVertices, numIndices);
 
     
+    for (int i = 0; i < numVertices; i+= 3) {
+        std::cout << i << ":(" << vertices[i] << ", " << vertices[i+1] << ", " << vertices[i+2] << ")" << std::endl;
+    }
+
+    
     float * normals = NULL;
     calculateNormals(vertices, indices, normals, numVertices, numIndices);
     assert(normals);
@@ -891,10 +914,13 @@ void GeometryFactory::createSphere(RE167::Object *o, int numRows, int numFacesPe
 	GeometryFactory::fillInObject(o, vertices, normals, colors, indices, 
         numVertices, numIndices);
 
+    
+
 	delete[] indices;
 	delete[] vertices;
     delete[] normals;
 	delete[] colors;
+//    delete[] normals;
 }
 
 /**
@@ -1051,9 +1077,9 @@ void GeometryFactory::createSphere(int numFaceRows,
 
     // Create the color array.  Each triangle section of each face will be
     // a separate color
-    colors = new float[numVertices * 3];
+    //colors = new float[numVertices * 3];
     //ColorFactory::randomlyColorize(colors, numVertices);
-    std::fill(&colors[0], &colors[numVertices * 3], 1.0f);
+    //std::fill(&colors[0], &colors[numVertices * 3], 1.0f);
 
     // Create the connectivity array, which says how the vertices are
     // joined together to create faces.  This array is set up so that
@@ -1473,12 +1499,15 @@ void GeometryFactory::fillInObject(RE167::Object *o, float *vertices, float *nor
 	vertexData.vertexDeclaration.addElement(0, 0, 3, 3*sizeof(float), RE167::VES_POSITION);
 	vertexData.createVertexBuffer(0, 3 * numVertices * sizeof(float), (unsigned char*) vertices);
 	
+	//TODO: Put back in the color stuff.  Figure out why those objects that
+	//have colors defined don't work correctly with the material colors
+	/*
 	if (colors != NULL)
 	{
 	    // - one element for vertex colors
     	vertexData.vertexDeclaration.addElement(1, 0, 3, 3*sizeof(int), RE167::VES_DIFFUSE);
     	vertexData.createVertexBuffer(1, 3 * numVertices * sizeof(float), (unsigned char*) colors);
-	}
+	}*/
 
     if (normals != NULL)
     {
@@ -1486,6 +1515,20 @@ void GeometryFactory::fillInObject(RE167::Object *o, float *vertices, float *nor
         vertexData.vertexDeclaration.addElement(2, 0, 3, 3*sizeof(float), RE167::VES_NORMAL);
         vertexData.createVertexBuffer(2, 3 * numVertices * sizeof(float), (unsigned char*) normals);
     }
+        
+        
+    // Add spherical texture coordinates to object    
+    float * texCoords = NULL;
+    //createSphericalCoordinates(vertices, normals, indices, texCoords, numVertices, numIndices);
+    createPositionalSphericalCoordinates(vertices, indices, texCoords, numVertices, numIndices);
+    assert(texCoords != NULL);
+
+    vertexData.vertexDeclaration.addElement(3, 0, 2, 2*sizeof(float),
+        RE167::VES_TEXTURE_COORDINATES);
+    vertexData.createVertexBuffer(3, numVertices * 2*sizeof(float), (unsigned char*) texCoords);
+    delete[] texCoords;
+        
+        
         
 	vertexData.createIndexBuffer(numIndices, indices);
 }

@@ -22,11 +22,6 @@ public:
 	static void createObject(Object *o, char * filePath, bool normalize = true);
 	static void createTerrainFromPGM(Object *o, char * filepath, bool normalize = true);
 
-    static void createXYPlane(Object *o);
-    static void createXZPlane(Object *o);
-    static void createYZPlane(Object *o);
-
-
 	static void createSphere(Object *o, int numRows = 10, int numFacesPerRow = 20);
 
 	static void createSphere(int numRows, int numFacesPerRow,

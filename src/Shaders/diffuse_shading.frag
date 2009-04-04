@@ -17,6 +17,12 @@ void main()
 
 	float phongExponent = 100.0;
 
+
+    // Local illumination - sum of 3 components.  diffuse, specular, ambient
+    // Complete blinn model:
+    // c = sum of cl_i (k_d (L_i dot n) + K_s (h))
+
+
 	//gl_FragColor = gl_LightSource[0].diffuse * pow(max(dot(normal, normalize(lightDir)),0.0), phongExponent) * gl_FrontMaterial.diffuse;	
 	gl_FragColor = gl_LightSource[0].diffuse * max(0.0, dot(normalize(eyeDir), normalize(reflectionDir) ) ) * 		
 					gl_FrontMaterial.diffuse;		
