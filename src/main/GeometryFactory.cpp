@@ -26,7 +26,7 @@
 
 using namespace RE167;
 
-//#include "BasicMath.h"
+#include "BasicMath.h"
 
 // HACK: CANNOT GET BasicMath to work right
 #ifndef PI
@@ -236,16 +236,16 @@ void GeometryFactory::createObject(RE167::Object *o, char * filepath, bool norma
 
         std::cout << "non normals num vertices: " << numVertices << " num indices:" << numIndices << std::endl;
 	}
-
+    /*
     float * texCoords = NULL;
-    createSphericalCoordinates(vertices, normals, indices, texCoords, numVertices, numIndices);
+    //createSphericalCoordinates(vertices, normals, indices, texCoords, numVertices, numIndices);
     //createPositionalSphericalCoordinates(vertices, indices, texCoords, numVertices, numIndices);
     assert(texCoords != NULL);
 
     vertexData.vertexDeclaration.addElement(3, 0, 2, 2*sizeof(float),
         RE167::VES_TEXTURE_COORDINATES);
     vertexData.createVertexBuffer(3, numVertices * 2*sizeof(float), (unsigned char*) texCoords);
-
+*/
 
 
 	vertexData.createIndexBuffer(numIndices, indices);
@@ -304,7 +304,7 @@ void GeometryFactory::createSphericalCoordinates(float *vertices,
         float tu = asin(x)/PI + 0.5f;
         float tv = asin(y)/PI + 0.5f;
 
-        std::cout << "(" << x << "," << y << "): " << tu << " , " << tv << std::endl;
+        //std::cout << "(" << x << "," << y << "): " << tu << " , " << tv << std::endl;
 
         int textureIndex = 2 * i;
         texCoords[textureIndex] = tu;
@@ -317,6 +317,9 @@ void GeometryFactory::createSphericalCoordinates(float *vertices,
 * each vertex in the mesh.  Calling class is responsible for delete[]ing
 * the texCoords array that is allocated within this method.
 * Used when the the object in question has large flat faces.
+* 
+* Modified version of algorithm described here
+* {@link http://blogs.msdn.com/coding4fun/archive/2006/10/31/912562.aspx}
 *
 * {@link http://www.mvps.org/directx/articles/spheremap.htm}
 * @param vertices       an array representing the vertices of the mesh.
@@ -344,17 +347,23 @@ void GeometryFactory::createPositionalSphericalCoordinates(float *vertices,
 
 
     // Calculate the bounding box around the object
-    RE167::Vector3 vMin;
-    RE167::Vector3 vMax;
+    Vector3 vMin;
+    Vector3 vMax;
 
     calculateBoundingBox(vertices, numVertices, vMin, vMax);
 
-    std::cout << vMin << vMax << std::endl;
+    
+    //std::cout << vMin << vMax << std::endl;
 
     // Calculate the center; just the average of the bounding box
     // coordinates
-    RE167::Vector3 center = 0.5f * (vMax + vMin);
+    Vector3 center = 0.5f * (vMax + vMin);
 
+    // Create a north vector given the center x and z coordinates
+    Vector3 north(0, 1, 0);
+    Vector3 equator(1, 0, 0);
+    Vector3 northCrossEquator = north.crossProduct(equator);
+    
     std::cout << "Center: " << center << std::endl;
 
     // Each texture coordinate is two dimensional
@@ -373,20 +382,52 @@ void GeometryFactory::createPositionalSphericalCoordinates(float *vertices,
         float z = vertices[3 * index + 2];
 
         Vector3 position(x,y,z);
+        
+        // Calculate the vector from the center of the sphere to the
+        // position of vertex in question
+        Vector3 vertexRay = (position - center).normalize();
+
+        double phi = acos(north.dotProduct(vertexRay));
+        float tv = phi / PI;
+        
+        
+        float tu;
+        if (phi == 0.0) //if north and vertex ray are coincident then we can pick an 
+                        //arbitrary u since its the entire top/bottom line of the texture
+        {
+            tu = 0.5f;
+        }
+        else
+        {
+                        
+            //Clamp the acos() param to 1.0/-1.0 
+            //(rounding errors are sometimes taking it slightly over).
+            float acosArg = 
+                BasicMath::clamp(equator.dotProduct(vertexRay) / sin(phi), -1.0f, 1.0f);
+            tu = acos(acosArg) / (2 * PI);
+            if (vertexRay.dotProduct(northCrossEquator) >= 0.0f) {
+                tu = 1.0f - tu;
+            }    
+        }
+
+        /*
 
         // Calculate the vector from the center to this point on the
         // object
         Vector3 offset = (position - center).normalize();
 
         float tu = asin(offset.getX())/PI + 0.5f;
-        float tv = asin(offset.getY())/PI + 0.5f;
+        float tv = asin(offset.getY())/PI + 0.5f;*/
 
-        texCoords[counter++] = tu;
-        texCoords[counter++] = tv;
+        // If we are on other side of the equator, we need to flip the tu
+        // coordinate
+        
+        texCoords[counter++] = -tu;
+        texCoords[counter++] = -tv;
         
 /*        std::cout << "Index " << i << ": " << index << std::endl;
         std::cout << position << offset << "(" << tu << ", " << tv << ")" << std::endl;*/
-            std::cout << counter << std::endl;
+            //std::cout << counter << std::endl;
     }
 
 }

@@ -64,6 +64,7 @@ private:
     Object *sphere;
     Object *teapot;
     Object *buddha;
+    Object *earth;
 	
 	// Hold the last mouse position
 	int lastX;

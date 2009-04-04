@@ -94,49 +94,49 @@ void RenderWidget0::initGeometry()
        
     Material * defaultMat = new Material();
        
-    // Object * pedestal1 = sceneManager->createObject();
-    //  GeometryFactory::createCylinder(pedestal1, 1, 40, 1.0f);
-    //  pedestal1->setTransformation(Matrix4::scale(1,2,1) * Matrix4::translate(-2,0,0));
-    //  pedestal1->setMaterial(brass);
-    //  
-    // 
-    // 
-    //  Object * pedestal2 = sceneManager->createObject();
-    //  GeometryFactory::createCylinder(pedestal2, 1, 40, 1.0f);
-    //  pedestal2->setTransformation(Matrix4::scale(1,2,1) * Matrix4::translate(2,0,0));
-    //  pedestal2->setMaterial(polishedSilver);
-    // 
-    //  
-     /*
+    Object * pedestal1 = sceneManager->createObject();
+    GeometryFactory::createCylinder(pedestal1, 1, 40, 1.0f);
+    pedestal1->setTransformation(Matrix4::scale(1,2,1) * Matrix4::translate(-2,0,0));
+    pedestal1->setMaterial(brass);
+
+
+    // Create the pedestal for the globe
+    Object * pedestal2 = sceneManager->createObject();
+    GeometryFactory::createCylinder(pedestal2, 1, 40, 1.0f);
+    pedestal2->setTransformation(Matrix4::scale(1,2,1) * Matrix4::translate(2,0,0));
+    pedestal2->setMaterial(polishedSilver);
+
+    
+    Object * cone = sceneManager->createObject();
+    GeometryFactory::createCone(cone);
+    cone->setMaterial(polishedSilver);
+    cone->setTransformation(Matrix4::translate(2,1.5,0));
+
+    earth = sceneManager->createObject();
+    GeometryFactory::createSphere(earth, 30, 30);
+    earth->setTransformation(Matrix4::translate(2,3,0));
+    earth->setMaterial(defaultMat);
+    
+         
+    /* 
     dragon = sceneManager->createObject();
     GeometryFactory::createObject(dragon, "objects/dragon_smooth.obj");
+    dragon->setTransformation(Matrix4::translate(2,0,0));
+
     dragon->setMaterial(emerald);
-*/
+    */
     
-    /*
-    Object * ball = sceneManager->createObject(); 
-    GeometryFactory::createObject(ball, "objects/sphere.obj");
-    ball->setTransformation(Matrix4::translate(-2,2,0));
-    ball->setMaterial(polishedSilver);*/
     
-    Object * sphere2 = sceneManager->createObject();
-    GeometryFactory::createSphere(sphere2, 30, 30);
-//    sphere2->setTransformation(Matrix4::translate(2,2,0));
-    sphere2->setMaterial(defaultMat);
     
-    /*
+    
     Object * cube = sceneManager->createObject();
     GeometryFactory::createCube(cube);
     cube->setTransformation(Matrix4::translate(0,2,0));
     cube->setMaterial(defaultMat);
-    */
     
     
-    // Object * cone = sceneManager->createObject();
-    //     GeometryFactory::createCone(cone);
-    //     cone->setMaterial(ruby);
-    //     
-      
+        
+          
     // http://friday.westnet.com/~crywalt/dymaxion_2003/earthmap10k.reduced.jpg
     QImage *texImg = new QImage("earthmap.jpg", "jpg");
     assert(texImg != NULL);
@@ -145,10 +145,12 @@ void RenderWidget0::initGeometry()
     
       
       
-    // bunny = sceneManager->createObject();
-    //     GeometryFactory::createObject(bunny, "objects/bunny.obj");
-    //     bunny->setTransformation(Matrix4::translate(0,4,0));
-    //     bunny->setMaterial(turquoise);
+    emerald->setTexture(picture); 
+      
+    bunny = sceneManager->createObject();
+    GeometryFactory::createObject(bunny, "objects/bunny.obj");
+    bunny->setTransformation(Matrix4::translate(0,4,0));
+    bunny->setMaterial(turquoise);
     
     
     // Make a back wall behind all the objects
@@ -271,7 +273,7 @@ void RenderWidget0::resizeRenderWidgetEvent(const QSize &s)
 
 void RenderWidget0::timerEvent(QTimerEvent *t)
 {
-
+    earth->setTransformation(earth->getTransformation() * Matrix4::rotateY(0.005));
 	
 	updateScene();
 
