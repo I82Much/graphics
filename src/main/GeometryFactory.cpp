@@ -210,25 +210,11 @@ void GeometryFactory::createObject(RE167::Object *o, char * filepath, bool norma
 		vertexData.createVertexBuffer(2, numVertices *3*sizeof(float), (unsigned char*)normals);
 	}
 	// Calculate the normals since they weren't included on object
-	else {/*
-        std::cout << "before: " << numVertices << " : " << numIndices << std::endl;
-
-	    // In order to calculate the normals correctly, we need to do
-	    // a preprocessing step to eliminate duplicated vertices
-        float * vVertices;
-        int * vIndices;
-
-        int oldVertices = numVertices;
-
-        eliminateDuplicateVertices(vertices, indices, vVertices,
-                                                        vIndices,
-                                                        numVertices,
-                                                        numIndices);
-
-        std::cout << "eliminated " << (oldVertices - numVertices) << " vertices" << std::endl;
-	    */
-
-        calculateNormals(vertices, indices, normals, numVertices, numIndices);
+	else {
+	    
+        calculateSphericalNormals(vertices, normals, indices, numVertices, numIndices);
+	    
+        //        calculateNormals(vertices, indices, normals, numVertices, numIndices);
         assert(normals);
 
         vertexData.vertexDeclaration.addElement(2, 0, 3, 3*sizeof(float), RE167::VES_NORMAL);
@@ -257,6 +243,39 @@ void GeometryFactory::createObject(RE167::Object *o, char * filepath, bool norma
 	delete[] colors;
 }
 
+
+
+/**
+*
+*/
+void GeometryFactory::calculateSphericalNormals(float *vertices, 
+                                            float *&normals, 
+                                            int *indices, 
+                                            int numVertices, 
+                                            int numIndices) {
+    // Calculate the bounding box around the object
+    Vector3 vMin;
+    Vector3 vMax;
+    calculateBoundingBox(vertices, numVertices, vMin, vMax);
+    
+    normals = new float[numVertices * 3];
+    
+    // Calculate the center; just the average of the bounding box
+    // coordinates
+    Vector3 center = 0.5f * (vMax + vMin);
+
+    for (int i = 0; i < numVertices; i++) {
+        int index = 3 * i;
+        float x = vertices[index    ];
+        float y = vertices[index + 1];
+        float z = vertices[index + 2];
+        
+        Vector3 position(x, y, z);
+        Vector3 vertexRay = (position - center).normalize();
+       
+        fillInVertex(normals, index, vertexRay);
+    }
+}
 
 
 /**
@@ -909,16 +928,12 @@ void GeometryFactory::createSphere(RE167::Object *o, int numRows, int numFacesPe
 	int *indices = NULL;
 	float *vertices= NULL;
 	float *colors = NULL;
-    
+    float *normals = NULL;
 	int numVertices = 0;
 	int numIndices = 0;
 	// Do the heavy lifting with a helper method
-	GeometryFactory::createSphere(numRows, numFacesPerRow, vertices, colors, indices,
+	GeometryFactory::createSphere(numRows, numFacesPerRow, vertices, normals, colors, indices,
         numVertices, numIndices);
-
-    float * normals = NULL;
-    calculateNormals(vertices, indices, normals, numVertices, numIndices);
-    assert(normals);
     
 	GeometryFactory::fillInObject(o, vertices, normals, colors, indices, 
         numVertices, numIndices);
@@ -928,7 +943,7 @@ void GeometryFactory::createSphere(RE167::Object *o, int numRows, int numFacesPe
 	delete[] vertices;
     delete[] normals;
 	delete[] colors;
-//    delete[] normals;
+    //delete[] normals;
 }
 
 /**
@@ -938,6 +953,8 @@ void GeometryFactory::createSphere(RE167::Object *o, int numRows, int numFacesPe
 * @param vertices			the float pointer that will be allocated
 *							and filled in with the vertices of the faces
 *							in this method
+* @param normals            the float pointer that will be allocated
+*							and filled in with the normals of each vertex
 * @param colors				the float pointer that will be allocated and
 *							filled in with the colors of the vertices
 * @param indices			will be created within this method and filled
@@ -951,15 +968,17 @@ void GeometryFactory::createSphere(RE167::Object *o, int numRows, int numFacesPe
 void GeometryFactory::createSphere(int numFaceRows,
 								   int numFacesPerRow,
                                    float *&vertices,
+                                   float *&normals,
                                    float *&colors,
                                    int *&indices,
                                    int &numVertices,
                                    int &numIndices) {
 
-
+                                       
     assert(numFaceRows >= 1);
 	assert(numFacesPerRow >= 3);
-
+	
+	
     // Even with just one row of faces, you need two rows of vertices
     const int NUM_VERTICES_ROWS = numFaceRows + 1;
     const int NUM_VERTICES_PER_ROW = numFacesPerRow;
@@ -1012,6 +1031,9 @@ void GeometryFactory::createSphere(int numFaceRows,
     // Caller needs to be able to assertain size of array we will create
     numVertices = NUM_VERTICES;
     vertices = new float[NUM_VERTICES * NUM_COMPONENTS_PER_VERTEX];
+    // One normal per vertex
+    normals = new float[NUM_VERTICES * NUM_COMPONENTS_PER_VERTEX];
+
 
     const int NUM_COMPONENTS_PER_ROW =
         NUM_COMPONENTS_PER_RECTANGULAR_FACE * numFacesPerRow;
@@ -1054,30 +1076,24 @@ void GeometryFactory::createSphere(int numFaceRows,
             // iteration of this inner loop
             int startIndex = (row * NUM_COMPONENTS_PER_ROW) + (NUM_COMPONENTS_PER_RECTANGULAR_FACE * face);
 
-            vertices[startIndex]     = f1_1.getX();
-            vertices[startIndex + 1] = f1_1.getY();
-            vertices[startIndex + 2] = f1_1.getZ();
-
-            vertices[startIndex + 3] = f1_2.getX();
-            vertices[startIndex + 4] = f1_2.getY();
-            vertices[startIndex + 5] = f1_2.getZ();
-
-            vertices[startIndex + 6] = f1_3.getX();
-            vertices[startIndex + 7] = f1_3.getY();
-            vertices[startIndex + 8] = f1_3.getZ();
-
-            vertices[startIndex + 9]  = f2_1.getX();
-            vertices[startIndex + 10] = f2_1.getY();
-            vertices[startIndex + 11] = f2_1.getZ();
-
-            vertices[startIndex + 12] = f2_2.getX();
-            vertices[startIndex + 13] = f2_2.getY();
-            vertices[startIndex + 14] = f2_2.getZ();
-
-            vertices[startIndex + 15] = f2_3.getX();
-            vertices[startIndex + 16] = f2_3.getY();
-            vertices[startIndex + 17] = f2_3.getZ();
-		}
+            fillInVertex(vertices, startIndex, f1_1);
+            fillInVertex(vertices, startIndex+3, f1_2);
+            fillInVertex(vertices, startIndex+6, f1_3);
+            fillInVertex(vertices, startIndex+9, f2_1);
+            fillInVertex(vertices, startIndex+12, f2_2);
+            fillInVertex(vertices, startIndex+15, f2_3);
+            
+            int normalStartIndex = startIndex;
+            
+            // Fill in normal information for each of the 6 vertices;
+            // simply the normalized (x,y,z)
+            fillInVertex(normals, normalStartIndex, f1_1.normalize());
+            fillInVertex(normals, normalStartIndex+3, f1_2.normalize());
+            fillInVertex(normals, normalStartIndex+6, f1_3.normalize());
+            fillInVertex(normals, normalStartIndex+9, f2_1.normalize());
+            fillInVertex(normals, normalStartIndex+12, f2_2.normalize());
+            fillInVertex(normals, normalStartIndex+15, f2_3.normalize());
+   		}
     }
 
     // Our vertices array is fully filled in; no need for the temporary one
@@ -1102,9 +1118,11 @@ void GeometryFactory::createSphere(int numFaceRows,
 }
 
 
-
-
-
+void GeometryFactory::fillInVertex(float *&vertices, int startIndex, const Vector3 &vertex) {
+    vertices[startIndex  ] = vertex.getX();
+    vertices[startIndex+1] = vertex.getY();
+    vertices[startIndex+2] = vertex.getZ();
+}
 
 
 void GeometryFactory::createCylinder(RE167::Object *o, int numRows,

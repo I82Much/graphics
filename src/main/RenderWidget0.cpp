@@ -83,9 +83,9 @@ void RenderWidget0::initGeometry()
     
     Material * emerald = new Material(Emerald);
     //emerald->setShader(new Shader("src/Shaders/simple.vert", "src/Shaders/simple.frag"));
-    emerald->setShader(new Shader(  "src/Shaders/diffuse_shading.vert", 
-                                    "src/Shaders/diffuse_shading.frag"));
-
+     emerald->setShader(new Shader(  "src/Shaders/diffuse_shading.vert", 
+                                         "src/Shaders/diffuse_shading.frag"));
+    
     //emerald->setShader(new Shader("src/Shaders/texture2D.vert", "src/Shaders/texture2D.frag"));
     
     
@@ -148,9 +148,6 @@ void RenderWidget0::initGeometry()
     Texture *picture = new Texture(texImg);
     defaultMat->setTexture(picture);
     
-      
-      
-    emerald->setTexture(picture); 
       
     bunny = sceneManager->createObject();
     GeometryFactory::createObject(bunny, "objects/bunny.obj");

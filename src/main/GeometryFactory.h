@@ -26,6 +26,7 @@ public:
 
 	static void createSphere(int numRows, int numFacesPerRow,
                              float *&vertices,
+                             float *&normals,
                              float *&colors,
                              int *&indices,
                              int &numVertices,
@@ -74,6 +75,14 @@ public:
 							int &numVertices,
 							int &numIndices);
 
+    static void calculateSphericalNormals(float *vertices, 
+                                        float *&normals, 
+                                        int *indices, 
+                                        int numVertices, 
+                                        int numIndices);
+
+    static void fillInVertex(float *&vertices, int startIndex, const Vector3 &vertex);
+                                
 
 	static void printVerticesArray(float *verticesArray, const int numElements, int entriesPerLine = 10);
 	static void printVectorArray(Vector3 *vectorArray, const int numElements, int entriesPerLine = 10);

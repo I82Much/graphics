@@ -12,14 +12,13 @@ varying vec3 normal, lightDir, reflectionDir, position;
 
 void main()
 {		
+    // TODO: Make this work with more than one light
+    
 	// We are in eye coordinates, so (0,0,0) - position is eye direction
-	vec3 eyeDir = normalize(-position);
+	vec3 unitEyeDir = normalize(-position);
 
     // Local illumination - sum of 3 components.  diffuse, specular, ambient
-    // Complete blinn model:
-    // c = sum of cl_i (k_d (L_i dot n) + K_s (h))
 
-    vec3 unitEyeDir = normalize(eyeDir);
     vec3 unitReflectionDir = normalize(reflectionDir);
     vec3 unitLightDir = normalize(lightDir);
     vec3 unitNormal = normalize(normal);
@@ -31,12 +30,12 @@ void main()
     
     // Need to take the max of 0 and the dot product because the dot product
     // can be negative
-    float specCoefficient = max(0.0, dot(unitEyeDir, unitReflectionDir));
+    float specCoefficient = pow(max(0.0, dot(unitEyeDir, unitReflectionDir)), gl_FrontMaterial.shininess);
     
     // Calculate the specular color
     vec4 specularColor = specCoefficient * gl_LightSource[0].specular * gl_FrontMaterial.specular;		
     
-    float diffuseCoefficient = pow(max(0.0, dot(unitLightDir, unitNormal)), gl_FrontMaterial.shininess);
+    float diffuseCoefficient = max(0.0, dot(unitLightDir, unitNormal));
     // Calculate the diffuse color
     vec4 diffuseColor = diffuseCoefficient * gl_LightSource[0].diffuse * gl_FrontMaterial.diffuse;
     
