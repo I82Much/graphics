@@ -49,7 +49,9 @@ namespace RE167 {
 		*/
 		void renderScene();
 
-
+        // TODO: This breaks encapsulation
+        std::list<Object*> &getObjects() { return mObjectList; }
+        std::list<Light*> &getLights() { return mLightList; }
 
 	private:
 		Camera *mCamera;
@@ -61,4 +63,4 @@ namespace RE167 {
 
 }
 
-#endif
+#endifß

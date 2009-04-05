@@ -30,8 +30,6 @@ void main()
 	reflectionDir = -lightDir + ((2.0 * dotProd) * normal );
 
 	position = vec3(gl_ModelViewMatrix * gl_Vertex);
-
-	
 	
 	
 	// ftransform() is a built-in function that applies all

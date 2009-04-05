@@ -83,6 +83,9 @@ void RenderWidget0::initGeometry()
     
     Material * emerald = new Material(Emerald);
     //emerald->setShader(new Shader("src/Shaders/simple.vert", "src/Shaders/simple.frag"));
+    emerald->setShader(new Shader(  "src/Shaders/diffuse_shading.vert", 
+                                    "src/Shaders/diffuse_shading.frag"));
+
     //emerald->setShader(new Shader("src/Shaders/texture2D.vert", "src/Shaders/texture2D.frag"));
     
     
@@ -93,6 +96,8 @@ void RenderWidget0::initGeometry()
     Material * turquoise = new Material(Turquoise);   
        
     Material * defaultMat = new Material();
+       
+       
        
     Object * pedestal1 = sceneManager->createObject();
     GeometryFactory::createCylinder(pedestal1, 1, 40, 1.0f);
@@ -115,7 +120,7 @@ void RenderWidget0::initGeometry()
     earth = sceneManager->createObject();
     GeometryFactory::createSphere(earth, 30, 30);
     earth->setTransformation(Matrix4::translate(2,3,0));
-    earth->setMaterial(defaultMat);
+    earth->setMaterial(emerald);
     
          
     /* 
@@ -132,7 +137,7 @@ void RenderWidget0::initGeometry()
     Object * cube = sceneManager->createObject();
     GeometryFactory::createCube(cube);
     cube->setTransformation(Matrix4::translate(0,2,0));
-    cube->setMaterial(defaultMat);
+    cube->setMaterial(emerald);
     
     
         
@@ -151,6 +156,7 @@ void RenderWidget0::initGeometry()
     GeometryFactory::createObject(bunny, "objects/bunny.obj");
     bunny->setTransformation(Matrix4::translate(0,4,0));
     bunny->setMaterial(turquoise);
+    turquoise->setTexture(picture);
     
     
     // Make a back wall behind all the objects
@@ -325,7 +331,23 @@ void RenderWidget0::mouseMoveEvent(QMouseEvent *e)
 	// the camera
 	Matrix4 rotation = Matrix4::rotate(axis4, angle);
 
-	//object->setTransformation(rotation * object->getTransformation());
+	
+	// Apply transformation to each object in scene
+	/*
+    std::list<Object*> &objects = sceneManager->getObjects();
+    for ( std::list<Object*>::iterator i = objects.begin(); i != objects.end(); i++) {
+        (*i)->setTransformation(rotation * (*i)->getTransformation() );
+    }*/
+    
+    /*
+    // Apply transformation to the lights in the scene
+    std::list<Light*> &lights = sceneManager->getLights();
+    for ( std::list<Light*>::iterator i = lights.begin(); i != lights.end(); i++) {
+        (*i)->setTransformation(rotation * (*i)->getTransformation() );
+    }*/
+    
+    
+    
 
 	// Apply transformation to the camera
 	camera->setViewMatrix(camera->getViewMatrix() * rotation);

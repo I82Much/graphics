@@ -236,16 +236,16 @@ void GeometryFactory::createObject(RE167::Object *o, char * filepath, bool norma
 
         std::cout << "non normals num vertices: " << numVertices << " num indices:" << numIndices << std::endl;
 	}
-    /*
+    
     float * texCoords = NULL;
     //createSphericalCoordinates(vertices, normals, indices, texCoords, numVertices, numIndices);
-    //createPositionalSphericalCoordinates(vertices, indices, texCoords, numVertices, numIndices);
+    createPositionalSphericalCoordinates(vertices, indices, texCoords, numVertices, numIndices);
     assert(texCoords != NULL);
 
     vertexData.vertexDeclaration.addElement(3, 0, 2, 2*sizeof(float),
         RE167::VES_TEXTURE_COORDINATES);
     vertexData.createVertexBuffer(3, numVertices * 2*sizeof(float), (unsigned char*) texCoords);
-*/
+
 
 
 	vertexData.createIndexBuffer(numIndices, indices);
