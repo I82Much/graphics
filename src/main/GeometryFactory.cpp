@@ -320,12 +320,10 @@ void GeometryFactory::createSphericalCoordinates(float *vertices,
 * 
 * Modified version of algorithm described here
 * {@link http://blogs.msdn.com/coding4fun/archive/2006/10/31/912562.aspx}
-*
+* {@link http://www.cs.unc.edu/~rademach/xroads-RT/RTarticle.html#texturemap}
 * {@link http://www.mvps.org/directx/articles/spheremap.htm}
 * @param vertices       an array representing the vertices of the mesh.
 *                       Must not be NULL.
-* @param normals        an array representing the unit normal vectors at
-*                       each vertex.  Must not be NULL.
 * @param indices        an array mapping the faces of mesh to the vertices.
 *                       Must not be NULL.
 * @param texCoords      the array that will be allocated within this method
@@ -352,28 +350,23 @@ void GeometryFactory::createPositionalSphericalCoordinates(float *vertices,
 
     calculateBoundingBox(vertices, numVertices, vMin, vMax);
 
-    
-    //std::cout << vMin << vMax << std::endl;
-
     // Calculate the center; just the average of the bounding box
     // coordinates
     Vector3 center = 0.5f * (vMax + vMin);
 
-    // Create a north vector given the center x and z coordinates
+    // The north vector is a vector from center of object to north pole
     Vector3 north(0, 1, 0);
+    // A point on the equator of the sphere
     Vector3 equator(1, 0, 0);
     Vector3 northCrossEquator = north.crossProduct(equator);
     
-    std::cout << "Center: " << center << std::endl;
-
     // Each texture coordinate is two dimensional
     texCoords = new float[numIndices * 2];
 
-    std::cout << "numindices: " << numIndices << std::endl;
-
     // For each vertex in the mesh, calculate the unit vector from
-    // center of object to vertex.  Use x and y coordinates of this
-    // to calculate the texture coordinates.
+    // center of object to vertex. Use this to calculate the longitude
+    // and latitude of point, and convert it into range [-1,1] in u coord,
+    // [0,1] in v coord
     for (int i = 0, counter = 0; i < numIndices; i++) {
         int index = indices[i];
         
@@ -387,47 +380,28 @@ void GeometryFactory::createPositionalSphericalCoordinates(float *vertices,
         // position of vertex in question
         Vector3 vertexRay = (position - center).normalize();
 
-        double phi = acos(north.dotProduct(vertexRay));
+        // Calculate the latitude - simply the angle between the equator
+        // and our vertexRay
+        double phi = acos(-north.dotProduct(vertexRay));
+        // Make sure v is in range [0,1]
         float tv = phi / PI;
         
-        
         float tu;
-        if (phi == 0.0) //if north and vertex ray are coincident then we can pick an 
-                        //arbitrary u since its the entire top/bottom line of the texture
-        {
-            tu = 0.5f;
-        }
-        else
-        {
-                        
-            //Clamp the acos() param to 1.0/-1.0 
-            //(rounding errors are sometimes taking it slightly over).
-            float acosArg = 
-                BasicMath::clamp(equator.dotProduct(vertexRay) / sin(phi), -1.0f, 1.0f);
-            tu = acos(acosArg) / (2 * PI);
-            if (vertexRay.dotProduct(northCrossEquator) >= 0.0f) {
-                tu = 1.0f - tu;
-            }    
-        }
-
-        /*
-
-        // Calculate the vector from the center to this point on the
-        // object
-        Vector3 offset = (position - center).normalize();
-
-        float tu = asin(offset.getX())/PI + 0.5f;
-        float tv = asin(offset.getY())/PI + 0.5f;*/
-
-        // If we are on other side of the equator, we need to flip the tu
-        // coordinate
         
-        texCoords[counter++] = -tu;
-        texCoords[counter++] = -tv;
+        // Calculate the longitude
+        float theta = ( acos( vertexRay.dotProduct(equator) / sin( phi )) ) / ( 2 * PI);
+        // Ensure that the both sides of the sphere have different textures.
+        // Maps the u coordinate to be in range [-1, 1]
+        if ( vertexRay.dotProduct(northCrossEquator) > 0) {
+            tu = theta;
+         }
+        else {
+            tu = 1 - theta;
+        }
         
-/*        std::cout << "Index " << i << ": " << index << std::endl;
-        std::cout << position << offset << "(" << tu << ", " << tv << ")" << std::endl;*/
-            //std::cout << counter << std::endl;
+        
+        texCoords[counter++] = tu;
+        texCoords[counter++] = tv;
     }
 
 }
@@ -942,19 +916,12 @@ void GeometryFactory::createSphere(RE167::Object *o, int numRows, int numFacesPe
 	GeometryFactory::createSphere(numRows, numFacesPerRow, vertices, colors, indices,
         numVertices, numIndices);
 
-    
-    for (int i = 0; i < numVertices; i+= 3) {
-        std::cout << i << ":(" << vertices[i] << ", " << vertices[i+1] << ", " << vertices[i+2] << ")" << std::endl;
-    }
-
-    
     float * normals = NULL;
     calculateNormals(vertices, indices, normals, numVertices, numIndices);
     assert(normals);
     
 	GeometryFactory::fillInObject(o, vertices, normals, colors, indices, 
         numVertices, numIndices);
-
     
 
 	delete[] indices;
