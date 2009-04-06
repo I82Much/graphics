@@ -4,9 +4,13 @@
 #include "Vector4.h"
 #include "Matrix4.h"
 #include "GeometryFactory.h"
+#include "Group.h"
 
 int main(int argc, char *argv[])
 {
+    
+    Group::test();
+    /*
 	Vector3::runTestSuite();
 	
 	
@@ -17,5 +21,5 @@ int main(int argc, char *argv[])
     MainWindow window;
     window.show();
 	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
-    return app.exec();
+    return app.exec();*/
 }
