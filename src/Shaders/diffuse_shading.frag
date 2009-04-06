@@ -12,9 +12,7 @@ varying vec3 normal, lightDir, reflectionDir, position;
 
 void main()
 {		
-    // TODO: Make this work with more than one light
-    
-	// We are in eye coordinates, so (0,0,0) - position is eye direction
+   	// We are in eye coordinates, so (0,0,0) - position is eye direction
 	vec3 unitEyeDir = normalize(-position);
 
     // Local illumination - sum of 3 components.  diffuse, specular, ambient
@@ -23,22 +21,30 @@ void main()
     vec3 unitLightDir = normalize(lightDir);
     vec3 unitNormal = normalize(normal);
     
-    // Handle just one light for now
+    vec4 color;
+    color = vec4(0,0,0,0);
     
-    // calculate the ambient color
-    vec4 ambientColor = gl_LightSource[0].ambient * gl_FrontMaterial.ambient;
+    // accumulate the colors for all the lights
+    const int MAX_LIGHTS = 2;
+    int i;
+    for (i = 0; i < MAX_LIGHTS; i++) {
     
-    // Need to take the max of 0 and the dot product because the dot product
-    // can be negative
-    float specCoefficient = pow(max(0.0, dot(unitEyeDir, unitReflectionDir)), gl_FrontMaterial.shininess);
+        // calculate the ambient color
+        vec4 ambientColor = gl_LightSource[i].ambient * gl_FrontMaterial.ambient;
     
-    // Calculate the specular color
-    vec4 specularColor = specCoefficient * gl_LightSource[0].specular * gl_FrontMaterial.specular;		
+        // Need to take the max of 0 and the dot product because the dot product
+        // can be negative
+        float specCoefficient = pow(max(0.0, dot(unitEyeDir, unitReflectionDir)), gl_FrontMaterial.shininess);
     
-    float diffuseCoefficient = max(0.0, dot(unitLightDir, unitNormal));
-    // Calculate the diffuse color
-    vec4 diffuseColor = diffuseCoefficient * gl_LightSource[0].diffuse * gl_FrontMaterial.diffuse;
+        // Calculate the specular color
+        vec4 specularColor = specCoefficient * gl_LightSource[i].specular * gl_FrontMaterial.specular;		
     
+        float diffuseCoefficient = max(0.0, dot(unitLightDir, unitNormal));
+        // Calculate the diffuse color
+        vec4 diffuseColor = diffuseCoefficient * gl_LightSource[i].diffuse * gl_FrontMaterial.diffuse;
+        
+        color = color + ambientColor + specularColor + diffuseColor;
+    }
     // Automatically clamped later    
-    gl_FragColor = ambientColor + specularColor + diffuseColor;
+    gl_FragColor = color; //ambientColor + specularColor + diffuseColor;
 }

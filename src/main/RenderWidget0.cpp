@@ -123,7 +123,6 @@ void RenderWidget0::initGeometry()
     pedestal2->setMaterial(polishedSilver);
 
     
-
     earth = sceneManager->createObject();
     GeometryFactory::createSphere(earth, 30, 30);
     earth->setTransformation(Matrix4::translate(2,3,0));
@@ -132,7 +131,7 @@ void RenderWidget0::initGeometry()
     Object * cube = sceneManager->createObject();
     GeometryFactory::createCube(cube);
     cube->setTransformation(Matrix4::translate(0,2,0));
-    cube->setMaterial(emerald);
+    cube->setMaterial(pewter);
     
     
     Object * teapot = sceneManager->createObject();
@@ -177,43 +176,22 @@ void RenderWidget0::initCamera()
 
 void RenderWidget0::initLights()
 {
-    /*
+    // Make a blue spotlight coming from the left
     Light * blue = sceneManager->createLight();
-    blue->setAmbientColor(Vector3(0,0,1));
+    blue->setType(Light::SPOT);
+    blue->setAmbientColor(Vector3(.2,.2,.2));
     blue->setDiffuseColor(Vector3(0,0,1));
     blue->setSpecularColor(Vector3(1,1,1));
-    
-    blue->setPosition(Vector3(1,0,0));
-    blue->setDirection(Vector3(1,0,0));
-    */
-    
+    blue->setSpotDirection(Vector3(0,0,1));
+    blue->setPosition(Vector3(-1,.5,1));
     
     // Create a white light
     Light * white = sceneManager->createLight();
-    white->setAmbientColor(Vector3(0,0,0));
+    white->setDirection(Vector3(1,1,1));
     white->setDiffuseColor(Vector3(1,1,1));
+    white->setAmbientColor(Vector3(.2,.2,.2));
     white->setSpecularColor(Vector3(1,1,1));
     
-/*
-    // Make a red spotlight shining from the front side of screen
-    Light * red = sceneManager->createLight();
-    red->setAmbientColor(Vector3(0,0,0));
-    red->setDiffuseColor(Vector3(1,0,0));
-    red->setSpecularColor(Vector3(1,1,1));
-    red->setType(Light::SPOT);
-    red->setPosition(Vector3(0,0,5));
-    red->setDirection(Vector3(0,0,-5));
-  */  
-    /*
-    // Make a blue point light on left
-    Light * blue = sceneManager->createLight();
-    blue->setAmbientColor(Vector3(0,0,0));
-    blue->setDiffuseColor(Vector3(0,0,1));
-    blue->setSpecularColor(Vector3(1,1,1));
-    blue->setType(Light::POINT);
-    blue->setPosition(Vector3(-5,0,0));
-    blue->setDirection(Vector3(5,0,0));
-    */
 }
 
 
@@ -229,9 +207,7 @@ void RenderWidget0::resizeRenderWidgetEvent(const QSize &s)
 void RenderWidget0::timerEvent(QTimerEvent *t)
 {
     earth->setTransformation(earth->getTransformation() * Matrix4::rotateY(0.005));
-	
 	updateScene();
-
 	counter++;
 }
 
@@ -282,21 +258,7 @@ void RenderWidget0::mouseMoveEvent(QMouseEvent *e)
 
 	
 	// Apply transformation to each object in scene
-	/*
-    std::list<Object*> &objects = sceneManager->getObjects();
-    for ( std::list<Object*>::iterator i = objects.begin(); i != objects.end(); i++) {
-        (*i)->setTransformation(rotation * (*i)->getTransformation() );
-    }*/
-    
-    /*
-    // Apply transformation to the lights in the scene
-    std::list<Light*> &lights = sceneManager->getLights();
-    for ( std::list<Light*>::iterator i = lights.begin(); i != lights.end(); i++) {
-        (*i)->setTransformation(rotation * (*i)->getTransformation() );
-    }*/
-    
-    
-    
+	
 
 	// Apply transformation to the camera
 	camera->setViewMatrix(camera->getViewMatrix() * rotation);
