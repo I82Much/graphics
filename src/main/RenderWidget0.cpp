@@ -73,32 +73,43 @@ void RenderWidget0::initMaterials()
 void RenderWidget0::initGeometry()
 {
     
-    Material * brass = new Material(Brass);
+      
     
-      //Shader *shader = new Shader("src/Shaders/simple.vert", "src/Shaders/simple.frag");
-    //Shader *shader = new Shader("src/Shaders/diffuse_shading.vert", "src/Shaders/diffuse_shading.frag");
-    //Shader *shader = new Shader("src/Shaders/texture2D.vert", "src/Shaders/texture2D.frag");
-    //shader->use();
+    Shader * phongShader = new Shader("src/Shaders/diffuse_shading.vert", 
+        "src/Shaders/diffuse_shading.frag");
+    Shader * texture2D = new Shader("src/Shaders/texture2D.vert", 
+        "src/Shaders/texture2D.frag");
     
-    
-    Material * emerald = new Material(Emerald);
-    //emerald->setShader(new Shader("src/Shaders/simple.vert", "src/Shaders/simple.frag"));
-     emerald->setShader(new Shader(  "src/Shaders/diffuse_shading.vert", 
-                                         "src/Shaders/diffuse_shading.frag"));
-    
-    //emerald->setShader(new Shader("src/Shaders/texture2D.vert", "src/Shaders/texture2D.frag"));
-    
-    
+    Material * brass = new Material(Brass);                                 
     Material * pewter = new Material(Pewter);
     Material * polishedSilver = new Material(Polished_Silver);
     Material * blackRubber = new Material(Black_Rubber);
     Material * ruby = new Material(Ruby);
     Material * turquoise = new Material(Turquoise);   
-       
+    Material * mattePearl = new Material(Pearl);   
     Material * defaultMat = new Material();
-       
-       
-       
+    Material * emerald = new Material(Emerald);
+    
+    brass->setShader(phongShader);
+    pewter->setShader(phongShader);
+    polishedSilver->setShader(phongShader);
+    blackRubber->setShader(phongShader);
+    ruby->setShader(phongShader);
+    turquoise->setShader(phongShader);
+    mattePearl->setShader(phongShader);
+    emerald->setShader(phongShader);
+    
+    
+    mattePearl->setShininess(2);
+    
+    // Textured materials
+    Material * earthMat = new Material();
+    Material * stripes = new Material();
+    earthMat->setShader(texture2D);
+    stripes->setShader(texture2D);
+    
+
+    // Make a shiny brass pedestal
     Object * pedestal1 = sceneManager->createObject();
     GeometryFactory::createCylinder(pedestal1, 1, 40, 1.0f);
     pedestal1->setTransformation(Matrix4::scale(1,2,1) * Matrix4::translate(-2,0,0));
@@ -112,27 +123,11 @@ void RenderWidget0::initGeometry()
     pedestal2->setMaterial(polishedSilver);
 
     
-    Object * cone = sceneManager->createObject();
-    GeometryFactory::createCone(cone);
-    cone->setMaterial(polishedSilver);
-    cone->setTransformation(Matrix4::translate(2,1.5,0));
 
     earth = sceneManager->createObject();
     GeometryFactory::createSphere(earth, 30, 30);
     earth->setTransformation(Matrix4::translate(2,3,0));
-    earth->setMaterial(emerald);
-    
-         
-    /* 
-    dragon = sceneManager->createObject();
-    GeometryFactory::createObject(dragon, "objects/dragon_smooth.obj");
-    dragon->setTransformation(Matrix4::translate(2,0,0));
-
-    dragon->setMaterial(emerald);
-    */
-    
-    
-    
+    earth->setMaterial(earthMat);
     
     Object * cube = sceneManager->createObject();
     GeometryFactory::createCube(cube);
@@ -140,73 +135,30 @@ void RenderWidget0::initGeometry()
     cube->setMaterial(emerald);
     
     
-        
+    Object * teapot = sceneManager->createObject();
+    GeometryFactory::createObject(teapot, "objects/teapot.obj");
+    teapot->setTransformation(Matrix4::translate(-2,2,0));
+    teapot->setMaterial(mattePearl);
+    
           
     // http://friday.westnet.com/~crywalt/dymaxion_2003/earthmap10k.reduced.jpg
     QImage *texImg = new QImage("earthmap.jpg", "jpg");
     assert(texImg != NULL);
     Texture *picture = new Texture(texImg);
-    defaultMat->setTexture(picture);
-    
+    earthMat->setTexture(picture);
+
       
+    // http://hi-and-low.typepad.com/my_weblog/images/2007/09/30/stripes_02.jpg
+    QImage *stripeImg = new QImage("stripes_02.jpg", "jpg");
+    assert(stripeImg != NULL);
+    Texture *stripeTex = new Texture(stripeImg);
+    stripes->setTexture(stripeTex);
+   
     bunny = sceneManager->createObject();
     GeometryFactory::createObject(bunny, "objects/bunny.obj");
     bunny->setTransformation(Matrix4::translate(0,4,0));
-    bunny->setMaterial(turquoise);
-    turquoise->setTexture(picture);
-    
-    
-    // Make a back wall behind all the objects
-    // Object * backWall = sceneManager->createObject();
-    //     GeometryFactory::createCube(backWall);
-    //     backWall->setTransformation(Matrix4::scale(20,20,1) * 
-    //         Matrix4::translate(0,0,-10));
-    //     backWall->setMaterial(defaultMat);    
-    
-    
-    /*
-    Object * bunny2 = sceneManager->createObject();
-    GeometryFactory::createObject(bunny2, "objects/bunny.obj");
-    bunny2->setTransformation(Matrix4::translate(2,2,0));
-    bunny2->setMaterial(brass);
-      */
-   
-    /*
-    buddha = sceneManager->createObject();
-	GeometryFactory::createObject(buddha, "objects/buddha_smooth.obj");
-    buddha->setTransformation(Matrix4::scale(2,2,2));
-*/
-	    
-/*
-	terrain = sceneManager->createObject();
-	GeometryFactory::createTerrainFromPGM(terrain, "objects/Heightmap.pgm");
-	*/
-/*
-    cube = sceneManager->createObject();
-    GeometryFactory::createCube(cube);*/
-    /*
-    cube->setTransformation(cube->getTransformation() * Matrix4::translate(2, 0, 0));
-  */  
-  
-    //dragon->setMaterial(brass);
-    
-    
-   /* QImage *texImg = new QImage("sph_sky.jpg", "jpg");
-    teapot = sceneManager->createObject();
-    GeometryFactory::createObject(teapot, "objects/teapot.obj");
-    teapot->setMaterial(brass);
-*/
-    //buddha->setMaterial(brass);
-    
-    //sphere = sceneManager->createObject();
-    
-    /*
-    GeometryFactory::createSphere(sphere);
-    sphere->setMaterial(shiny);*/
-    
-	/*houses = sceneManager->createObject();
-	GeometryFactory::createHouses(houses);*/
-    
+    bunny->setMaterial(stripes);
+ 
 }
 
 

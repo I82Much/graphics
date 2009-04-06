@@ -1138,6 +1138,7 @@ void GeometryFactory::createCylinder(int numRows,
 									int numFacesPerRow,
 									float radius,
 									float *&vertices,
+									float *&normals,
 									float *&colors,
 									int *&indices,
 									int &numVertices,
@@ -1148,6 +1149,7 @@ void GeometryFactory::createCylinder(int numRows,
 											radius,
 											radius,
 											vertices,
+											normals,
 											colors,
 											indices,
 											numVertices,
@@ -1166,6 +1168,7 @@ void GeometryFactory::createCone(int numRows,
 									int numFacesPerRow,
 									float bottomRadius,
 									float *&vertices,
+									float *&normals,
 									float *&colors,
 									int *&indices,
 									int &numVertices,
@@ -1176,6 +1179,7 @@ void GeometryFactory::createCone(int numRows,
 											0,
 											bottomRadius,
 											vertices,
+											normals,
 											colors,
 											indices,
 											numVertices,
@@ -1200,6 +1204,7 @@ void GeometryFactory::createTaperedCylinder(RE167::Object *o, int numRows,
 	int *indices = NULL;
 	float *vertices= NULL;
 	float *colors = NULL;
+    float *normals = NULL;
 
 	int numIndices = 0;
 	int numVertices = 0;
@@ -1209,13 +1214,14 @@ void GeometryFactory::createTaperedCylinder(RE167::Object *o, int numRows,
 									topRadius,
 									bottomRadius,
 									vertices,
+									normals,
 									colors,
 									indices,
 									numVertices,
 									numIndices);
 									
-    float * normals = NULL;
-    calculateNormals(vertices, indices, normals, numVertices, numIndices);								
+                                
+//    calculateNormals(vertices, indices, normals, numVertices, numIndices);								
     assert(normals);
     
 	GeometryFactory::fillInObject(o, vertices, normals, colors, indices, numVertices,
@@ -1239,6 +1245,7 @@ void GeometryFactory::createTaperedCylinder(RE167::Object *o, int numRows,
 * @param bottomRadius	the radius of the bottom of the cylinder
 * @param vertices	the array of vertices that will be allocated and
 *					filled in
+* @param normals    will be filled in with a normal for each vertex in object
 * @param colors		the array of colors that will be allocated and filled
 *					in
 * @param indices	the array of indices that will be allocated and
@@ -1254,6 +1261,7 @@ void GeometryFactory::createTaperedCylinder(int numRows,
 									float topRadius,
 									float bottomRadius,
 									float *&vertices,
+									float *&normals,
 									float *&colors,
 									int *&indices,
 									int &numVertices,
@@ -1303,6 +1311,7 @@ void GeometryFactory::createTaperedCylinder(int numRows,
 
 	vertices = new float[numVertices * 3];
 	colors = new float[numVertices * 3];
+    normals = new float[numVertices * 3];
 	indices = new int[numIndices];
 
 	assert(vertices != NULL);
@@ -1318,8 +1327,26 @@ void GeometryFactory::createTaperedCylinder(int numRows,
 	// How much does the radius change between top and bottom?
 	const float RADIUS_CHANGE = bottomRadius - topRadius;
 
+    // The normals are constant at given proportion around circular
+    // cross sections (the sloping side of the cylinder is straight).
+    // Calculate the normal at theta = 0 around the circle, e.g. when
+    // x = 1, z = 0
+    /*
+    Vector3 tangent(0,0,1);
+    Vector3 lowestPoint(bottomRadius, LOWEST_Y_VALUE, 0);
+    Vector3 highestPoint(topRadius, HIGHEST_Y_VALUE, 0);
+    Vector3 side = lowestPoint - highestPoint;
+    Vector3 normal(tangent.crossProduct(side).normalize());
+    Vector4 normal4v(normal.getX(), normal.getY(), normal.getZ(), 0);*/
+    Vector3 * tempNormals = new Vector3[NUM_ROWS_VERTICES * numFacesPerRow];
+    /*
+    std::cout << "Tangent: " << tangent << std::endl;
+    std::cout << "Lowest point: " << lowestPoint << std::endl;
+    std::cout << "Highest point: " << highestPoint << std::endl;
+    std::cout << "Normal: " << normal << std::endl;*/
+    
 	// Divide the conical shape into NUM_ROWS_VERTICES slices
-	// Draw from top to bottom
+	// Draw from top to bottom.  
 	for (int row = 0, count = 0; row < NUM_ROWS_VERTICES; row++) {
 		// Calculate the height of the row of vertices.
 		float proportionDown = static_cast<float>(row) / (NUM_ROWS_VERTICES - 1);
@@ -1341,16 +1368,29 @@ void GeometryFactory::createTaperedCylinder(int numRows,
 
 			// Assign the (x,y,z) triple
 			tempVertices[count] = Vector3(x,y,z);
+			
+            // TODO: This only works for a cylinder; otherwise the y value
+            // should change
+            tempNormals[count] = Vector3(x, 0, z);
+			
 			count++;
 		}
 	}
+    /*for (int i = 0; i < numFacesPerRow; i++) {
+        std::cout << "Normal[" << i << "]: " << tempNormals[i] << std::endl;
+    }*/
 
+
+    
 	// From the vertices we have calculated, we need to duplicate some since
 	// multiple faces have vertices in common and we want to be able to
 	// set each face's color individually
 
-	// The top of the cylindrical column
-	for (int i = 0; i < numFacesPerRow; i++) {
+
+	// The top of the cylindrical column.  The normals here are easy: just the
+	// up vector
+	const Vector3 UP_VECTOR(0,1,0);
+    for (int i = 0; i < numFacesPerRow; i++) {
 		// Need to make sure we go counterclockwise.
 		int tempVertex1Index = i;
 		int tempVertex2Index = (i + 1) % numFacesPerRow;
@@ -1365,20 +1405,16 @@ void GeometryFactory::createTaperedCylinder(int numRows,
 		int vertex2Index = vertex1Index + NUM_COMPONENTS_PER_VERTEX;
 		int vertex3Index = vertex2Index + NUM_COMPONENTS_PER_VERTEX;
 
-		// Assign vertex 1
-		vertices[vertex1Index    ] = vertex1.getX();
-		vertices[vertex1Index + 1] = vertex1.getY();
-		vertices[vertex1Index + 2] = vertex1.getZ();
 
-		// Assign vertex 2
-		vertices[vertex2Index    ] = vertex2.getX();
-		vertices[vertex2Index + 1] = vertex2.getY();
-		vertices[vertex2Index + 2] = vertex2.getZ();
-
-		// Assign vertex 3
-		vertices[vertex3Index    ] = center.getX();
-		vertices[vertex3Index + 1] = center.getY();
-		vertices[vertex3Index + 2] = center.getZ();
+        fillInVertex(vertices, vertex1Index, vertex1);
+        fillInVertex(vertices, vertex2Index, vertex2);
+        fillInVertex(vertices, vertex3Index, center);
+        
+        // The top of the cylinder has normals facing up
+        fillInVertex(normals, vertex1Index, UP_VECTOR);
+        fillInVertex(normals, vertex2Index, UP_VECTOR);
+        fillInVertex(normals, vertex3Index, UP_VECTOR);
+        
 	}
 
 	const int topOffset = NUM_TOP_VERTICES * NUM_COMPONENTS_PER_VERTEX;
@@ -1386,6 +1422,9 @@ void GeometryFactory::createTaperedCylinder(int numRows,
 	// The middle faces.  For each interation we connect
 	// a single band of faces (rectangular faces that have
 	// been triangulated)
+	//
+	// The normals here are slightly more difficult to calculate.  
+	
 	for (int row = 0; row < numRows; row++) {
 
 
@@ -1402,7 +1441,6 @@ void GeometryFactory::createTaperedCylinder(int numRows,
             // Vertex 3: Upper right corner
 			Vector3 f1_3 = tempVertices[(row * numFacesPerRow) + ((face + 1) % numFacesPerRow)];
 
-
             // Face 2: The lower left triangle of the rectangular face
             // Vertex 1: The upper left corner (same as f1_1)
             Vector3 f2_1 = f1_1;
@@ -1411,43 +1449,50 @@ void GeometryFactory::createTaperedCylinder(int numRows,
             // Vertex 3: Lower right corner: same as f1_2
             Vector3 f2_3 = f1_2;
 
+            Vector3 f1_1n = tempNormals[(row * numFacesPerRow) + face];
+            // Vertex 2: Lower right corner.
+            Vector3 f1_2n = tempNormals[((row + 1) * numFacesPerRow) + ((face + 1) % numFacesPerRow)];
+            // Vertex 3: Upper right corner
+			Vector3 f1_3n = tempNormals[(row * numFacesPerRow) + ((face + 1) % numFacesPerRow)];
+
+            // Face 2: The lower left triangle of the rectangular face
+            // Vertex 1: The upper left corner (same as f1_1)
+            Vector3 f2_1n = f1_1n;
+            // Vertex 2: Lower left corner
+            Vector3 f2_2n = tempNormals[((row + 1) * numFacesPerRow) + face];
+            // Vertex 3: Lower right corner: same as f1_2
+            Vector3 f2_3n = f1_2n;
+
+
+
 			// Now we need to actually fill in the vertices array with the
             // raw float values from our vertices.  We are filling in
             // 6 vertices, for a total of 18 floats added to the array per
             // iteration of this inner loop.  We also need to note that we
 			// have added a bunch of elements already due to the top of the cylinder
             int startIndex = (row * NUM_COMPONENTS_PER_ROW) + (NUM_COMPONENTS_PER_RECTANGULAR_FACE * face)
-							+ topOffset;
+                + topOffset;
 
-            vertices[startIndex]     = f1_1.getX();
-            vertices[startIndex + 1] = f1_1.getY();
-            vertices[startIndex + 2] = f1_1.getZ();
+            fillInVertex(vertices, startIndex,    f1_1);
+            fillInVertex(vertices, startIndex+3,  f1_2);
+            fillInVertex(vertices, startIndex+6,  f1_3);
+            fillInVertex(vertices, startIndex+9,  f2_1);
+            fillInVertex(vertices, startIndex+12, f2_2);
+            fillInVertex(vertices, startIndex+15, f2_3);
 
-            vertices[startIndex + 3] = f1_2.getX();
-            vertices[startIndex + 4] = f1_2.getY();
-            vertices[startIndex + 5] = f1_2.getZ();
-
-            vertices[startIndex + 6] = f1_3.getX();
-            vertices[startIndex + 7] = f1_3.getY();
-            vertices[startIndex + 8] = f1_3.getZ();
-
-            vertices[startIndex + 9]  = f2_1.getX();
-            vertices[startIndex + 10] = f2_1.getY();
-            vertices[startIndex + 11] = f2_1.getZ();
-
-            vertices[startIndex + 12] = f2_2.getX();
-            vertices[startIndex + 13] = f2_2.getY();
-            vertices[startIndex + 14] = f2_2.getZ();
-
-            vertices[startIndex + 15] = f2_3.getX();
-            vertices[startIndex + 16] = f2_3.getY();
-            vertices[startIndex + 17] = f2_3.getZ();
+            fillInVertex(normals, startIndex,    f1_1n);
+            fillInVertex(normals, startIndex+3,  f1_2n);
+            fillInVertex(normals, startIndex+6,  f1_3n);
+            fillInVertex(normals, startIndex+9,  f2_1n);
+            fillInVertex(normals, startIndex+12, f2_2n);
+            fillInVertex(normals, startIndex+15, f2_3n);
 		}
 	}
 
 
 	const int midOffset = topOffset + NUM_MID_VERTICES * NUM_COMPONENTS_PER_VERTEX;
 
+    const Vector3 DOWN_VECTOR(0,-1,0);
 
 	// The bottom of the cylindrical column
 	// Exactly the same as the top part, except that we need to give the
@@ -1469,20 +1514,13 @@ void GeometryFactory::createTaperedCylinder(int numRows,
 		int vertex2Index = vertex1Index + NUM_COMPONENTS_PER_VERTEX;
 		int vertex3Index = vertex2Index + NUM_COMPONENTS_PER_VERTEX;
 
-		// Assign vertex 1
-		vertices[vertex1Index    ] = vertex1.getX();
-		vertices[vertex1Index + 1] = vertex1.getY();
-		vertices[vertex1Index + 2] = vertex1.getZ();
-
-		// Assign vertex 2
-		vertices[vertex2Index    ] = vertex2.getX();
-		vertices[vertex2Index + 1] = vertex2.getY();
-		vertices[vertex2Index + 2] = vertex2.getZ();
-
-		// Assign vertex 3
-		vertices[vertex3Index    ] = center.getX();
-		vertices[vertex3Index + 1] = center.getY();
-		vertices[vertex3Index + 2] = center.getZ();
+        fillInVertex(vertices, vertex1Index, vertex1);
+        fillInVertex(vertices, vertex2Index, vertex2);
+        fillInVertex(vertices, vertex3Index, center);
+        
+        fillInVertex(normals, vertex1Index, DOWN_VECTOR);
+        fillInVertex(normals, vertex2Index, DOWN_VECTOR);
+        fillInVertex(normals, vertex3Index, DOWN_VECTOR);
 	}
 
 	// Fill in the color arrays
@@ -1497,6 +1535,7 @@ void GeometryFactory::createTaperedCylinder(int numRows,
 
 	// We no longer need the temparray
 	delete[] tempVertices;
+    delete[] tempNormals;
 }
 
 
