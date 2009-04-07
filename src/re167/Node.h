@@ -10,10 +10,13 @@ namespace RE167
 	class RE167_EXPORT Node
 	{
     public:
-        virtual void draw() = 0;
+        virtual void draw(const Matrix4 & t) = 0;
         
-        virtual void applyTransformation(const Matrix4 &t) = 0;
+        inline Matrix4 getLocalToWorldTransform() { return localToWorldTransform; }
+        inline void setLocalToWorldTransform(const Matrix4 &t) { localToWorldTransform = t; }
         
+    protected:
+        Matrix4 localToWorldTransform;
     };
 }
 

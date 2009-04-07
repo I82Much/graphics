@@ -10,13 +10,13 @@ TransformGroup::TransformGroup(const Matrix4 &t) : transform(t) {}
 /**
 *
 **/
-void TransformGroup::draw() 
+void TransformGroup::draw(const Matrix4 &t) 
 {
+    Matrix4 t_new = t * localToWorldTransform;
     // For each node in the list, apply the transform to them and continue
     for (std::list<Node *>::iterator i = children.begin(); i != children.end(); i++) 
     {
-    //    (*i)->applyTransformation(transform);
-        (*i)->draw();
+        (*i)->draw(t_new);
     }
 }
 

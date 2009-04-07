@@ -19,7 +19,7 @@ namespace RE167
         virtual ~TransformGroup();
         
         
-        virtual void draw();
+        virtual void draw(const Matrix4 &t);
         
         static void test();
         
@@ -28,7 +28,7 @@ namespace RE167
         inline Matrix4 getTransformation() const { return transform; }
 
 
-        virtual void applyTransformation(const Matrix4 &t) 
+        void applyTransformation(const Matrix4 &t) 
         {
             transform = t * transform;
         }
