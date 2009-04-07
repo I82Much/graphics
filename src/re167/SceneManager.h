@@ -8,6 +8,8 @@
 #include <list>
 #include "Light.h"
 #include "FirstPersonCamera.h"
+#include "Node.h"
+
 
 namespace RE167 {
 
@@ -53,6 +55,9 @@ namespace RE167 {
 		Camera *mCamera;
 		std::list<Object*> mObjectList;
         std::list<Light*> mLightList;
+        
+        Node * root;
+        
                 
         static const unsigned int MAX_NUM_LIGHTS = 8;
 	};

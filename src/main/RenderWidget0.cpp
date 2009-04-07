@@ -22,6 +22,10 @@
 #include "Materials.h"
 
 
+#include "Shape3D.h"
+#include "TransformGroup.h"
+
+
 /**
 * This class is an OpenGL window, with support for mouse dragging
 * and key presses.
@@ -61,7 +65,7 @@ void RenderWidget0::initSceneEvent()
     initCamera();
     initLights();
     initGeometry();
-    
+    initRobot();
 	
 	// Trigger timer event every 5ms.
 	timerId = startTimer(5);
@@ -110,14 +114,14 @@ void RenderWidget0::initGeometry()
     
 
     // Make a shiny brass pedestal
-    Object * pedestal1 = sceneManager->createObject();
+    RE167::Object * pedestal1 = sceneManager->createObject();
     GeometryFactory::createCylinder(pedestal1, 1, 40, 1.0f);
     pedestal1->setTransformation(Matrix4::scale(1,2,1) * Matrix4::translate(-2,0,0));
     pedestal1->setMaterial(brass);
 
 
     // Create the pedestal for the globe
-    Object * pedestal2 = sceneManager->createObject();
+    RE167::Object * pedestal2 = sceneManager->createObject();
     GeometryFactory::createCylinder(pedestal2, 1, 40, 1.0f);
     pedestal2->setTransformation(Matrix4::scale(1,2,1) * Matrix4::translate(2,0,0));
     pedestal2->setMaterial(polishedSilver);
@@ -128,13 +132,13 @@ void RenderWidget0::initGeometry()
     earth->setTransformation(Matrix4::translate(2,3,0));
     earth->setMaterial(earthMat);
     
-    Object * cube = sceneManager->createObject();
+    RE167::Object * cube = sceneManager->createObject();
     GeometryFactory::createCube(cube);
     cube->setTransformation(Matrix4::translate(0,2,0));
     cube->setMaterial(pewter);
     
     
-    Object * teapot = sceneManager->createObject();
+    RE167::Object * teapot = sceneManager->createObject();
     GeometryFactory::createObject(teapot, "objects/teapot.obj");
     teapot->setTransformation(Matrix4::translate(-2,2,0));
     teapot->setMaterial(mattePearl);
@@ -158,6 +162,16 @@ void RenderWidget0::initGeometry()
     bunny->setTransformation(Matrix4::translate(0,4,0));
     bunny->setMaterial(stripes);
  
+}
+
+void RenderWidget0::initRobot()
+{
+    Node * torso = new Shape3D(NULL);
+    Node * leftLeg = new TransformGroup();
+    Node * rightLeg = new TransformGroup();
+    Node * leftArm = new TransformGroup();
+    Node * rightArm = new TransformGroup();
+    Node * head = new TransformGroup();
 }
 
 

@@ -5,17 +5,12 @@
 #include "Node.h"
 #include <list>
 
-class Matrix4;
 
 namespace RE167
 {
 	class RE167_EXPORT Group : public Node
 	{
     public:
-        /*
-        virtual void draw();
-        virtual void applyTransformation(const Matrix4 &t);
-        */
         
         bool addChild(Node * n);
         bool removeChild(Node * n);

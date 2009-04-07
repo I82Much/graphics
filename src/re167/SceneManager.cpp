@@ -1,6 +1,6 @@
 #include "SceneManager.h"
 #include "RenderContext.h"
-
+#include "TransformGroup.h"
 
 using namespace RE167;
 
@@ -8,7 +8,7 @@ using namespace RE167;
 const unsigned int SceneManager::MAX_NUM_LIGHTS;
 
 SceneManager::SceneManager()
-	: mCamera(0)
+	: mCamera(0), root(new TransformGroup())
 {
 }
 
@@ -90,6 +90,9 @@ void SceneManager::renderScene()
 
 		renderContext->setProjectionMatrix(mCamera->getProjectionMatrix());
 		Matrix4 v = mCamera->getViewMatrix();
+
+        // Traverse the scene graph
+        //        root->draw();
 
 		// Iterate through list of objects
 		std::list<Object *>::const_iterator iter;

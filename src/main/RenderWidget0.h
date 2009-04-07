@@ -77,6 +77,7 @@ private:
     void initLights();
     void initMaterials();
     void initGeometry();
+    void initRobot();
 };
 
 #endif // BASICAPP_H

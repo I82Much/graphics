@@ -5,6 +5,7 @@
 #include "Object.h"
 #include "RE167_global.h"
 
+
 namespace RE167 {
 
 class RE167_EXPORT GeometryFactory 

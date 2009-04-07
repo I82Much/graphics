@@ -8,6 +8,8 @@
 
 namespace RE167 {
 
+    class Vector3;
+
 	/** This class provides an abstraction of scene objects.
 	@remarks
 		The SceneManager creates and deletes objects. Vertex data is stored
@@ -16,6 +18,12 @@ namespace RE167 {
 	class RE167_EXPORT Object
 	{
 	public:
+	    
+	    struct BoundingSphere {
+            Vector3 center;
+            float radius;
+        };
+	    
 		inline void resetTransformation() { mTransformation = Matrix4::IDENTITY; }
 		inline void setTransformation(const Matrix4 &t) { mTransformation = t; }
 		inline Matrix4 getTransformation() const { return mTransformation; }
@@ -29,6 +37,8 @@ namespace RE167 {
         inline void setMaterial(Material * m) { material = m; }
         inline Material * getMaterial() { return material; }
         
+
+        
 	protected:
 		Object() : mTransformation(Matrix4::IDENTITY), material(NULL) {} 
 
@@ -39,6 +49,9 @@ namespace RE167 {
 	private:
 	    Material * material;
         
+        // Hold bounding sphere information
+        Vector3 sphereCenter;
+        float sphereRadius;
 	};
 
 }
