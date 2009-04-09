@@ -461,26 +461,30 @@ void RenderWidget0::toggleWireframe()
 
 }
 
+/**
+* Sets up a scene with >= 100 instances of a complicated object for testing
+* the Object-Level Culling
+**/
 void RenderWidget0::createTestScene()
 {
     
     const int NUM_OBJECTS = 100;
     const int NUM_ROWS = (int) sqrt(static_cast<float>(NUM_OBJECTS));
     const int NUM_COLS = NUM_ROWS;
-    
-    
-    // Each bunny will be spaced .5 apart
-    const float SPACING = 1;
-    
-    
-    
+
+    const float SPACING = 2;
+        
     RE167::Object * bunny = sceneManager->createObject();
     GeometryFactory::createObject(bunny, "objects/bunny.obj");
+    
+    Shape3D * bunnyShape = new Shape3D(bunny);
     
     geometryGroup = new TransformGroup();
     for (int i = 0; i < NUM_ROWS; i++) {
         for (int j = 0; j < NUM_COLS; j++) {
-            geometryGroup->addChild(new Shape3D(bunny, Matrix4::translate(i * SPACING, j * SPACING, 0)));
+            TransformGroup * curBunny = new TransformGroup(Matrix4::translate(i * SPACING, j * SPACING, 0));
+            curBunny->addChild(bunnyShape);            
+            geometryGroup->addChild(curBunny);
         }
     }
     

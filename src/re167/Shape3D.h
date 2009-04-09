@@ -13,7 +13,7 @@ namespace RE167
 	{
     public:
         
-        Shape3D(Object * s, const Matrix4 &t = Matrix4::IDENTITY) : shape(s), transformation(t) {}
+        Shape3D(Object * s) : shape(s) {}
         // Nothing allocated.
         ~Shape3D() {}
         
@@ -26,7 +26,7 @@ namespace RE167
         
     protected:
         Object * shape;
-        Matrix4 transformation;
+
     };
 }
 
