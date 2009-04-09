@@ -65,6 +65,8 @@ private:
     Object *teapot;
     Object *buddha;
     Object *earth;
+    
+    TransformGroup * leftLeg;
 	
 	// Hold the last mouse position
 	int lastX;

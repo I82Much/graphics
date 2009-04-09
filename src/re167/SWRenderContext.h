@@ -10,6 +10,8 @@
 
 namespace RE167 {
 
+    class Material;
+
 	/** This class implements the abstract base class RenderContext and
 		it is the main interface to the low-level graphics API.
 	@remarks
@@ -32,6 +34,7 @@ namespace RE167 {
 			OpenSW vertex arrays. See the OpenSW 2.0 book for details.
 		*/
 		void render(Object *object);
+        void setMaterial(Material * m);
 
 		/** Set the widget that will receive rendering output.
 		*/

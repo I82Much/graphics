@@ -31,7 +31,11 @@ SceneManager::~SceneManager()
         Light *l = mLightList.front();
         mLightList.pop_front();
         delete l;
-	} 
+	}
+	if (root) 
+	{
+        delete root; 
+    }
 }
 
 Object* SceneManager::createObject()
@@ -92,8 +96,10 @@ void SceneManager::renderScene()
 		Matrix4 v = mCamera->getViewMatrix();
 
         // Traverse the scene graph
-        //        root->draw();
-
+        root->draw(v, renderContext);
+        
+        
+        /*
 		// Iterate through list of objects
 		std::list<Object *>::const_iterator iter;
 		for (iter=mObjectList.begin(); iter!=mObjectList.end(); iter++)
@@ -104,7 +110,7 @@ void SceneManager::renderScene()
 			renderContext->setModelViewMatrix(v*m);
 			renderContext->render(o);
 		}
-
+        */
 		renderContext->endFrame();
 	}
 }

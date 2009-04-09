@@ -26,6 +26,7 @@ namespace RE167 {
 		virtual void setModelViewMatrix(const Matrix4 &m) = 0;
 		virtual void setProjectionMatrix(const Matrix4 &m) = 0;
         virtual void setLights(const std::list<Light*> &lightList) = 0;
+        virtual void setMaterial(const Material *m) = 0;
 		virtual void render(Object *object) = 0;
 	};
 

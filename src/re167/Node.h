@@ -3,20 +3,14 @@
 
 #include "RE167_global.h"
 #include "Matrix4.h"
-
+#include "RenderContext.h"
 
 namespace RE167
 {
 	class RE167_EXPORT Node
 	{
     public:
-        virtual void draw(const Matrix4 & t) = 0;
-        
-        inline Matrix4 getLocalToWorldTransform() { return localToWorldTransform; }
-        inline void setLocalToWorldTransform(const Matrix4 &t) { localToWorldTransform = t; }
-        
-    protected:
-        Matrix4 localToWorldTransform;
+        virtual void draw(const Matrix4 & t, RenderContext * context) = 0;
     };
 }
 

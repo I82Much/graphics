@@ -33,6 +33,10 @@ namespace RE167 {
 			// but with same magnitude
 			friend Vector4 operator-(const Vector4 &other);
 
+            // Less than operator (for weak ordering/sorting)
+            const bool operator<(const Vector4 &other) const;
+            
+
 			// Addition operator for vectors
 			Vector4 & operator+=(const Vector4 &rhs);
 			const Vector4 operator+(const Vector4 &rhs) const;

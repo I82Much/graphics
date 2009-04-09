@@ -5,9 +5,12 @@
 #include "Matrix4.h"
 #include "GeometryFactory.h"
 #include "Group.h"
+#include "Plane.h"
 
 int main(int argc, char *argv[])
 {
+    Plane::test();
+    
     
     Group::test();
     

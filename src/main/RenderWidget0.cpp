@@ -34,6 +34,8 @@
 */
 
 
+using namespace RE167;
+
 RenderWidget0::RenderWidget0()
 {
 	RenderContext *rs = new GLRenderContext();
@@ -161,17 +163,84 @@ void RenderWidget0::initGeometry()
     GeometryFactory::createObject(bunny, "objects/bunny.obj");
     bunny->setTransformation(Matrix4::translate(0,4,0));
     bunny->setMaterial(stripes);
+    
+    TransformGroup * world = sceneManager->getRoot();
+    world->addChild(new Shape3D(bunny));
  
 }
 
+
+// TODO: All these new calls will be memory leaks if we don't free them at the end somewhere
 void RenderWidget0::initRobot()
 {
-    Node * torso = new Shape3D(NULL);
-    Node * leftLeg = new TransformGroup();
-    Node * rightLeg = new TransformGroup();
-    Node * leftArm = new TransformGroup();
-    Node * rightArm = new TransformGroup();
-    Node * head = new TransformGroup();
+    
+    // Create the geometry
+    RE167::Object * cube = sceneManager->createObject();
+    GeometryFactory::createCube(cube);
+    
+    // Cylinders used for arms and legs
+    RE167::Object * cylinder = sceneManager->createObject();
+    GeometryFactory::createCylinder(cylinder);
+    // Make it so that the origin of the cylinder is at the top of the cylinder
+    // rather than in the middle
+    cylinder->setTransformation(Matrix4::translate(0,-1,0));
+    
+    // Sphere 
+    RE167::Object * sphere = sceneManager->createObject();
+    GeometryFactory::createSphere(sphere);
+    
+    // Represents the center of the torso
+    TransformGroup * torsoTransform = new TransformGroup();
+    // Right shoulder is at (1,1,0) relative to center of torso
+    TransformGroup * rightShoulderTransform = new TransformGroup(Matrix4::translate(1,1,0));
+    // Left shoulder is at (-1,1,0)
+    TransformGroup * leftShoulderTransform = new TransformGroup(Matrix4::translate(-1,1,0));
+    
+    // Center of head is (0,2,0)
+    TransformGroup * centerOfHeadTransform = new TransformGroup(Matrix4::translate(0,2,0));
+    
+
+    centerOfHeadTransform->addChild(new Shape3D(sphere));
+    
+    
+    
+    rightShoulderTransform->addChild(new Shape3D(cylinder));
+    
+    leftShoulderTransform->addChild(new Shape3D(cylinder));
+    
+    torsoTransform->addChild(new Shape3D(cube));
+    
+    
+    torsoTransform->addChild(centerOfHeadTransform);
+    torsoTransform->addChild(rightShoulderTransform);
+    torsoTransform->addChild(leftShoulderTransform);
+    
+    
+    // Share the same cylinder object for all the legs
+    
+
+    leftLeg = new TransformGroup(Matrix4::translate(-1,-1,0) * Matrix4::scale(.5,1,.5));
+    TransformGroup * rightLeg = new TransformGroup(Matrix4::translate(1,-1,0) * Matrix4::scale(.5,1,.5));
+    
+    leftLeg->addChild(new Shape3D(cylinder));
+    rightLeg->addChild(new Shape3D(cylinder));
+    
+    TransformGroup * leftShin = new TransformGroup(Matrix4::translate(0,-2,0) * leftLeg->getTransformation());
+    leftShin->addChild(new Shape3D(cylinder));
+
+    leftLeg->addChild(leftShin);
+    
+    
+    
+    torsoTransform->addChild(leftLeg);
+    torsoTransform->addChild(rightLeg);
+    
+    TransformGroup * leftArm = new TransformGroup();
+    TransformGroup * rightArm = new TransformGroup();
+
+    TransformGroup * root = sceneManager->getRoot();
+    root->addChild(torsoTransform);
+
 }
 
 
@@ -220,7 +289,17 @@ void RenderWidget0::resizeRenderWidgetEvent(const QSize &s)
 
 void RenderWidget0::timerEvent(QTimerEvent *t)
 {
-    earth->setTransformation(earth->getTransformation() * Matrix4::rotateY(0.005));
+    float DEGREES_PER_TICK = 0.005;
+    float degree = counter * DEGREES_PER_TICK;
+    
+    float MAX_EXTENSION = 45.0f;
+    float MIN_EXTENSION = -25.0f;
+    
+    
+    
+    
+    leftLeg->setTransformation(Matrix4::rotateX(.005 * sin(counter)) * leftLeg->getTransformation());
+    //earth->setTransformation(earth->getTransformation() * Matrix4::rotateY(0.005));
 	updateScene();
 	counter++;
 }

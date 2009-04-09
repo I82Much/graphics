@@ -20,13 +20,12 @@ namespace RE167
         inline void setObject(Object * s) { shape = s; }
         inline Object * getObject() { return shape; }
         
-        virtual void draw(const Matrix4 &t);
+        virtual void draw(const Matrix4 &t, RenderContext * context);
         
         static void test();
         
     protected:
         Object * shape;
-        Matrix4 transformation;
     };
 }
 

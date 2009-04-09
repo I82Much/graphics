@@ -19,20 +19,14 @@ namespace RE167
         virtual ~TransformGroup();
         
         
-        virtual void draw(const Matrix4 &t);
+        virtual void draw(const Matrix4 &t, RenderContext *context);
         
         static void test();
         
         inline void resetTransformation() { transform = Matrix4::IDENTITY; }
         inline void setTransformation(const Matrix4 &t) { transform = t; }
         inline Matrix4 getTransformation() const { return transform; }
-
-
-        void applyTransformation(const Matrix4 &t) 
-        {
-            transform = t * transform;
-        }
-        
+ 
     protected:
         Matrix4 transform;
         

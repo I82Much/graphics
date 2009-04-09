@@ -13,6 +13,8 @@
 
 namespace RE167 {
 
+    class TransformGroup;
+
 	/** This class provides an abstraction of a scene. It manages a camera,
 		objects in the scene, etc. It is the main interface for applications
 		to the rendering engine.
@@ -23,9 +25,13 @@ namespace RE167 {
 		SceneManager();
 		~SceneManager();
 
+        TransformGroup * getRoot() { return root; }
+        
 		/** This method creates a default camera.
 		*/
 		Camera *createCamera();
+
+
 
 
 		/** This method creates an object and adds it to the list of object
@@ -51,12 +57,13 @@ namespace RE167 {
 		*/
 		void renderScene();
 
+
 	private:
 		Camera *mCamera;
 		std::list<Object*> mObjectList;
         std::list<Light*> mLightList;
         
-        Node * root;
+        TransformGroup * root;
         
                 
         static const unsigned int MAX_NUM_LIGHTS = 8;

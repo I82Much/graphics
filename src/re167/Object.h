@@ -47,7 +47,7 @@ namespace RE167 {
         void calculateBoundingSphere();
         
         // Hold bounding sphere information
-        Vector3 sphereCenter;
+        Vector4 sphereCenter;
         float sphereRadius;
 	};
 

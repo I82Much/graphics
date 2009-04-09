@@ -14,12 +14,12 @@ namespace RE167
         
         bool addChild(Node * n);
         bool removeChild(Node * n);
-      
+        
+        
         static void test();
         
     protected:
         std::list<Node *> children;
-        
     };
 }
 

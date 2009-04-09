@@ -1276,7 +1276,7 @@ void GeometryFactory::createTaperedCylinder(int numRows,
 	assert(bottomRadius >= 0);
 	assert(topRadius >= 0);
 
-	const float HEIGHT = 1.0f;
+	const float HEIGHT = 2.0f;
 	// Since we are centering the object at (0,0,0)
 	const float HIGHEST_Y_VALUE = HEIGHT/2;
 	const float LOWEST_Y_VALUE = -HIGHEST_Y_VALUE;

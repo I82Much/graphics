@@ -117,6 +117,25 @@ const bool Vector4::operator!=(const Vector4& other) const {
 }
 
 
+const bool Vector4::operator<(const Vector4& other) const {
+
+    // Order by x, then by y, then by z, then w
+    if (x != other.x) {
+      return (x < other.x);
+    }
+    else if (y != other.y) {
+      return (y < other.y);
+    }
+    else if (z != other.z) {
+      return (z < other.z);
+    }
+    else {
+      return w < other.w;
+    }
+}
+
+
+
 /**
 * @return the dot product between two vectors.  The dot product between
 * vectors a and b is defined as ||a|| ||b|| cos theta, where ||a|| is
