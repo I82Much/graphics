@@ -67,6 +67,8 @@ private:
     Object *earth;
     
     TransformGroup * leftLeg;
+    TransformGroup * robotGroup;
+    TransformGroup * geometryGroup;
 	
 	// Hold the last mouse position
 	int lastX;
@@ -80,6 +82,10 @@ private:
     void initMaterials();
     void initGeometry();
     void initRobot();
+    void createTestScene();
+    
+    
+    void switchScene();
 };
 
 #endif // BASICAPP_H

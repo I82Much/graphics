@@ -26,6 +26,8 @@ namespace RE167 {
 		~SceneManager();
 
         TransformGroup * getRoot() { return root; }
+        void setRoot(TransformGroup * root) { this->root = root; }
+        
         
 		/** This method creates a default camera.
 		*/

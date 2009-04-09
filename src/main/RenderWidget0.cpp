@@ -66,8 +66,9 @@ void RenderWidget0::initSceneEvent()
 
     initCamera();
     initLights();
-    initGeometry();
+//    initGeometry();
     initRobot();
+    createTestScene();
 	
 	// Trigger timer event every 5ms.
 	timerId = startTimer(5);
@@ -164,8 +165,12 @@ void RenderWidget0::initGeometry()
     bunny->setTransformation(Matrix4::translate(0,4,0));
     bunny->setMaterial(stripes);
     
-    TransformGroup * world = sceneManager->getRoot();
-    world->addChild(new Shape3D(bunny));
+    geometryGroup = new TransformGroup();
+    geometryGroup->addChild(new Shape3D(bunny));
+    //world->addChild(new Shape3D(bunny));
+    
+    
+    
  
 }
 
@@ -240,6 +245,8 @@ void RenderWidget0::initRobot()
 
     TransformGroup * root = sceneManager->getRoot();
     root->addChild(torsoTransform);
+    
+    robotGroup = torsoTransform;
 
 }
 
@@ -454,6 +461,50 @@ void RenderWidget0::toggleWireframe()
 
 }
 
+void RenderWidget0::createTestScene()
+{
+    
+    const int NUM_OBJECTS = 100;
+    const int NUM_ROWS = (int) sqrt(static_cast<float>(NUM_OBJECTS));
+    const int NUM_COLS = NUM_ROWS;
+    
+    
+    // Each bunny will be spaced .5 apart
+    const float SPACING = 1;
+    
+    
+    
+    RE167::Object * bunny = sceneManager->createObject();
+    GeometryFactory::createObject(bunny, "objects/bunny.obj");
+    
+    geometryGroup = new TransformGroup();
+    for (int i = 0; i < NUM_ROWS; i++) {
+        for (int j = 0; j < NUM_COLS; j++) {
+            geometryGroup->addChild(new Shape3D(bunny, Matrix4::translate(i * SPACING, j * SPACING, 0)));
+        }
+    }
+    
+
+    
+    
+    
+}
+
+void RenderWidget0::switchScene()
+{
+    static bool robot = true;
+    
+    robot = !robot;
+    
+    if (robot) {
+        sceneManager->setRoot(robotGroup);
+    }
+    else {
+        sceneManager->setRoot(geometryGroup);
+    }
+    
+}
+
 void RenderWidget0::keyPressEvent ( QKeyEvent * k )
 {
 	switch ( k->key() )  {
@@ -476,6 +527,11 @@ void RenderWidget0::keyPressEvent ( QKeyEvent * k )
     // Move camera right
     case Qt::Key_D:
         camera->setViewMatrix(Matrix4::translate(-1,0,0) * camera->getViewMatrix());
+        break;
+    
+    // Switch scenes    
+    case Qt::Key_T:
+        switchScene();
         break;
     
     // Move camera up
