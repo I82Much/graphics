@@ -5,10 +5,11 @@
 #include "VertexData.h"
 #include "Matrix4.h"
 #include "Material.h"
+#include "Vector4.h"
 
 namespace RE167 {
 
-    class Vector3;
+
 
 	/** This class provides an abstraction of scene objects.
 	@remarks

@@ -26,7 +26,7 @@
 
 #include "scenegraph/Shape3D.h"
 #include "scenegraph/TransformGroup.h"
-
+#include "Texture.h"
 
 /**
 * This class is an OpenGL window, with support for mouse dragging

@@ -2,6 +2,8 @@
 #include "Light.h"
 #include "VertexDeclaration.h"
 #include "Material.h"
+#include "Texture.h"
+#include "Shader.h"
 
 using namespace RE167;
 
