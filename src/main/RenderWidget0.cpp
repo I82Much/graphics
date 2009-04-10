@@ -4,7 +4,7 @@
 #include "Object.h"
 
 #include "SWWidget.h"
-#include "SWRenderContext.h"
+//#include "SWRenderContext.h"
 #include "GLRenderContext.h"
 
 #include "GLWidget.h"
@@ -21,6 +21,7 @@
 #include "Shader.h"
 
 #include "Materials.h"
+#include "SceneManager.h"
 
 
 #include "scenegraph/Shape3D.h"

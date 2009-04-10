@@ -1,4 +1,5 @@
 #include "BasicMath.h"
+#include <math.h>
 #include <assert.h>
 #include <cstdlib> 
 

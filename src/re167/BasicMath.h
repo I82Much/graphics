@@ -2,7 +2,7 @@
 #define __BasicMath_h__
 
 #include "RE167_global.h"
-#include <math.h>
+
 
 namespace RE167
 {

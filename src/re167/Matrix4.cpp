@@ -6,6 +6,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <cmath>
 
 /**
 * This class represents a 4x4 matrix, which are used to implement

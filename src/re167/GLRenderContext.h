@@ -3,14 +3,16 @@
 
 #include "glew.h"
 #include <QtOpenGL>
-
 #include "RE167_global.h"
 #include "RenderContext.h"
-#include "VertexDeclaration.h"
-#include "Light.h"
-#include "Material.h"
 
+
+
+// TODO: Fix the wireframe thing.  Would be cool to add :)
 namespace RE167 {
+    // Forward declarations
+    class Light;
+    class Material;
 
 	/** This class implements the abstract base class RenderContext and
 		it is the main interface to the low-level graphics OpenGL API.

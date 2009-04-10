@@ -1,5 +1,7 @@
 #include "GLRenderContext.h"
-
+#include "Light.h"
+#include "VertexDeclaration.h"
+#include "Material.h"
 
 using namespace RE167;
 

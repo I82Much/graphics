@@ -3,7 +3,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include "BasicMath.h"
-
+#include <cmath>
 
 using namespace RE167;
 
