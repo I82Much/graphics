@@ -39,12 +39,14 @@ SOURCES += src/re167/BasicMath.cpp \
  src/re167/Material.cpp \
  src/re167/Shader.cpp \
  src/re167/FirstPersonCamera.cpp \
- src/re167/Node.cpp \
- src/re167/Group.cpp \
- src/re167/TransformGroup.cpp \
- src/re167/Leaf.cpp \
- src/re167/Shape3D.cpp \
- src/re167/Plane.cpp
+ src/re167/scenegraph/Node.cpp \
+ src/re167/scenegraph/Group.cpp \
+ src/re167/scenegraph/TransformGroup.cpp \
+ src/re167/scenegraph/Leaf.cpp \
+ src/re167/scenegraph/Shape3D.cpp \
+ src/re167/Plane.cpp \
+ src/re167/scenegraph/LightNode.cpp \
+ src/re167/scenegraph/CameraNode.cpp
 
 
  
@@ -88,12 +90,14 @@ HEADERS += src/re167/BasicMath.h \
  src/re167/Materials.h \
  src/re167/Shader.h \
  src/re167/FirstPersonCamera.h \
- src/re167/Node.h \
- src/re167/Group.h \
- src/re167/TransformGroup.h \
- src/re167/Leaf.h \
- src/re167/Shape3D.h \
- src/re167/Plane.h
+ src/re167/scenegraph/Node.h \
+ src/re167/scenegraph/Group.h \
+ src/re167/scenegraph/TransformGroup.h \
+ src/re167/scenegraph/Leaf.h \
+ src/re167/scenegraph/Shape3D.h \
+ src/re167/Plane.h \
+ src/re167/scenegraph/LightNode.h \
+ src/re167/scenegraph/CameraNode.h
 
 
 	

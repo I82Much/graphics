@@ -8,7 +8,7 @@
 #include <list>
 #include "Light.h"
 #include "FirstPersonCamera.h"
-#include "Node.h"
+#include "scenegraph/Node.h"
 
 
 namespace RE167 {

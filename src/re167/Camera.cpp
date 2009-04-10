@@ -84,3 +84,30 @@ void Camera::resetViewMatrix() {
 }
 
 
+
+/**
+* Calculates the 6 planes defining our view volume.  These are the equations
+* of the planes before the perspective transform (we have a frustum at this point, 
+* a parallelpiped)
+**/
+/*
+void Camera::calculatePlanes(const float near, const float far, 
+    const float aspect, const float vertFOV) 
+{
+    // These are the 8 vertices of the frustum.  Based on p. 263 of
+    // Fundamentals of Computer Graphics.
+    // These are AFTER converting to a parallelpiped
+  
+    Vector4 v1(l,b,n,1);
+    Vector4 v2(r,b,n,1);
+    Vector4 v3(l,t,n,1);
+    Vector4 v4(r,t,n,1);
+    Vector4 v5(l,b,f,1);
+    Vector4 v6(r,b,f,1);
+    Vector4 v7(l,t,f,1);
+    Vector4 v8(r,t,f,1);
+  
+    
+    
+}*/
+

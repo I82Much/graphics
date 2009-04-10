@@ -18,13 +18,6 @@ namespace RE167 {
 
 	public:
 	    
-	    /*
-	    * A plane is defined by a point p on the plane and a unit normal
-	    */
-	    struct Plane {
-            Vector3 p;
-            Vector3 normal;
-        };
 	    	    
 		Frustum() :	p(2, 0, 0, 0, 0, 2, 0, 0, 0, 0, -1.02, -2.02, 0, 0, -1.f, 0.f) {}
 						
@@ -40,14 +33,14 @@ namespace RE167 {
 		const float getAspectRatio() 	const { return aspectRatio; }
 		const float getVerticalFOV() 	const { return vertFOV; 	}
 		*/
-		
+		/*
         const Plane getNearPlane();
         const Plane getFarPlane();
         const Plane getLeftPlane();
         const Plane getRightPlane();
         const Plane getBottomPlane();
         const Plane getTopPlane();
-        
+        */
 
 		
         
@@ -66,7 +59,7 @@ namespace RE167 {
         float far;
         float aspectRatio;
         float vertFOV;
-
+        /*
         const Plane nearPlane;
         const Plane farPlane;
         const Plane leftPlane;
@@ -74,6 +67,9 @@ namespace RE167 {
         const Plane bottomPlane;
         const Plane topPlane;
         
+        void calculatePlanes(const float near, const float far, 
+            const float aspectRatio, const float vertFOV);
+        */
 	};
 
 }

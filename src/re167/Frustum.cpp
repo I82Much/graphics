@@ -54,3 +54,4 @@ void Frustum::setFrustum(const float near, const float far,
 						0,		0,		p22,p23,
 						0,		0,		p32,	0);
 }
+

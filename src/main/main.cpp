@@ -4,7 +4,7 @@
 #include "Vector4.h"
 #include "Matrix4.h"
 #include "GeometryFactory.h"
-#include "Group.h"
+#include "scenegraph/Group.h"
 #include "Plane.h"
 
 int main(int argc, char *argv[])

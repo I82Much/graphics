@@ -32,7 +32,12 @@ namespace RE167 {
         inline void setMaterial(Material * m) { material = m; }
         inline Material * getMaterial() { return material; }
         
-
+        inline void setSphereCenter(const Vector4 &center) { sphereCenter = center; }
+        inline void setSphereRadius(const float radius) { sphereRadius = radius; }
+        
+        inline Vector4 getSphereCenter() { return sphereCenter; }
+        inline float getSphereRadius() { return sphereRadius; }
+        
         
 	protected:
 		Object() : mTransformation(Matrix4::IDENTITY), material(NULL) {} 

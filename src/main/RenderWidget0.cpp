@@ -22,8 +22,8 @@
 #include "Materials.h"
 
 
-#include "Shape3D.h"
-#include "TransformGroup.h"
+#include "scenegraph/Shape3D.h"
+#include "scenegraph/TransformGroup.h"
 
 
 /**
@@ -467,6 +467,16 @@ void RenderWidget0::toggleWireframe()
 **/
 void RenderWidget0::createTestScene()
 {
+    Material * brass = new Material(Brass);                                 
+    Material * pewter = new Material(Pewter);
+    Material * polishedSilver = new Material(Polished_Silver);
+    Material * blackRubber = new Material(Black_Rubber);
+    Material * ruby = new Material(Ruby);
+    Material * turquoise = new Material(Turquoise);   
+    Material * mattePearl = new Material(Pearl);   
+    Material * defaultMat = new Material();
+    Material * emerald = new Material(Emerald);
+    
     
     const int NUM_OBJECTS = 100;
     const int NUM_ROWS = (int) sqrt(static_cast<float>(NUM_OBJECTS));
@@ -475,23 +485,34 @@ void RenderWidget0::createTestScene()
     const float SPACING = 2;
         
     RE167::Object * bunny = sceneManager->createObject();
-    GeometryFactory::createObject(bunny, "objects/bunny.obj");
+    GeometryFactory::createObject(bunny, "objects/teapot.obj");
     
-    Shape3D * bunnyShape = new Shape3D(bunny);
+    Shape3D * metalBunny = new Shape3D(bunny, polishedSilver);
+    Shape3D * emeraldBunny = new Shape3D(bunny, emerald);
+    Shape3D * rubyBunny = new Shape3D(bunny, ruby);
+    
+    Shape3D * bunnies[] = {
+        new Shape3D(bunny, brass),
+        new Shape3D(bunny, pewter),
+        new Shape3D(bunny, polishedSilver),
+        new Shape3D(bunny, blackRubber),
+        new Shape3D(bunny, ruby),
+        new Shape3D(bunny, turquoise),
+        new Shape3D(bunny, mattePearl),
+        new Shape3D(bunny, defaultMat),
+        new Shape3D(bunny, emerald)
+    };
+    
     
     geometryGroup = new TransformGroup();
-    for (int i = 0; i < NUM_ROWS; i++) {
+    for (int i = 0, counter = 0; i < NUM_ROWS; i++) {
         for (int j = 0; j < NUM_COLS; j++) {
             TransformGroup * curBunny = new TransformGroup(Matrix4::translate(i * SPACING, j * SPACING, 0));
-            curBunny->addChild(bunnyShape);            
+            curBunny->addChild(bunnies[counter % 9]);
             geometryGroup->addChild(curBunny);
+            counter++;
         }
     }
-    
-
-    
-    
-    
 }
 
 void RenderWidget0::switchScene()

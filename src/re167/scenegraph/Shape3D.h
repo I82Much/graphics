@@ -13,12 +13,15 @@ namespace RE167
 	{
     public:
         
-        Shape3D(Object * s) : shape(s) {}
+        Shape3D(Object * s, Material * m = NULL) : shape(s), material(m) {}
         // Nothing allocated.
         ~Shape3D() {}
         
         inline void setObject(Object * s) { shape = s; }
         inline Object * getObject() { return shape; }
+        
+        inline void setMaterial(Material * m) { material = m; }
+        inline Material * getMaterial() { return material; }
         
         virtual void draw(const Matrix4 &t, RenderContext * context);
         
@@ -26,6 +29,7 @@ namespace RE167
         
     protected:
         Object * shape;
+        Material * material;
 
     };
 }
