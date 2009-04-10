@@ -16,7 +16,7 @@ MainWindow::MainWindow()
     // Ensure that the window never gets bigger than this amount
     setMaximumSize(MAX_WIDTH, MAX_HEIGHT);
 
-	renderWidget = new RenderWidget0();
+	renderWidget = new RE167::RenderWidget0();
 	setCentralWidget(renderWidget);
 }
 

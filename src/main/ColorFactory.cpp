@@ -10,6 +10,7 @@
 * @date   February 21, 2009
 */
 
+using namespace RE167;
 
 const int ColorFactory::NUM_COMPONENTS_PER_COLOR = 3;
 

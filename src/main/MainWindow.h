@@ -28,7 +28,7 @@ private:
 	QAction *stopAct;
 	QAction *wireframeAct;
 
-	RenderWidget0 *renderWidget;
+	RE167::RenderWidget0 *renderWidget;
 };
 
 #endif

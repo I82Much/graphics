@@ -5,15 +5,20 @@
 #include "SWRenderWidget.h"
 #include "GLRenderWidget.h"
 #include "SceneManager.h"
-#include "Object.h"
+//#include "Object.h"
 #include "Vector3.h"
-#include "FirstPersonCamera.h"
-
-using namespace RE167;
 
 
-class RenderWidget0 : public GLRenderWidget
+
+
+
+namespace RE167 {
+
+    class Object;
+
+class RE167_EXPORT RenderWidget0 : public GLRenderWidget
 {
+    
 
 public:
     RenderWidget0();
@@ -87,5 +92,7 @@ private:
     
     void switchScene();
 };
+
+}
 
 #endif // BASICAPP_H

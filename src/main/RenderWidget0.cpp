@@ -1,6 +1,7 @@
 #include "RenderWidget0.h"
 
 #include "Camera.h"
+#include "Object.h"
 
 #include "SWWidget.h"
 #include "SWRenderContext.h"

@@ -23,6 +23,8 @@
 #include "PGMReader.h"
 #include <map>
 #include <vector>
+#include "VertexData.h"
+#include "Object.h"
 
 using namespace RE167;
 
