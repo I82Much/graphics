@@ -86,6 +86,23 @@ void Camera::resetViewMatrix() {
 
 
 /**
+* Given the definition of a sphere, determines if the sphere is completely
+* outside of the clipping planes
+* @param center the center of the sphere, in *MODEL SPACE* coordinates
+* @param radius the radius of the sphere
+**/
+Camera::ClipStatus Camera::getSphereClipStatus(const Vector4 &center, const float radius) 
+{
+    
+
+    // For each plane defining view volume of camera
+        // Determine if sphere is completely above 
+    return COMPLETELY_INSIDE;
+    
+    
+}
+
+/**
 * Calculates the 6 planes defining our view volume.  These are the equations
 * of the planes before the perspective transform (we have a frustum at this point, 
 * a parallelpiped)

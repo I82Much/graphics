@@ -16,6 +16,13 @@ namespace RE167 {
 	class RE167_EXPORT Camera : public Frustum
 	{
 	public:
+	    enum ClipStatus {
+	        COMPLETELY_INSIDE,
+	        COMPLETELY_OUTSIDE,
+	        OVERLAPPING
+        };
+	    
+	    
 		Camera() : v(1,0,0,0, 0,1,0,0, 0,0,1,-10, 0,0,0,1) {};
 
 		Camera(const Vector3 &center, 
@@ -41,6 +48,8 @@ namespace RE167 {
 		void resetViewMatrix();
 
 		void updateVectors();
+
+        ClipStatus getSphereClipStatus(const Vector4 &center, const float radius); 
 
 	private:
 		Matrix4 v;
