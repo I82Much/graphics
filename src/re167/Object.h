@@ -2,14 +2,15 @@
 #define __Object_h__
 
 #include "RE167_global.h"
-#include "VertexData.h"
+
 #include "Matrix4.h"
-#include "Material.h"
 #include "Vector4.h"
+#include "VertexData.h"
 
 namespace RE167 {
 
-
+    class Material;
+    
 
 	/** This class provides an abstraction of scene objects.
 	@remarks

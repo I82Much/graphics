@@ -22,6 +22,7 @@
 
 #include "Materials.h"
 #include "SceneManager.h"
+#include "Material.h"
 
 
 #include "scenegraph/Shape3D.h"

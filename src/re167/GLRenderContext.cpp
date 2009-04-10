@@ -4,6 +4,7 @@
 #include "Material.h"
 #include "Texture.h"
 #include "Shader.h"
+#include "VertexData.h"
 
 using namespace RE167;
 
