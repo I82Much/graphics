@@ -14,6 +14,7 @@
 namespace RE167 {
 
     class TransformGroup;
+    class LightNode;
 
 	/** This class provides an abstraction of a scene. It manages a camera,
 		objects in the scene, etc. It is the main interface for applications
@@ -27,6 +28,13 @@ namespace RE167 {
 
         TransformGroup * getRoot() { return root; }
         void setRoot(TransformGroup * root) { this->root = root; }
+        
+        
+        void addLightNodes(Node * node, 
+                         std::list<LightNode *> &lightNodes, 
+                         const Matrix4 &transform);
+                         
+        
         
         
 		/** This method creates a default camera.

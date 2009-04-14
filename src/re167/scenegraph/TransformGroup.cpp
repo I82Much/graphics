@@ -1,5 +1,7 @@
 #include "TransformGroup.h"
 #include <iostream>
+#include <list>
+
 using namespace RE167;
 
 

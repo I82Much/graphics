@@ -1,6 +1,8 @@
 #include "SceneManager.h"
 #include "RenderContext.h"
 #include "scenegraph/TransformGroup.h"
+#include "scenegraph/LightNode.h"
+
 
 using namespace RE167;
 
@@ -80,6 +82,40 @@ Camera* SceneManager::createCamera()
 
 
 
+/**
+* @param node           the node to be added to light nodes, or if a group,
+*                       the nodes whose children will be recursively added
+* @param lightNodes     the list holding all of the LightNodes found in
+*                       graph
+* @param transform      
+**/
+void SceneManager::addLightNodes(Node * node, 
+                                std::list<LightNode *> &lightNodes, 
+                                const Matrix4 &transform) 
+{
+    LightNode * ln = dynamic_cast<LightNode*>(node);
+    // Current node is a light node
+    if ( ln != NULL ) {
+        // Update the transformation
+        ln->setTransformation(transform);
+        lightNodes.push_back( ln );
+        return;
+    }
+
+    // Check to see if this node has children; if so recursively call this
+    // method on each child
+    TransformGroup * g = dynamic_cast<TransformGroup *>(node);
+    if ( g != NULL ) {
+        // TODO: is it left or right multiply?
+        const Matrix4 &updatedTransform = g->getTransformation() * transform;
+        std::list<Node *>::iterator iter;
+        for (iter=g->children.begin(); iter!=g->children.end(); iter++)
+        	addLightNodes((*iter), lightNodes, updatedTransform);
+    }
+    // All other cases (Shape3D, CameraNode) we do nothing.
+}
+
+
 
 void SceneManager::renderScene()
 {
@@ -88,29 +124,22 @@ void SceneManager::renderScene()
 	if(mCamera!=0) 
 	{
 	    // Set up the lights
+        //renderContext->setLights(getLightsFromGraph(root));
+        std::list<LightNode *> lights;
+        addLightNodes(dynamic_cast<Node *>(root), lights, root->getTransformation());
+        
+        // TODO: Need to convert the LightNodes into Lights.
+        
         renderContext->setLights(mLightList);
-	    
-		renderContext->beginFrame();
 
-		renderContext->setProjectionMatrix(mCamera->getProjectionMatrix());
-		Matrix4 v = mCamera->getViewMatrix();
+        renderContext->beginFrame();
+
+        renderContext->setProjectionMatrix(mCamera->getProjectionMatrix());
+        Matrix4 v = mCamera->getViewMatrix();
 
         // Traverse the scene graph
         root->draw(v, renderContext);
         
-        
-        /*
-		// Iterate through list of objects
-		std::list<Object *>::const_iterator iter;
-		for (iter=mObjectList.begin(); iter!=mObjectList.end(); iter++)
-		{
-			Object *o = (*iter);
-			Matrix4 m = o->getTransformation();
-
-			renderContext->setModelViewMatrix(v*m);
-			renderContext->render(o);
-		}
-        */
 		renderContext->endFrame();
 	}
 }

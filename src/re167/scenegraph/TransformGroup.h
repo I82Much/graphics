@@ -4,7 +4,6 @@
 #include "RE167_global.h"
 #include "Group.h"
 #include "Node.h"
-#include <list>
 #include "Matrix4.h"
 
 
