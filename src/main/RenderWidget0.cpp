@@ -541,24 +541,24 @@ void RenderWidget0::keyPressEvent ( QKeyEvent * k )
         camera->resetViewMatrix();
         break;
     // move forward
-    case Qt::Key_W:
+    case Qt::Key_Up: // Qt::Key_W
         camera->setViewMatrix(Matrix4::translate(0,0,1) * camera->getViewMatrix());
         break;
     // Move camera backwards
-    case Qt::Key_S:
+    case Qt::Key_Down: //Qt::Key_S:
         camera->setViewMatrix(Matrix4::translate(0,0,-1) * camera->getViewMatrix());
         break;
     // Move camera left
-    case Qt::Key_A:
+    case Qt::Key_Left //Key_A:
         camera->setViewMatrix(Matrix4::translate(1,0,0) * camera->getViewMatrix());
         break;
     // Move camera right
-    case Qt::Key_D:
+    case Qt::Key_Right //D:
         camera->setViewMatrix(Matrix4::translate(-1,0,0) * camera->getViewMatrix());
         break;
     
     // Switch scenes    
-    case Qt::Key_T:
+    case Qt::Key_S:
         switchScene();
         break;
     
