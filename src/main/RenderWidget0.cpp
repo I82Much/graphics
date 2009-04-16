@@ -181,40 +181,113 @@ void RenderWidget0::initGeometry()
 // TODO: All these new calls will be memory leaks if we don't free them at the end somewhere
 void RenderWidget0::initRobot()
 {
+    Shader * phongShader = new Shader("src/Shaders/diffuse_shading.vert", 
+        "src/Shaders/diffuse_shading.frag");
+    Shader * texture2D = new Shader("src/Shaders/texture2D.vert", 
+        "src/Shaders/texture2D.frag");
+    
+
+    Material * brass = new Material(Brass);
+    Material * blackRubber = new Material(Black_Rubber);
+    Material * polishedSilver = new Material(Polished_Silver);
+    Material * pewter = new Material(Pewter);
+    
+    brass->setShader(phongShader);
+    pewter->setShader(phongShader);
+    polishedSilver->setShader(phongShader);
+    blackRubber->setShader(phongShader);
     
     // Create the geometry
     RE167::Object * cube = sceneManager->createObject();
     GeometryFactory::createCube(cube);
+    cube->setMaterial(brass);
+    
+    RE167::Object * taperedCylinder = sceneManager->createObject();
+    GeometryFactory::createTaperedCylinder(taperedCylinder, 1, 20, .8f, .5f);
+    taperedCylinder->setTransformation(Matrix4::scale(1,0.5,1));
+    taperedCylinder->setMaterial(brass);
+    
     
     // Cylinders used for arms and legs
-    RE167::Object * cylinder = sceneManager->createObject();
-    GeometryFactory::createCylinder(cylinder);
+    RE167::Object * legCylinder = sceneManager->createObject();
+    GeometryFactory::createCylinder(legCylinder);
     // Make it so that the origin of the cylinder is at the top of the cylinder
     // rather than in the middle
-    cylinder->setTransformation(Matrix4::translate(0,-1,0) * Matrix4::scale(.5,1,.5));
+    legCylinder->setTransformation(Matrix4::translate(0,-1,0) * Matrix4::scale(.5,1,.5));
+    legCylinder->setMaterial(polishedSilver);
     
-    // Sphere 
-    RE167::Object * sphere = sceneManager->createObject();
-    GeometryFactory::createSphere(sphere);
     
-    // Represents the center of the torso
-    TransformGroup * torsoTransform = new TransformGroup();
-    // Right shoulder is at (1,1,0) relative to center of torso
-    TransformGroup * rightShoulderTransform = new TransformGroup(Matrix4::translate(1,1,0));
-    // Left shoulder is at (-1,1,0)
-    TransformGroup * leftShoulderTransform = new TransformGroup(Matrix4::translate(-1,1,0));
+    RE167::Object * armCylinder = sceneManager->createObject();
+    GeometryFactory::createCylinder(armCylinder);
+    // Make it so that the origin of the cylinder is at the top of the cylinder
+    // rather than in the middle.  Will be 1.5 units long instead of .75
+    armCylinder->setTransformation(Matrix4::translate(0,-.75,0) * Matrix4::scale(.5,.75,.5));
+    armCylinder->setMaterial(pewter);
     
-    // Center of head is (0,2,0)
-    TransformGroup * centerOfHeadTransform = new TransformGroup(Matrix4::translate(0,2,0));
+    Shape3D * armShape = new Shape3D(armCylinder);
     
 
-    centerOfHeadTransform->addChild(new Shape3D(sphere));
+    // Represents the center of the torso.  Its center is at (0,1,0) relative to pelvis
+    torsoTransform = new TransformGroup(Matrix4::translate(0,1,0));
+    // Right shoulder is at (1,1,0) relative to center of torso.  It also is rotated 90 degrees
+    // about the z axis so that the local coordinate system of the right shoulder points into
+    // the body.
+    TransformGroup * rightShoulderTransform = new TransformGroup(Matrix4::translate(1,1,0) * Matrix4::rotateZ(BasicMath::radians(90)));
+    // Left shoulder is at (-1,1,0)
+    TransformGroup * leftShoulderTransform = new TransformGroup(Matrix4::translate(-1,1,0) * Matrix4::rotateZ(BasicMath::radians(-90)));
+    
+    leftUpperArm = new TransformGroup();
+    rightUpperArm = new TransformGroup();
+    
+    leftUpperArm->addChild(armShape);
+    rightUpperArm->addChild(armShape);
+    
+    
+    leftLowerArm = new TransformGroup(Matrix4::translate(0,-1.5,0));
+    rightLowerArm = new TransformGroup(Matrix4::translate(0,-1.5,0));
+
+    leftUpperArm->addChild(leftLowerArm);
+    rightUpperArm->addChild(rightLowerArm);
+
+    
+    leftLowerArm->addChild(armShape);
+    rightLowerArm->addChild(armShape);
+    
+    
+    leftHand = new TransformGroup(Matrix4::translate(0,-2,0) * Matrix4::scale(0.3f, 0.5f, 0.3f));
+    rightHand = new TransformGroup(Matrix4::translate(0,-2,0) * Matrix4::scale(0.3f, 0.5f, 0.3f));
+    
+    leftHand->addChild(new Shape3D(cube));
+    rightHand->addChild(new Shape3D(cube));
+    
+    leftLowerArm->addChild(leftHand);
+    rightLowerArm->addChild(rightHand);
     
     
     
-    rightShoulderTransform->addChild(new Shape3D(cylinder));
+    rightShoulderTransform->addChild(leftUpperArm);
     
-    leftShoulderTransform->addChild(new Shape3D(cylinder));
+    leftShoulderTransform->addChild(rightUpperArm);
+    
+    
+    
+    
+    // Center of head is (0,1.5,0) relative to torso
+    TransformGroup * centerOfHeadTransform = new TransformGroup(Matrix4::translate(0,1.5,0));
+    TransformGroup * robotHead = new TransformGroup(Matrix4::scale(0.5,0.5,0.5));
+    robotHead->addChild(new Shape3D(cube));
+    
+    
+    // Represents the center of the pelvis of the robot.  Pelvis itself will be
+    // represented as a shallow cone
+    pelvis = new TransformGroup(Matrix4::translate(0,-1,0));
+    
+    pelvis->addChild(new Shape3D(taperedCylinder));
+    pelvis->addChild(torsoTransform);
+    
+    
+
+    centerOfHeadTransform->addChild(robotHead);
     
     torsoTransform->addChild(new Shape3D(cube));
     
@@ -222,37 +295,37 @@ void RenderWidget0::initRobot()
     torsoTransform->addChild(centerOfHeadTransform);
     torsoTransform->addChild(rightShoulderTransform);
     torsoTransform->addChild(leftShoulderTransform);
+
     
     
     // Share the same cylinder object for all the legs
     
-
-    leftLeg = new TransformGroup(Matrix4::translate(-1,-1,0));
-    TransformGroup * rightLeg = new TransformGroup(Matrix4::translate(1,-1,0));
+    // Legs will be positioned relative to the pelvis; slightly below
+    leftLeg = new TransformGroup(Matrix4::translate(-.7f, -.1, 0));
+    rightLeg = new TransformGroup(Matrix4::translate(.7f, -.1, 0));
     
-    leftLeg->addChild(new Shape3D(cylinder));
-    rightLeg->addChild(new Shape3D(cylinder));
+    
+    pelvis->addChild(leftLeg);
+    pelvis->addChild(rightLeg);
+    
+    leftLeg->addChild(new Shape3D(legCylinder));
+    rightLeg->addChild(new Shape3D(legCylinder));
     
     leftShin = new TransformGroup(Matrix4::translate(0,-2,0));
-    leftShin->addChild(new Shape3D(cylinder));
+    leftShin->addChild(new Shape3D(legCylinder));
 
     leftLeg->addChild(leftShin);
     
     rightShin = new TransformGroup(Matrix4::translate(0,-2,0));
-    rightShin->addChild(new Shape3D(cylinder));
+    rightShin->addChild(new Shape3D(legCylinder));
     rightLeg->addChild(rightShin);
     
-    
-    torsoTransform->addChild(leftLeg);
-    torsoTransform->addChild(rightLeg);
-    
-    TransformGroup * leftArm = new TransformGroup();
-    TransformGroup * rightArm = new TransformGroup();
-
+ 
+   
     TransformGroup * root = sceneManager->getRoot();
-    root->addChild(torsoTransform);
+    root->addChild(pelvis);
     
-    robotGroup = torsoTransform;
+    robotGroup = pelvis;
 
 }
 
@@ -272,6 +345,7 @@ void RenderWidget0::initCamera()
 
 void RenderWidget0::initLights()
 {
+    
     // Make a blue spotlight coming from the left
     Light * blue = sceneManager->createLight();
     blue->setType(Light::SPOT);
@@ -280,6 +354,18 @@ void RenderWidget0::initLights()
     blue->setSpecularColor(Vector3(1,1,1));
     blue->setSpotDirection(Vector3(0,0,1));
     blue->setPosition(Vector3(-1,.5,1));
+    
+    /*
+    // Make a green spotlight coming from the right
+    Light * green = sceneManager->createLight();
+    green->setType(Light::SPOT);
+    green->setAmbientColor(Vector3(.2,.2,.2));
+    green->setDiffuseColor(Vector3(0,1,0));
+    green->setSpecularColor(Vector3(1,1,1));
+    green->setSpotDirection(Vector3(0,0,-1));
+    green->setPosition(Vector3(1,.5,1));
+    */
+    
     
     // Create a white light
     Light * white = sceneManager->createLight();
@@ -312,7 +398,6 @@ void RenderWidget0::timerEvent(QTimerEvent *t)
     
     static float sign = 1.0f;
 
-    std::cout << degree << std::endl;
     if (degree > MAX_EXTENSION) {
         counter = 0;
         sign *= -1;
@@ -320,6 +405,17 @@ void RenderWidget0::timerEvent(QTimerEvent *t)
     
     leftLeg->setTransformation(leftLeg->getTransformation() * Matrix4::rotateX(BasicMath::radians(sign * DEGREES_PER_TICK)));
     leftShin->setTransformation(leftShin->getTransformation() * Matrix4::rotateX(BasicMath::radians(sign * SHIN_DEGREES_PER_TICK)));
+    
+    leftUpperArm->setTransformation(leftUpperArm->getTransformation() * Matrix4::rotateZ(BasicMath::radians(sign * DEGREES_PER_TICK)));
+    rightUpperArm->setTransformation(rightUpperArm->getTransformation() * Matrix4::rotateZ(BasicMath::radians(sign * SHIN_DEGREES_PER_TICK)));
+    
+    leftLowerArm->setTransformation(leftLowerArm->getTransformation() * Matrix4::rotateX(BasicMath::radians(-sign * DEGREES_PER_TICK)));
+    rightLowerArm->setTransformation(rightLowerArm->getTransformation() * Matrix4::rotateX(BasicMath::radians(-sign * SHIN_DEGREES_PER_TICK)));
+    
+    leftHand->setTransformation(leftHand->getTransformation() * Matrix4::rotateY(BasicMath::radians(-sign * DEGREES_PER_TICK)));
+    rightHand->setTransformation(rightHand->getTransformation() * Matrix4::rotateY(BasicMath::radians(-sign * SHIN_DEGREES_PER_TICK)));
+    
+    torsoTransform->setTransformation(torsoTransform->getTransformation() * Matrix4::rotateY(BasicMath::radians(-sign * DEGREES_PER_TICK)));
     
     //earth->setTransformation(earth->getTransformation() * Matrix4::rotateY(0.005));
 	updateScene();

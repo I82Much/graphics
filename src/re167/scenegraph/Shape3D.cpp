@@ -15,8 +15,8 @@ void Shape3D::draw(const Matrix4 &t, RE167::RenderContext *context) {
             
         
     context->setModelViewMatrix(t_new);
-//    context->setMaterial(shape->getMaterial());
-    context->setMaterial(material);
+    context->setMaterial(shape->getMaterial());
+    //context->setMaterial(material);
 
     context->render(shape);
 }

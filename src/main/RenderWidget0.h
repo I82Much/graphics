@@ -74,6 +74,17 @@ namespace RE167 {
         TransformGroup * leftShin;
         TransformGroup * rightShin;
         
+        TransformGroup * leftUpperArm;
+        TransformGroup * rightUpperArm;
+        
+        TransformGroup * leftLowerArm;
+        TransformGroup * rightLowerArm;
+        
+        TransformGroup * leftHand;
+        TransformGroup * rightHand;
+        
+        TransformGroup * pelvis;
+        TransformGroup * torsoTransform;
         
         TransformGroup * robotGroup;
         TransformGroup * geometryGroup;
