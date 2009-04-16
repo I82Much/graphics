@@ -24,6 +24,7 @@ namespace RE167 {
 	class RE167_EXPORT SWRenderContext : public RenderContext
 	{
 	public:
+	    virtual ~SWRenderContext() {}
 		void init();
 		void setViewport(int width, int height);
 		void beginFrame();

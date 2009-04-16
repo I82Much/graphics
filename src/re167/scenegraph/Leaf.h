@@ -9,6 +9,7 @@ namespace RE167
 	class RE167_EXPORT Leaf : public Node
 	{
     public:
+        virtual ~Leaf() {}
         static void test();
     
     };

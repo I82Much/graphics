@@ -19,6 +19,7 @@ namespace RE167 {
 	class RE167_EXPORT RenderContext : public Singleton<RenderContext>
 	{
 	public:
+	    virtual ~RenderContext() {}
 		virtual void init() = 0;
 		virtual void setViewport(int width, int height) = 0;
 		virtual void beginFrame() = 0;

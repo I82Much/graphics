@@ -15,7 +15,7 @@ namespace RE167
         
         Shape3D(Object * s, Material * m = NULL) : shape(s), material(m) {}
         // Nothing allocated.
-        ~Shape3D() {}
+        virtual ~Shape3D() {}
         
         inline void setObject(Object * s) { shape = s; }
         inline Object * getObject() { return shape; }

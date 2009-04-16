@@ -117,6 +117,9 @@ void GLRenderContext::render(Object *object)
 				glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 				glTexCoordPointer(vertexSize, GL_FLOAT, vertexStride, buf+offset);
 				break;
+			case VES_SPECULAR:
+                std::cerr << "Error: Found VES_SPECULAR in the vertex data of object " << object << std::endl;
+                assert(false);
 		}
 	}
 	
@@ -142,6 +145,9 @@ void GLRenderContext::render(Object *object)
 			case VES_TEXTURE_COORDINATES :
 				glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 				break;
+		    case VES_SPECULAR:
+                std::cerr << "Error: Found VES_SPECULAR in the vertex data of object " << object << std::endl;
+                assert(false);	
 		}
 	}
 

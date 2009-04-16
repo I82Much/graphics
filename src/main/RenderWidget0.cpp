@@ -535,6 +535,7 @@ void RenderWidget0::switchScene()
 
 void RenderWidget0::keyPressEvent ( QKeyEvent * k )
 {
+        
 	switch ( k->key() )  {
     // reload
     case Qt::Key_R:                               
@@ -549,11 +550,11 @@ void RenderWidget0::keyPressEvent ( QKeyEvent * k )
         camera->setViewMatrix(Matrix4::translate(0,0,-1) * camera->getViewMatrix());
         break;
     // Move camera left
-    case Qt::Key_Left //Key_A:
+    case Qt::Key_Left: //Key_A:
         camera->setViewMatrix(Matrix4::translate(1,0,0) * camera->getViewMatrix());
         break;
     // Move camera right
-    case Qt::Key_Right //D:
+    case Qt::Key_Right: //D:
         camera->setViewMatrix(Matrix4::translate(-1,0,0) * camera->getViewMatrix());
         break;
     

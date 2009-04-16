@@ -24,6 +24,8 @@ namespace RE167 {
 	class RE167_EXPORT GLRenderContext : public RenderContext
 	{
 	public:
+	    
+	    virtual ~GLRenderContext() {}
 		void init();
 		void toggleWireframe();
 		void setViewport(int width, int height);

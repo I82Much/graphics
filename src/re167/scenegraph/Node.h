@@ -10,6 +10,7 @@ namespace RE167
 	class RE167_EXPORT Node
 	{
     public:
+        virtual ~Node() {}
         virtual void draw(const Matrix4 & t, RenderContext * context) = 0;
     };
 }
