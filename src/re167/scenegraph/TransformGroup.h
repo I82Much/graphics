@@ -25,9 +25,16 @@ namespace RE167
         inline void resetTransformation() { transform = Matrix4::IDENTITY; }
         inline void setTransformation(const Matrix4 &t) { transform = t; }
         inline Matrix4 getTransformation() const { return transform; }
+
+        /*
+        inline void resetSecondaryTransformation() { secondaryTransform = Matrix4::IDENTITY; }
+        inline void setSecondaryTransformation(const Matrix4 &t) { secondaryTransform = t; }
+        inline Matrix4 getSecondaryTransformation() const { return secondaryTransform; }
+        */
  
     protected:
         Matrix4 transform;
+        //Matrix4 secondaryTransform;
         
     };
 }

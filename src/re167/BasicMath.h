@@ -16,7 +16,7 @@ namespace RE167
 	public:
 		static const float PI;
 		static const float TWO_PI;
-		static float radian(float a) { return a*PI/180.f; };
+		static float radians(float a) { return a*PI/180.f; };
 		static float degrees(float radians) { return radians * 180.f / PI; }
 
 		static bool AlmostEqual2sComplement(float A, float B, int maxUlps);

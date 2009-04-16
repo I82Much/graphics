@@ -191,7 +191,7 @@ void RenderWidget0::initRobot()
     GeometryFactory::createCylinder(cylinder);
     // Make it so that the origin of the cylinder is at the top of the cylinder
     // rather than in the middle
-    cylinder->setTransformation(Matrix4::translate(0,-1,0));
+    cylinder->setTransformation(Matrix4::translate(0,-1,0) * Matrix4::scale(.5,1,.5));
     
     // Sphere 
     RE167::Object * sphere = sceneManager->createObject();
@@ -227,17 +227,20 @@ void RenderWidget0::initRobot()
     // Share the same cylinder object for all the legs
     
 
-    leftLeg = new TransformGroup(Matrix4::translate(-1,-1,0) * Matrix4::scale(.5,1,.5));
-    TransformGroup * rightLeg = new TransformGroup(Matrix4::translate(1,-1,0) * Matrix4::scale(.5,1,.5));
+    leftLeg = new TransformGroup(Matrix4::translate(-1,-1,0));
+    TransformGroup * rightLeg = new TransformGroup(Matrix4::translate(1,-1,0));
     
     leftLeg->addChild(new Shape3D(cylinder));
     rightLeg->addChild(new Shape3D(cylinder));
     
-    TransformGroup * leftShin = new TransformGroup(Matrix4::translate(0,-2,0) * leftLeg->getTransformation());
+    leftShin = new TransformGroup(Matrix4::translate(0,-2,0));
     leftShin->addChild(new Shape3D(cylinder));
 
     leftLeg->addChild(leftShin);
     
+    rightShin = new TransformGroup(Matrix4::translate(0,-2,0));
+    rightShin->addChild(new Shape3D(cylinder));
+    rightLeg->addChild(rightShin);
     
     
     torsoTransform->addChild(leftLeg);
@@ -264,7 +267,7 @@ void RenderWidget0::initCamera()
 	camera = sceneManager->createCamera();
 	camera->changeSettings(cameraCenter, lookAtPoint, upVector);
 
-	camera->setFrustum(1, 100, 1, BasicMath::radian(60));
+	camera->setFrustum(1, 100, 1, BasicMath::radians(60));
 }
 
 void RenderWidget0::initLights()
@@ -299,16 +302,25 @@ void RenderWidget0::resizeRenderWidgetEvent(const QSize &s)
 
 void RenderWidget0::timerEvent(QTimerEvent *t)
 {
-    float DEGREES_PER_TICK = 0.005;
+    float DEGREES_PER_TICK = 0.1;
     float degree = counter * DEGREES_PER_TICK;
+    
+    float SHIN_DEGREES_PER_TICK = 0.2;
     
     float MAX_EXTENSION = 45.0f;
     float MIN_EXTENSION = -25.0f;
     
+    static float sign = 1.0f;
+
+    std::cout << degree << std::endl;
+    if (degree > MAX_EXTENSION) {
+        counter = 0;
+        sign *= -1;
+    }
     
+    leftLeg->setTransformation(leftLeg->getTransformation() * Matrix4::rotateX(BasicMath::radians(sign * DEGREES_PER_TICK)));
+    leftShin->setTransformation(leftShin->getTransformation() * Matrix4::rotateX(BasicMath::radians(sign * SHIN_DEGREES_PER_TICK)));
     
-    
-    leftLeg->setTransformation(Matrix4::rotateX(.005 * sin(counter)) * leftLeg->getTransformation());
     //earth->setTransformation(earth->getTransformation() * Matrix4::rotateY(0.005));
 	updateScene();
 	counter++;

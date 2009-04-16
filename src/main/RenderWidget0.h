@@ -67,8 +67,14 @@ namespace RE167 {
         Object *teapot;
         Object *buddha;
         Object *earth;
-    
+        
         TransformGroup * leftLeg;
+        TransformGroup * rightLeg;
+        
+        TransformGroup * leftShin;
+        TransformGroup * rightShin;
+        
+        
         TransformGroup * robotGroup;
         TransformGroup * geometryGroup;
 	
