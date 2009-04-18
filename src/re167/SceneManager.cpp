@@ -10,7 +10,7 @@ using namespace RE167;
 const unsigned int SceneManager::MAX_NUM_LIGHTS;
 
 SceneManager::SceneManager()
-	: mCamera(0), root(new TransformGroup())
+	: mCamera(0), root(new TransformGroup()), objectLevelCulling(true)
 {
 }
 
@@ -141,7 +141,7 @@ void SceneManager::renderScene()
 
         // Traverse the scene graph
         // TODO: the mCamera thing could be replaced later on with the CameraNode
-        root->draw(v, renderContext, mCamera);
+        root->draw(v, renderContext, mCamera, objectLevelCulling);
         
 		renderContext->endFrame();
 	}

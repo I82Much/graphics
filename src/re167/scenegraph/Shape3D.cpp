@@ -5,7 +5,7 @@
 
 using namespace RE167;
 
-void Shape3D::draw(const Matrix4 &t, RenderContext *context, Camera * camera) { 
+void Shape3D::draw(const Matrix4 &t, RenderContext *context, Camera * camera, bool cull) { 
     
     Matrix4 t_new = t * shape->getTransformation();
     
@@ -34,11 +34,8 @@ void Shape3D::draw(const Matrix4 &t, RenderContext *context, Camera * camera) {
         << " Original radius: " << shape->getSphereRadius() 
         << " Transformed radius: " << transformedRadius <<  std::endl;
     */    
-    
-    
-    static bool OBJECT_LEVEL_CULLING = true;
-    
-    if (OBJECT_LEVEL_CULLING) {
+
+    if (cull) {
         if (camera->getSphereClipStatus(transformedCenter, transformedRadius) == Camera::COMPLETELY_OUTSIDE) {
             return;
         }

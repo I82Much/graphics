@@ -26,7 +26,7 @@ namespace RE167
         inline void setMaterial(Material * m) { material = m; }
         inline Material * getMaterial() { return material; }
         
-        virtual void draw(const Matrix4 &t, RenderContext * context, Camera * camera);
+        virtual void draw(const Matrix4 &t, RenderContext * context, Camera * camera, bool cull);
         
         static void test();
         

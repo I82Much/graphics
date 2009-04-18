@@ -63,8 +63,6 @@ RenderWidget0::~RenderWidget0()
 void RenderWidget0::initSceneEvent()
 {
     
-    
-    
 	sceneManager = new SceneManager();
 
     initCamera();
@@ -72,6 +70,9 @@ void RenderWidget0::initSceneEvent()
 //    initGeometry();
     initRobot();
     createTestScene();
+	
+	// Show the bunnies by default
+    sceneManager->setRoot(geometryGroup);
 	
     //test();
 	
@@ -409,13 +410,12 @@ void RenderWidget0::resizeRenderWidgetEvent(const QSize &s)
 void RenderWidget0::timerEvent(QTimerEvent *t)
 {
     
-    float DEGREES_PER_TICK = 0.1;
-    float degree = counter * DEGREES_PER_TICK;
+    float SLOW_DEGREES_PER_TICK = 0.1;
+    float degree = counter * SLOW_DEGREES_PER_TICK;
     
-    float SHIN_DEGREES_PER_TICK = 0.2;
+    float FAST_DEGREES_PER_TICK = 0.2;
     
     float MAX_EXTENSION = 45.0f;
-    float MIN_EXTENSION = -25.0f;
     
     static float sign = 1.0f;
 
@@ -424,19 +424,19 @@ void RenderWidget0::timerEvent(QTimerEvent *t)
         sign *= -1;
     }
     
-    leftLeg->setTransformation(leftLeg->getTransformation() * Matrix4::rotateX(BasicMath::radians(sign * DEGREES_PER_TICK)));
-    leftShin->setTransformation(leftShin->getTransformation() * Matrix4::rotateX(BasicMath::radians(sign * SHIN_DEGREES_PER_TICK)));
+    leftLeg->setTransformation(leftLeg->getTransformation() * Matrix4::rotateX(BasicMath::radians(sign * SLOW_DEGREES_PER_TICK)));
+    leftShin->setTransformation(leftShin->getTransformation() * Matrix4::rotateX(BasicMath::radians(sign * FAST_DEGREES_PER_TICK)));
     
-    leftUpperArm->setTransformation(leftUpperArm->getTransformation() * Matrix4::rotateZ(BasicMath::radians(sign * DEGREES_PER_TICK)));
-    rightUpperArm->setTransformation(rightUpperArm->getTransformation() * Matrix4::rotateZ(BasicMath::radians(sign * SHIN_DEGREES_PER_TICK)));
+    leftUpperArm->setTransformation(leftUpperArm->getTransformation() * Matrix4::rotateZ(BasicMath::radians(sign * FAST_DEGREES_PER_TICK)));
+    rightUpperArm->setTransformation(rightUpperArm->getTransformation() * Matrix4::rotateZ(BasicMath::radians(sign * FAST_DEGREES_PER_TICK)));
     
-    leftLowerArm->setTransformation(leftLowerArm->getTransformation() * Matrix4::rotateX(BasicMath::radians(-sign * DEGREES_PER_TICK)));
-    rightLowerArm->setTransformation(rightLowerArm->getTransformation() * Matrix4::rotateX(BasicMath::radians(-sign * SHIN_DEGREES_PER_TICK)));
+    leftLowerArm->setTransformation(leftLowerArm->getTransformation() * Matrix4::rotateX(BasicMath::radians(-sign * FAST_DEGREES_PER_TICK)));
+    rightLowerArm->setTransformation(rightLowerArm->getTransformation() * Matrix4::rotateX(BasicMath::radians(-sign * SLOW_DEGREES_PER_TICK)));
     
-    leftHand->setTransformation(leftHand->getTransformation() * Matrix4::rotateY(BasicMath::radians(-sign * DEGREES_PER_TICK)));
-    rightHand->setTransformation(rightHand->getTransformation() * Matrix4::rotateY(BasicMath::radians(-sign * SHIN_DEGREES_PER_TICK)));
+    leftHand->setTransformation(leftHand->getTransformation() * Matrix4::rotateY(BasicMath::radians(-sign * SLOW_DEGREES_PER_TICK)));
+    rightHand->setTransformation(rightHand->getTransformation() * Matrix4::rotateY(BasicMath::radians(-sign * SLOW_DEGREES_PER_TICK)));
     
-    torsoTransform->setTransformation(torsoTransform->getTransformation() * Matrix4::rotateY(BasicMath::radians(-sign * DEGREES_PER_TICK)));
+    torsoTransform->setTransformation(torsoTransform->getTransformation() * Matrix4::rotateY(BasicMath::radians(-sign * SLOW_DEGREES_PER_TICK)));
     
     //earth->setTransformation(earth->getTransformation() * Matrix4::rotateY(0.005));
 	updateScene();
@@ -617,7 +617,7 @@ void RenderWidget0::createTestScene()
     const float SPACING = 2;
         
     RE167::Object * bunny = sceneManager->createObject();
-    GeometryFactory::createObject(bunny, "objects/teapot.obj");
+    GeometryFactory::createObject(bunny, "objects/bunny.obj");
     
     // Test object stuff
     /*   Object * bunny = new Object();
@@ -661,12 +661,23 @@ void RenderWidget0::switchScene()
     robot = !robot;
     
     if (robot) {
+        std::cout << "Switched to robot scene." << std::endl;
+        this->parentWidget()->setWindowTitle("Do the Robot!");
         sceneManager->setRoot(robotGroup);
     }
     else {
+        std::cout << "Switched to rabbit scene." << std::endl;
+        this->parentWidget()->setWindowTitle("Multiply like rabbits!");
         sceneManager->setRoot(geometryGroup);
     }
-    
+}
+
+void RenderWidget0::toggleCulling()
+{
+    static bool objectLevelCulling = true;
+    objectLevelCulling = !objectLevelCulling;
+    std::cout << "Object level culling: " << (objectLevelCulling ? "true" : "false") << std::endl;
+    sceneManager->setObjectLevelCulling(objectLevelCulling);
 }
 
 void RenderWidget0::keyPressEvent ( QKeyEvent * k )
@@ -698,6 +709,12 @@ void RenderWidget0::keyPressEvent ( QKeyEvent * k )
     case Qt::Key_S:
         switchScene();
         break;
+    
+    // Toggle object level culling
+    case Qt::Key_C:
+        toggleCulling();
+        break;
+    
     
     // Move camera up
     case Qt::Key_Q:

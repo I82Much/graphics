@@ -18,7 +18,7 @@ namespace RE167
         TransformGroup(const Matrix4 &t = Matrix4::IDENTITY);
         virtual ~TransformGroup();
         
-        virtual void draw(const Matrix4 &t, RenderContext *context, Camera * camera);
+        virtual void draw(const Matrix4 &t, RenderContext *context, Camera * camera, bool cull);
         
         static void test();
         

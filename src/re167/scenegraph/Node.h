@@ -13,7 +13,8 @@ namespace RE167
 	{
     public:
         virtual ~Node() {}
-        virtual void draw(const Matrix4 & t, RenderContext * context, Camera * camera) = 0;
+        virtual void draw(const Matrix4 & t, RenderContext * context, 
+            Camera * camera, bool cull) = 0;
     };
 }
 

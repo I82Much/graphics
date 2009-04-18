@@ -6,6 +6,8 @@
 #include "Shader.h"
 #include "VertexData.h"
 
+#include <qdatetime.h>
+
 using namespace RE167;
 
 GLRenderContext* GLRenderContext::getSingletonPtr(void)
@@ -32,6 +34,10 @@ void GLRenderContext::init()
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	
+	clock = new QTime();
+    globalClock = new QTime();
+    globalClock->start();
 }
 
 void GLRenderContext::toggleWireframe() {
@@ -54,11 +60,28 @@ void GLRenderContext::setViewport(int width, int height)
 void GLRenderContext::beginFrame()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	clock->start();
 }
 
 void GLRenderContext::endFrame()
 {
+    static int numFramesRendered = 0;
+    
 	glFlush();
+//	std::cout << "Elapsed ms: " << clock->elapsed() << std::endl;
+	
+    numFramesRendered++;
+    const int NUM_FRAMES_TO_TEST = 1000;
+    if (numFramesRendered % NUM_FRAMES_TO_TEST == 0) {
+        // Number of milliseconds
+        int elapsedTime = globalClock->elapsed();
+        float numSeconds = elapsedTime / 1000.0f;
+        std::cout << numSeconds << " num seconds" << std::endl;
+        std::cout << "FPS: " << numFramesRendered / numSeconds << std::endl;
+        numFramesRendered = 0;
+        globalClock->restart();
+    }
+	
 }
 
 void GLRenderContext::setModelViewMatrix(const Matrix4 &m)

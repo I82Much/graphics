@@ -105,6 +105,7 @@ namespace RE167 {
         void createTestScene();
     
         void switchScene();
+        void toggleCulling();
         void test();
     };
 

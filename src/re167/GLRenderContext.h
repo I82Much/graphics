@@ -56,6 +56,8 @@ namespace RE167 {
     	*/
     	void setMaterial(const Material *material);
 		bool wireframe;
+		QTime *clock;
+        QTime *globalClock;
 	};
 
 }

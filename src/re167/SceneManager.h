@@ -66,6 +66,10 @@ namespace RE167 {
 			trigger the renderScene event handler to be called. 
 		*/
 		void renderScene();
+		
+        inline void setObjectLevelCulling(bool b) { objectLevelCulling = b; }
+        inline bool getObjectLevelCulling() { return objectLevelCulling; }
+        
 
 
 	private:
@@ -74,6 +78,7 @@ namespace RE167 {
         std::list<Light*> mLightList;
         
         TransformGroup * root;
+        bool objectLevelCulling;
         
                 
         static const unsigned int MAX_NUM_LIGHTS = 8;
