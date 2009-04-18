@@ -94,12 +94,50 @@ void Camera::resetViewMatrix() {
 **/
 Camera::ClipStatus Camera::getSphereClipStatus(const Vector4 &center, const float radius) 
 {
+    int count = 0;
+    float distances[] = {
+        top.distanceTo(center),
+        bottom.distanceTo(center),
+        left.distanceTo(center),
+        right.distanceTo(center),
+        near.distanceTo(center),
+        far.distanceTo(center)
+    };
     
-
-    // For each plane defining view volume of camera
-        // Determine if sphere is completely above 
-    return COMPLETELY_INSIDE;
+    /*
+    std::string names[] = {
+        "top",
+        "bottom",
+        "left",
+        "right",
+        "near",
+        "far"
+    };
     
+    for (int i = 0; i < 6; i++) {
+        std::cout << "Distance to " << names[i] << " : " << distances[i] << std::endl;
+    }*/
+    
+    
+    // Check for each plane whether the sphere is above or below
+    for (int i = 0; i < 6; i++) {
+        // Outside
+        if (distances[i] > radius) {
+            return COMPLETELY_OUTSIDE;
+        }
+        // Completely inside
+        else if (distances[i] < -radius) {
+            count++;
+        }
+        // Overlapping
+    }
+    
+    if (count == 6) {
+        return COMPLETELY_INSIDE;
+    }
+    else {
+        return OVERLAPPING;
+    }
     
 }
 
@@ -143,16 +181,16 @@ void Camera::calculatePlanes()
     // The four points defining the front plane of the view frustum;
     // we will use these to calculate the side planes (which slope in towards
     // origin)
-    Vector3 topRight(right, top, near);
-    Vector3 bottomRight(right, bottom, near);
-    Vector3 bottomLeft(left, bottom, near);
-    Vector3 topLeft(left, top, near);
+    Vector3 topRight    (right, top, near);
+    Vector3 bottomRight (right, bottom, near);
+    Vector3 bottomLeft  (left, bottom, near);
+    Vector3 topLeft     (left, top, near);
     
     // We want all the normals to point towards the outside of the frustum
     // (meaning we need to give the points in counter clockwise order)
-    this->left = Plane(origin, bottomLeft, topLeft);
+    this->left = Plane(origin, topLeft, bottomLeft);
     this->right = Plane(origin, bottomRight, topRight);
-    this->top = Plane(origin, topLeft, topRight);
+    this->top = Plane(origin, topRight, topLeft);
     this->bottom = Plane(origin, bottomLeft, bottomRight);
     
     /*
@@ -171,6 +209,7 @@ void Camera::calculatePlanes()
         << "\tRight: " << this->right << std::endl
         << "Near: " << this->near 
         << "\tFar: " << this->far
-        << std::endl;*/
+        << std::endl;
+        */
 }
 

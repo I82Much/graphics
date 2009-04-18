@@ -28,18 +28,35 @@ void Shape3D::draw(const Matrix4 &t, RenderContext *context, Camera * camera) {
     
     float transformedRadius = maxScale * shape->getSphereRadius();
     
-    /*std::cout << "Original center: " << shape->getSphereCenter() 
+    /*
+    std::cout << "Original center: " << shape->getSphereCenter() 
         << " Transformed Center: " << transformedCenter 
         << " Original radius: " << shape->getSphereRadius() 
-        << " Transformed radius: " << transformedRadius <<  std::endl;*/
-        
+        << " Transformed radius: " << transformedRadius <<  std::endl;
+    */    
     
     
     static bool OBJECT_LEVEL_CULLING = true;
-    /*
-    if (OBJECT_LEVEL_CULLING && !camera->sphereInsideFrustum(transformedCenter, transformedRadius)
-        return;
-    }*/
+    
+    if (OBJECT_LEVEL_CULLING) {
+        if (camera->getSphereClipStatus(transformedCenter, transformedRadius) == Camera::COMPLETELY_OUTSIDE) {
+            return;
+        }
+        
+       /* switch (camera->getSphereClipStatus(transformedCenter, transformedRadius)) {
+            case Camera::COMPLETELY_OUTSIDE:
+                std::cout << "Completely outside. Not drawing" << std::endl;
+                return;
+                break;
+            case Camera::COMPLETELY_INSIDE:
+                std::cout << "Completely inside." << std::endl;
+                break;
+            default:
+                std::cout << "Intersecting." << std::endl;
+                break;
+                */
+        
+    }
     
         
     context->setModelViewMatrix(t_new);

@@ -443,6 +443,7 @@ void GeometryFactory::calculateBoundingBox(float *vertices, int numVertices,
                                             Vector3 &vMin,
                                             Vector3 &vMax)
 {
+    
     float xMin, yMin, zMin;
 	float xMax, yMax, zMax;
 
@@ -467,6 +468,9 @@ void GeometryFactory::calculateBoundingBox(float *vertices, int numVertices,
 		if (x > xMax) { xMax = x; }
 		if (y > yMax) { yMax = y; }
 		if (z > zMax) { zMax = z; }
+		
+		//std::cout << "Vertex " << i << ": " << Vector3(x,y,z) << std::endl;
+		//std::cout << "xMin: " << xMin << " yMin: " << yMin << " zMin: " << zMin << std::endl;
 
 	}
     vMin.setX(xMin);
@@ -672,7 +676,7 @@ void GeometryFactory::createCube(Object *o) {
      assert(normals);
 
 	 GeometryFactory::fillInObject(o, vertices, normals, colors, indices,
-									SIZE_OF_VERTICES_ARRAY, NUM_INDICES);
+									NUM_VERTICES, NUM_INDICES);
 
                                 
 

@@ -63,6 +63,7 @@ namespace RE167 {
 		void calculatePlanes();
         
         Plane left, right, top, bottom, near, far;
+
         
 	};
 

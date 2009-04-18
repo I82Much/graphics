@@ -73,6 +73,9 @@ void RenderWidget0::initSceneEvent()
     initRobot();
     createTestScene();
 	
+    //test();
+	
+	
 	// Trigger timer event every 5ms.
 	timerId = startTimer(5);
 }
@@ -173,6 +176,19 @@ void RenderWidget0::initGeometry()
     
     
  
+}
+
+void RenderWidget0::test()
+{
+    Object * cube = sceneManager->createObject();
+    GeometryFactory::createCube(cube);
+    
+    std::cout << "Center: " << cube->getSphereCenter() << " Radius: " << cube->getSphereRadius() << std::endl;
+/*    assert(cube->getSphereCenter() == Vector4(0,0,0,1));
+    assert(cube->getSphereRadius() == sqrt(2.0f));*/
+    
+    sceneManager->getRoot()->addChild(new Shape3D(cube));
+    
 }
 
 
@@ -325,6 +341,10 @@ void RenderWidget0::initRobot()
     
     robotGroup = pelvis;
     
+    
+    
+    
+    
 }
 
 
@@ -388,6 +408,7 @@ void RenderWidget0::resizeRenderWidgetEvent(const QSize &s)
 
 void RenderWidget0::timerEvent(QTimerEvent *t)
 {
+    
     float DEGREES_PER_TICK = 0.1;
     float degree = counter * DEGREES_PER_TICK;
     
