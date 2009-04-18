@@ -99,7 +99,6 @@ void RenderWidget0::initGeometry()
     Material * mattePearl = new Material(Pearl);   
     Material * defaultMat = new Material();
     Material * emerald = new Material(Emerald);
-    
     brass->setShader(phongShader);
     pewter->setShader(phongShader);
     polishedSilver->setShader(phongShader);
@@ -108,7 +107,6 @@ void RenderWidget0::initGeometry()
     turquoise->setShader(phongShader);
     mattePearl->setShader(phongShader);
     emerald->setShader(phongShader);
-    
     
     mattePearl->setShininess(2);
     
@@ -192,10 +190,10 @@ void RenderWidget0::initRobot()
     Material * polishedSilver = new Material(Polished_Silver);
     Material * pewter = new Material(Pewter);
     
-    brass->setShader(phongShader);
+    /*brass->setShader(phongShader);
     pewter->setShader(phongShader);
     polishedSilver->setShader(phongShader);
-    blackRubber->setShader(phongShader);
+    blackRubber->setShader(phongShader);*/
     
     // Create the geometry
     RE167::Object * cube = sceneManager->createObject();

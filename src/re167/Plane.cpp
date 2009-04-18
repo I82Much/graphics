@@ -2,7 +2,21 @@
 #include <list>
 #include <map>
 
+
+
 using namespace RE167;
+
+// Any plane can be defined by 3 points on it.  The normal will be defined
+// by the right hand rule.  Points should be passed in in counterclockwise
+// order for the normal to point in correct direction.
+Plane::Plane(const Vector3 &p1, const Vector3 &p2, const Vector3 &p3) {
+    Vector3 normal = (p2 - p1).crossProduct(p3 - p1).normalize();
+    
+    unitNormal = Vector4(normal.getX(), normal.getY(), normal.getZ(), 0);
+    distance = (p1.dotProduct(normal));
+}
+
+
 
 /**
 * Calculates the signed perpendicular distance from the point x to the plane.

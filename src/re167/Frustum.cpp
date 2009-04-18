@@ -35,11 +35,11 @@ void Frustum::setVerticalFOV(const float fov) {
 void Frustum::setFrustum(const float near, const float far, 
     const float aspect, const float vertFOV)
  {
-     /*
+     
 	this->near = near;
     this->far = far;
-    this->aspect = aspect;
-    this->vertFOV = vertFOV;*/
+    this->aspectRatio = aspect;
+    this->vertFOV = vertFOV;
 	
 	float p00 = 1.0f / (aspect * tan(vertFOV / 2.0f));
 	float p11 = 1.0f / (tan(vertFOV / 2));

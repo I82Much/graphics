@@ -5,7 +5,7 @@
 #include "Frustum.h"
 #include "Matrix4.h"
 #include "Vector3.h"
-
+#include "Plane.h"
 namespace RE167 {
 
 	/** Camera specification.
@@ -30,6 +30,7 @@ namespace RE167 {
 		        const Vector3 &up) : 
 			centerOfProjection(center), lookAtPoint(lookAt), upVector(up) {
 			updateViewMatrix();
+			calculatePlanes();
 		};
 		const Matrix4 &getViewMatrix() const { return v; }
 
@@ -38,7 +39,8 @@ namespace RE167 {
 		const Vector3 &getUpVector() const { return upVector; }
 		
 		void changeSettings(const Vector3 &center, const Vector3 &point, const Vector3 &up);
-
+        
+        
 		/*
 		void setCenterOfProjection(const Vector3 &center);
 		void setLookAtPoint(const Vector3 &point);
@@ -58,6 +60,10 @@ namespace RE167 {
 		Vector3 upVector;
 		
 		void updateViewMatrix();
+		void calculatePlanes();
+        
+        Plane left, right, top, bottom, near, far;
+        
 	};
 
 }

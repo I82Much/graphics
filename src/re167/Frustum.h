@@ -27,12 +27,12 @@ namespace RE167 {
             const float aspectRatio, const float vertFOV);
 
                         
-                        /*
+                        
 		const float getNearPlane() 		const { return near; 	}
 		const float getFarPlane() 		const { return far; 	}
 		const float getAspectRatio() 	const { return aspectRatio; }
 		const float getVerticalFOV() 	const { return vertFOV; 	}
-		*/
+		
 		/*
         const Plane getNearPlane();
         const Plane getFarPlane();

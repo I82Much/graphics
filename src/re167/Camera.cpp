@@ -1,5 +1,5 @@
 #include "Camera.h"
-
+#include <cmath>
 using namespace RE167;
 
 /**
@@ -103,28 +103,50 @@ Camera::ClipStatus Camera::getSphereClipStatus(const Vector4 &center, const floa
 }
 
 /**
-* Calculates the 6 planes defining our view volume.  These are the equations
-* of the planes before the perspective transform (we have a frustum at this point, 
-* a parallelpiped)
+* Calculates the 6 planes defining our view volume.  
 **/
-/*
-void Camera::calculatePlanes(const float near, const float far, 
-    const float aspect, const float vertFOV) 
+
+void Camera::calculatePlanes() 
 {
-    // These are the 8 vertices of the frustum.  Based on p. 263 of
-    // Fundamentals of Computer Graphics.
-    // These are AFTER converting to a parallelpiped
-  
-    Vector4 v1(l,b,n,1);
-    Vector4 v2(r,b,n,1);
-    Vector4 v3(l,t,n,1);
-    Vector4 v4(r,t,n,1);
-    Vector4 v5(l,b,f,1);
-    Vector4 v6(r,b,f,1);
-    Vector4 v7(l,t,f,1);
-    Vector4 v8(r,t,f,1);
-  
+    float near = getNearPlane();
+    float far = getFarPlane();
+    float aspectRatio = getAspectRatio();
+    float vertFOV = getVerticalFOV();
+    
+    // tan (fov/2) = top/near
+    float top = near * tan(vertFOV/2);
+    
+    // aspect ratio = (right-left) / (top - bottom) = right / top 
+    // (since right = -left, top = -bottom)
+    float right = aspectRatio * top;
+    
+    float bottom = -top;
+    float left = -right;
+    
+    // Now we have the coordinates of our frustum.  
+    
+    // Note that the center of projection of our camera, in camera coordinates,
+    // is (0,0,0).  All the sides of the frustum other than the near plane
+    // and far plane converge to this point.
+    
+
+    // Near and far planes are easy; we know how far they are from origin 
+    // (near and far, respectively) and we know their normals - they're orthogonal
+    // to camera
+    this->near = Plane();
+    this->far = Plane();
+    
+    // We want all the normals to point towards the outside of the frustum
+    // (meaning we need to give the points in counter clockwise order)
+
+
+    this->left = Plane();
+    this->right = Plane();
+    this->top = Plane();
+    this->bottom = Plane();
     
     
-}*/
+    
+  
+}
 

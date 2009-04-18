@@ -5,13 +5,14 @@
 #include "Vector4.h"
 
 namespace RE167 {
-    
+
     class RE167_EXPORT Plane
     {
     public:
         
-        
+        Plane() : distance(0), unitNormal(1,0,0,0) {}
         Plane(const float dist, const Vector4 &normal) : distance(dist), unitNormal(normal) {}
+        Plane(const Vector3 &p1, const Vector3 &p2, const Vector3 &p3);
         // no memory allocated
         ~Plane() {}
         
@@ -25,7 +26,6 @@ namespace RE167 {
         // Perpendicular distance from origin to the plane
         float distance;
         Vector4 unitNormal;
-        
     };
 }
 #endif /* end of include guard: PLANE_H_924GCA3G */

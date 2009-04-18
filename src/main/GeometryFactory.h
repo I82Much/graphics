@@ -2,13 +2,15 @@
 #define _GEOMETRY_FACTORY_H__
 
 // TODO: Figure out a way to eliminate this import
-#include "Vector3.h"
+//#include "Vector3.h"
 
 #include "RE167_global.h"
 
 namespace RE167 {
 
     class Object;
+    class Vector3;
+    class Vector4;
 
     class RE167_EXPORT GeometryFactory 
     {
@@ -95,6 +97,9 @@ namespace RE167 {
 
         static void calculateBoundingBox(float *vertices, int numVertices,
             Vector3 &vMin, Vector3 &vMax);
+            
+        static void calculateBoundingSphere(float * vertices, int numVertices, 
+            Vector4 &center, float & radius);
 
         static void eliminateDuplicateVertices(float *vertices, 
                                                 int *indices, 

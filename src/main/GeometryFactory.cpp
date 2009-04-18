@@ -18,6 +18,7 @@
 #include <assert.h>          // for assertions
 #include <iostream>
 #include "Vector3.h"
+#include "Vector4.h"
 #include "ColorFactory.h"
 #include "ObjReader.h"
 #include "PGMReader.h"
@@ -53,7 +54,7 @@ const int GeometryFactory::NUM_COMPONENTS_PER_RECTANGULAR_FACE =
 * Creates a terrain from a PGM file and stores it in this
 * object
 **/
-void GeometryFactory::createTerrainFromPGM(RE167::Object *o, char * filepath, bool normalize) 
+void GeometryFactory::createTerrainFromPGM(Object *o, char * filepath, bool normalize) 
 {
 	assert(o != NULL);
 	int imageWidth = 0;
@@ -174,7 +175,7 @@ void GeometryFactory::createTerrainFromPGM(RE167::Object *o, char * filepath, bo
 * @param filePath	the path to the .obj file
 * @param normalize	whether or not to make the object fit into unit cube centered at origin
 **/
-void GeometryFactory::createObject(RE167::Object *o, char * filepath, bool normalize) {
+void GeometryFactory::createObject(Object *o, char * filepath, bool normalize) {
 	int numVertices;
 	float *vertices;
 	float *normals;
@@ -205,9 +206,6 @@ void GeometryFactory::createObject(RE167::Object *o, char * filepath, bool norma
 
 	if(normals)
 	{
-
-	    std::cout << "normals num vertices: " << numVertices << " num indices:" << numIndices << std::endl;
-
 		vertexData.vertexDeclaration.addElement(2, 0, 3, 3*sizeof(float), RE167::VES_NORMAL);
 		vertexData.createVertexBuffer(2, numVertices *3*sizeof(float), (unsigned char*)normals);
 	}
@@ -428,10 +426,14 @@ void GeometryFactory::createPositionalSphericalCoordinates(float *vertices,
 }
 
 /**
-*/
+* Given an array of vertices defining an object, calculates the smallest
+* axis-aligned bounding box that fits all the points.
+* Has the side effect of changing vMin to contain the smallest x, y, and z
+* value in the point set, and vMax to contain the largest x, y, and z values.
+**/
 void GeometryFactory::calculateBoundingBox(float *vertices, int numVertices,
-                                            RE167::Vector3 &vMin,
-                                            RE167::Vector3 &vMax)
+                                            Vector3 &vMin,
+                                            Vector3 &vMax)
 {
     float xMin, yMin, zMin;
 	float xMax, yMax, zMax;
@@ -468,11 +470,37 @@ void GeometryFactory::calculateBoundingBox(float *vertices, int numVertices,
     vMax.setZ(zMax);
 }
 
+/**
+* Given an array of vertices defining and object, calculates a bounding sphere
+* containing all of the vertices within it.  Note that this is not guaranteed
+* to find the absolute minimal bounding sphere, but it will be close in most
+* cases.
+* @param vertices       the vertices making up the object
+* @param numVertices    how many vertices there are
+* @param center         will be changed to reflect the center of the bounding
+*                       sphere
+* @param radius         will be changed to reflect the radius of the bounding
+*                       sphere
+**/
+void GeometryFactory::calculateBoundingSphere(float * vertices, int numVertices, 
+    Vector4 &center, float & radius)
+{
 
-
-
-
-
+    Vector3 vMin;
+    Vector3 vMax;
+    
+    calculateBoundingBox(vertices, numVertices, vMin, vMax);
+    // The average of the corners of box gives center
+    Vector3 center3d = 0.5f * (vMin + vMax);
+    // Homogenize
+    center = Vector4(center3d.getX(), center3d.getY(), center3d.getZ(), 1);
+    // Both vMax and vMin will be equally close to the center of the bounding
+    // box, but they are also the farthest possible points from the center of
+    // the box.  Thus the bounding sphere can safely hold all of the points
+    // if we set its radius to be equal to the distance between the center
+    // and the farthest corner.
+    radius = (vMax - center3d).magnitude();
+}
 
 /**
 * Given a triangular mesh defined by vertices and indices where there
@@ -926,7 +954,7 @@ float vertices[] = {-4+6,-4, 4+6,   4+6,-4, 4+6,   4+6, 4, 4+6,  -4+6, 4, 4+6,  
 * @param numRows			how many rows of faces to make
 * @param numFacesPerRow		the number of faces per row
 **/
-void GeometryFactory::createSphere(RE167::Object *o, int numRows, int numFacesPerRow) {
+void GeometryFactory::createSphere(Object *o, int numRows, int numFacesPerRow) {
 	int *indices = NULL;
 	float *vertices= NULL;
 	float *colors = NULL;
@@ -1127,7 +1155,7 @@ void GeometryFactory::fillInVertex(float *&vertices, int startIndex, const Vecto
 }
 
 
-void GeometryFactory::createCylinder(RE167::Object *o, int numRows,
+void GeometryFactory::createCylinder(Object *o, int numRows,
 									 int numFacesPerRow, float radius) {
 	GeometryFactory::createTaperedCylinder(o, numRows, numFacesPerRow, radius, radius);
 }
@@ -1160,7 +1188,7 @@ void GeometryFactory::createCylinder(int numRows,
 
 
 
-void GeometryFactory::createCone(RE167::Object *o, int numRows,
+void GeometryFactory::createCone(Object *o, int numRows,
 								 int numFacesPerRow, float bottomRadius) {
 
 	GeometryFactory::createTaperedCylinder(o, numRows, numFacesPerRow, 0, bottomRadius);
@@ -1199,7 +1227,7 @@ void GeometryFactory::createCone(int numRows,
 * @param topRadius		radius of top of cylinder
 * @param bottomRadius	radius of bottom of cylinder
 */
-void GeometryFactory::createTaperedCylinder(RE167::Object *o, int numRows,
+void GeometryFactory::createTaperedCylinder(Object *o, int numRows,
 									int numFacesPerRow, float topRadius,
 									float bottomRadius) {
 
@@ -1555,7 +1583,7 @@ void GeometryFactory::createTaperedCylinder(int numRows,
  * @param numVertices       how many vertices, size of vertices array is 3 * numVertices
  * @param numIndices    	the size of the indices array
 **/
-void GeometryFactory::fillInObject(RE167::Object *o, float *vertices, float *normals, float *colors, int *indices,
+void GeometryFactory::fillInObject(Object *o, float *vertices, float *normals, float *colors, int *indices,
 								   int numVertices, int numIndices) 
 {
     VertexData& vertexData = o->vertexData;

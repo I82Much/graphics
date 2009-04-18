@@ -33,7 +33,7 @@ namespace RE167 {
 
         inline void setMaterial(Material * m) { material = m; }
         inline Material * getMaterial() { return material; }
-        
+                
         inline void setSphereCenter(const Vector4 &center) { sphereCenter = center; }
         inline void setSphereRadius(const float radius) { sphereRadius = radius; }
         
@@ -50,8 +50,6 @@ namespace RE167 {
 
 	private:
 	    Material * material;
-	    
-        void calculateBoundingSphere();
         
         // Hold bounding sphere information
         Vector4 sphereCenter;
