@@ -18,6 +18,7 @@ namespace RE167 {
 			~Vector4();
 
             static const Vector4 ZERO_VECTOR;
+            static const Vector4 ORIGIN;
 
 			static float angleBetween(const Vector4 &first, const Vector4 &second);
 

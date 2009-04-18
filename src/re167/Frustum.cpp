@@ -32,10 +32,10 @@ void Frustum::setVerticalFOV(const float fov) {
 * @param aspect
 * @param vertFOV	angular extent vertically (radians)
 */
+// TODO: This method is not called with default constructor.  Thus all the near, far, aspectRatio, vertFOV start out wrong
 void Frustum::setFrustum(const float near, const float far, 
     const float aspect, const float vertFOV)
  {
-     
 	this->near = near;
     this->far = far;
     this->aspectRatio = aspect;
@@ -53,5 +53,11 @@ void Frustum::setFrustum(const float near, const float far,
 						0,		p11,	0,	0,
 						0,		0,		p22,p23,
 						0,		0,		p32,	0);
+						
+						
+	/*2, 0, 0, 0, 
+	0, 2, 0, 0, 
+	0, 0, -1.02, -2.02, 
+	0, 0, -1.f, 0.f					*/
 }
 

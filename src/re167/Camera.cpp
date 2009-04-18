@@ -62,6 +62,7 @@ void Camera::changeSettings(const Vector3 &center, const Vector3 &point, const V
 	lookAtPoint = point;
 	upVector = up;
 	updateViewMatrix();
+	calculatePlanes();
 }
 
 
@@ -104,8 +105,8 @@ Camera::ClipStatus Camera::getSphereClipStatus(const Vector4 &center, const floa
 
 /**
 * Calculates the 6 planes defining our view volume.  
+* TODO: We have no way of knowing when the frustum changes... this method would obviously need to be called again
 **/
-
 void Camera::calculatePlanes() 
 {
     float near = getNearPlane();
@@ -131,22 +132,45 @@ void Camera::calculatePlanes()
     
 
     // Near and far planes are easy; we know how far they are from origin 
-    // (near and far, respectively) and we know their normals - they're orthogonal
-    // to camera
-    this->near = Plane();
-    this->far = Plane();
+    // (near and far, respectively) and we know their normals - they point 
+    // straight along z axis, positive for the front plane, negative for
+    // the rear plane
+    this->near = Plane(near, Vector4(0,0,1,0));
+    this->far = Plane(far, Vector4(0,0,-1,0));
+    
+    static const Vector3 origin = Vector3::ZERO_VECTOR;
+    
+    // The four points defining the front plane of the view frustum;
+    // we will use these to calculate the side planes (which slope in towards
+    // origin)
+    Vector3 topRight(right, top, near);
+    Vector3 bottomRight(right, bottom, near);
+    Vector3 bottomLeft(left, bottom, near);
+    Vector3 topLeft(left, top, near);
     
     // We want all the normals to point towards the outside of the frustum
     // (meaning we need to give the points in counter clockwise order)
-
-
-    this->left = Plane();
-    this->right = Plane();
-    this->top = Plane();
-    this->bottom = Plane();
+    this->left = Plane(origin, bottomLeft, topLeft);
+    this->right = Plane(origin, bottomRight, topRight);
+    this->top = Plane(origin, topLeft, topRight);
+    this->bottom = Plane(origin, bottomLeft, bottomRight);
+    
+    /*
+    std::cout << "Top: " << top
+        << "Bottom: " << bottom
+        << "Left: " << left
+        << "Right: " << right
+        << "Near: " << near
+        << "Far: " << far
+        << std::endl;
     
     
-    
-  
+    std::cout << "Top: " << this->top
+        << "\tBottom: " << this->bottom << std::endl
+        << "Left: " << this->left
+        << "\tRight: " << this->right << std::endl
+        << "Near: " << this->near 
+        << "\tFar: " << this->far
+        << std::endl;*/
 }
 

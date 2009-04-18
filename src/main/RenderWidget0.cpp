@@ -324,7 +324,7 @@ void RenderWidget0::initRobot()
     root->addChild(pelvis);
     
     robotGroup = pelvis;
-
+    
 }
 
 
@@ -336,9 +336,11 @@ void RenderWidget0::initCamera()
 	Vector3 upVector = Vector3(0,1,0);
 
 	camera = sceneManager->createCamera();
-	camera->changeSettings(cameraCenter, lookAtPoint, upVector);
-
+	
+	// TODO: the camera stuff will only work if setFrustum is called first!!
+	
 	camera->setFrustum(1, 100, 1, BasicMath::radians(60));
+	camera->changeSettings(cameraCenter, lookAtPoint, upVector);
 }
 
 void RenderWidget0::initLights()
@@ -595,6 +597,13 @@ void RenderWidget0::createTestScene()
         
     RE167::Object * bunny = sceneManager->createObject();
     GeometryFactory::createObject(bunny, "objects/teapot.obj");
+    
+    // Test object stuff
+    /*   Object * bunny = new Object();
+       GeometryFactory::createObject(bunny, "objects/teapot.obj");*/
+       std::cout << "Center of bunny: " << bunny->getSphereCenter() << " radius of sphere: " << bunny->getSphereRadius() << std::endl;
+    
+    
     
     Shape3D * metalBunny = new Shape3D(bunny, polishedSilver);
     Shape3D * emeraldBunny = new Shape3D(bunny, emerald);

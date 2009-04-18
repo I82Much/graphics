@@ -20,6 +20,8 @@ Vector4::Vector4(float x_, float y_, float z_, float w_) :
 Vector4::~Vector4() {}
 
 const Vector4 Vector4::ZERO_VECTOR(0, 0, 0, 0);
+const Vector4 Vector4::ORIGIN(0, 0, 0, 1);
+
 
 /**
 * Constructor that makes a Vector4 from a Vector3

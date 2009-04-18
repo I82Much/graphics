@@ -51,6 +51,7 @@ namespace RE167 {
 	
         // TODO: this is the reason we have to include Vector3.  Ugh.  I could make it take in a Vector3 & instead.
     	Vector3 mapToUnitSphere(int x, int y, int width, int height); 
+    	
 
     private:
     	SceneManager *sceneManager;
@@ -102,7 +103,6 @@ namespace RE167 {
         void initGeometry();
         void initRobot();
         void createTestScene();
-    
     
         void switchScene();
     };

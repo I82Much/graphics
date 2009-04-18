@@ -82,6 +82,8 @@ Camera* SceneManager::createCamera()
 
 
 
+
+
 /**
 * @param node           the node to be added to light nodes, or if a group,
 *                       the nodes whose children will be recursively added
@@ -138,7 +140,8 @@ void SceneManager::renderScene()
         Matrix4 v = mCamera->getViewMatrix();
 
         // Traverse the scene graph
-        root->draw(v, renderContext);
+        // TODO: the mCamera thing could be replaced later on with the CameraNode
+        root->draw(v, renderContext, mCamera);
         
 		renderContext->endFrame();
 	}

@@ -3,6 +3,7 @@
 
 #include "RE167_global.h"
 #include "Matrix4.h"
+#include <cmath>
 
 namespace RE167 {
 
@@ -19,7 +20,9 @@ namespace RE167 {
 	public:
 	    
 	    	    
-		Frustum() :	p(2, 0, 0, 0, 0, 2, 0, 0, 0, 0, -1.02, -2.02, 0, 0, -1.f, 0.f) {}
+		Frustum() :	p(2, 0, 0, 0, 0, 2, 0, 0, 0, 0, -1.02, -2.02, 0, 0, -1.f, 0.f),
+		// If the comments are to be believed, these are the aspect ratios  
+		    near(1), far(101), aspectRatio(1.0f), vertFOV(2.0f * std::atan(.5f))  {}
 						
 		const Matrix4 &getProjectionMatrix() const { return p; }
 
@@ -31,6 +34,7 @@ namespace RE167 {
 		const float getNearPlane() 		const { return near; 	}
 		const float getFarPlane() 		const { return far; 	}
 		const float getAspectRatio() 	const { return aspectRatio; }
+		/** In radians */
 		const float getVerticalFOV() 	const { return vertFOV; 	}
 		
 		/*

@@ -9,9 +9,12 @@ class Object;
 
 namespace RE167
 {
+    class Camera;
+    
 	class RE167_EXPORT Shape3D : public Leaf
 	{
     public:
+        
         
         Shape3D(Object * s, Material * m = NULL) : shape(s), material(m) {}
         // Nothing allocated.
@@ -23,14 +26,13 @@ namespace RE167
         inline void setMaterial(Material * m) { material = m; }
         inline Material * getMaterial() { return material; }
         
-        virtual void draw(const Matrix4 &t, RenderContext * context);
+        virtual void draw(const Matrix4 &t, RenderContext * context, Camera * camera);
         
         static void test();
         
     protected:
         Object * shape;
         Material * material;
-
     };
 }
 

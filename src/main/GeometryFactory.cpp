@@ -196,6 +196,14 @@ void GeometryFactory::createObject(Object *o, char * filepath, bool normalize) {
     //std::fill(&colors[0], &colors[3 * numVertices], 1.0f);
 
 
+    // Calculate the bounding sphere and save it to the object
+     float radius;
+     Vector4 center;
+     calculateBoundingSphere(vertices, numVertices, center, radius);
+     o->setSphereCenter(center);
+     o->setSphereRadius(radius);
+
+
 	VertexData& vertexData = o->vertexData;
 	vertexData.vertexDeclaration.addElement(0, 0, 3, 3*sizeof(float), RE167::VES_POSITION);
 	vertexData.createVertexBuffer(0, numVertices*3*sizeof(float), (unsigned char*)vertices);
@@ -874,6 +882,13 @@ float vertices[] = {-4+6,-4, 4+6,   4+6,-4, 4+6,   4+6, 4, 4+6,  -4+6, 4, 4+6,  
                       0,1,1, 0,0,1, 1,0,1,
                      };
 
+
+    // Calculate the bounding sphere and save it to the object
+     float radius;
+     Vector4 center;
+     calculateBoundingSphere(vertices, numVertices, center, radius);
+     object->setSphereCenter(center);
+     object->setSphereRadius(radius);
 
 	// Set up the vertex data
 	VertexData& vertexData = object->vertexData;
@@ -1586,6 +1601,14 @@ void GeometryFactory::createTaperedCylinder(int numRows,
 void GeometryFactory::fillInObject(Object *o, float *vertices, float *normals, float *colors, int *indices,
 								   int numVertices, int numIndices) 
 {
+    
+    // Calculate the bounding sphere and save it to the object
+    float radius;
+    Vector4 center;
+    calculateBoundingSphere(vertices, numVertices, center, radius);
+    o->setSphereCenter(center);
+    o->setSphereRadius(radius);
+    
     VertexData& vertexData = o->vertexData;
 
     assert (vertices != NULL);
@@ -1681,5 +1704,10 @@ void GeometryFactory::runTestSuite() {
         Vector3 * test = tests[i];
         assert (calculateTriangleNormal(test[0], test[1], test[2]) == test[3]);
     }
+    
+    
+   
+
+    
 
 }

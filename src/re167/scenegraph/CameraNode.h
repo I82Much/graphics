@@ -20,7 +20,7 @@ namespace RE167
         inline void setCamera(Camera * aCamera) { camera = aCamera; }
         inline Camera * getCamera() { return camera; }
         
-        virtual void draw(const Matrix4 &t, RenderContext * context);
+        virtual void draw(const Matrix4 &t, RenderContext * context, Camera * Camera);
         
         static void test();
         

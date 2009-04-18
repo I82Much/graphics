@@ -2,16 +2,18 @@
 #define NODE_H_NS9I4BNR
 
 #include "RE167_global.h"
-#include "Matrix4.h"
 #include "RenderContext.h"
 
 namespace RE167
 {
+    class Matrix4;
+    class Camera;
+    
 	class RE167_EXPORT Node
 	{
     public:
         virtual ~Node() {}
-        virtual void draw(const Matrix4 & t, RenderContext * context) = 0;
+        virtual void draw(const Matrix4 & t, RenderContext * context, Camera * camera) = 0;
     };
 }
 

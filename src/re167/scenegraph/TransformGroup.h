@@ -9,6 +9,7 @@
 
 namespace RE167
 {
+    class Camera;
 	class RE167_EXPORT TransformGroup : public Group
 	{
     public:
@@ -17,24 +18,16 @@ namespace RE167
         TransformGroup(const Matrix4 &t = Matrix4::IDENTITY);
         virtual ~TransformGroup();
         
-        
-        virtual void draw(const Matrix4 &t, RenderContext *context);
+        virtual void draw(const Matrix4 &t, RenderContext *context, Camera * camera);
         
         static void test();
         
         inline void resetTransformation() { transform = Matrix4::IDENTITY; }
         inline void setTransformation(const Matrix4 &t) { transform = t; }
         inline Matrix4 getTransformation() const { return transform; }
-
-        /*
-        inline void resetSecondaryTransformation() { secondaryTransform = Matrix4::IDENTITY; }
-        inline void setSecondaryTransformation(const Matrix4 &t) { secondaryTransform = t; }
-        inline Matrix4 getSecondaryTransformation() const { return secondaryTransform; }
-        */
  
     protected:
         Matrix4 transform;
-        //Matrix4 secondaryTransform;
         
     };
 }

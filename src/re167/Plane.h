@@ -3,6 +3,8 @@
 
 #include "RE167_global.h"
 #include "Vector4.h"
+#include <iostream>
+#include <fstream>
 
 namespace RE167 {
 
@@ -22,10 +24,17 @@ namespace RE167 {
         float distanceTo(const Vector4 &point);
         
         static void test();
+        
+        friend std::ostream &operator<<(std::ostream &os, const Plane &obj);
     private:
         // Perpendicular distance from origin to the plane
         float distance;
         Vector4 unitNormal;
     };
+    
+    inline std::ostream &operator<<(std::ostream &os, const Plane &obj) { 
+        os << "Distance: " << obj.distance << " unitNormal: " << obj.unitNormal;
+		return os;
+	}
 }
 #endif /* end of include guard: PLANE_H_924GCA3G */
