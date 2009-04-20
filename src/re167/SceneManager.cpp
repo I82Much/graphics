@@ -2,6 +2,7 @@
 #include "RenderContext.h"
 #include "scenegraph/TransformGroup.h"
 #include "scenegraph/LightNode.h"
+#include "scenegraph/CameraNode.h"
 
 
 using namespace RE167;
@@ -118,26 +119,88 @@ void SceneManager::addLightNodes(Node * node,
 }
 
 
+/**
+* A recursive method that finds the camera within the scene graph, keeps
+* track of the transformations above the camera in the tree, and returns
+* the transformed CameraNode.
+* @return a pointer to the CameraNode, or NULL if no camera exists in the
+* subtree rooted at root.
+**/
+CameraNode * SceneManager::findCamera(Node * root, const Matrix4 &transform) {
+    // Defensively check against null pointer
+    if (root == NULL) {
+        return NULL;
+    }
+    
+    CameraNode * camera = dynamic_cast<CameraNode*>(root);
+    if (camera != NULL) {
+        camera->setTransformation(transform);
+        return camera;
+    }
+    
+    // The current node is not a camera.  If it's a leaf of any other type,
+    // return NULL; we didn't find it.
+    if (dynamic_cast<Leaf*>(root) != NULL) {
+        return NULL;
+    }
+    
+    TransformGroup * group = dynamic_cast<TransformGroup*>(root);
+    // We have a transform group; recursively call this method on each of
+    // its children
+    if (group != NULL) {
+        const Matrix4 updatedTransform = group->getTransformation() * transform;
+
+        std::list<Node *>::iterator iter;
+        for (iter=group->children.begin(); iter!=group->children.end(); iter++){
+            Node * n = findCamera(*iter, updatedTransform);
+            if (n != NULL) {
+                // We only ever return anything that's NOT null from this method
+                // if it's a CameraNode, so this is guaranteed to work.
+                return dynamic_cast<CameraNode*>(n);
+            }
+        }
+        // None of the children were CameraNodes
+        return NULL;
+    }
+    
+    // Should never get here
+    assert(false && "Reached unreachable portion of findCamera()");
+    return NULL;
+}
+
 
 void SceneManager::renderScene()
 {
 	RenderContext* renderContext = RenderContext::getSingletonPtr();
 
-	if(mCamera!=0) 
+
+    // Find the camera node in the scene graph; if there are more than one
+    // just pick the first one
+    CameraNode * cameraNode = findCamera(root, Matrix4::IDENTITY);
+    
+    assert (cameraNode != NULL);
+    
+    Camera * camera = cameraNode->getCamera();
+
+//    if (mCamera !=0)
+    if(camera!=0) 
 	{
 	    // Set up the lights
-        //renderContext->setLights(getLightsFromGraph(root));
-        std::list<LightNode *> lights;
-        addLightNodes(dynamic_cast<Node *>(root), lights, root->getTransformation());
+        std::list<LightNode *> lightNodes;
+        addLightNodes(dynamic_cast<Node *>(root), lightNodes, root->getTransformation());
         
-        // TODO: Need to convert the LightNodes into Lights.
-        
-        renderContext->setLights(mLightList);
+        //renderContext->setLights(mLightList);
+        renderContext->setLightNodes(lightNodes);
+
 
         renderContext->beginFrame();
 
         renderContext->setProjectionMatrix(mCamera->getProjectionMatrix());
-        Matrix4 v = mCamera->getViewMatrix();
+        //Matrix4 v = mCamera->getViewMatrix();
+
+        Matrix4 v = cameraNode->getTransformation() * camera->getViewMatrix();
+
+
 
         // Traverse the scene graph
         // TODO: the mCamera thing could be replaced later on with the CameraNode

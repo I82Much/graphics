@@ -21,7 +21,7 @@ namespace RE167
         inline void setLight(Light * aLight) { light = aLight; }
         inline Light * getLight() { return light; }
         
-        virtual void draw(const Matrix4 &t, RenderContext * context);
+        virtual void draw(const Matrix4 &t, RenderContext * context, Camera * camera, bool cull);
         
         inline void resetTransformation() { transform = Matrix4::IDENTITY; }
         inline void setTransformation(const Matrix4 &t) { transform = t; }

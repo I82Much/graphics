@@ -5,6 +5,7 @@
 #include "Texture.h"
 #include "Shader.h"
 #include "VertexData.h"
+#include "scenegraph/LightNode.h"
 
 #include <qdatetime.h>
 
@@ -176,6 +177,108 @@ void GLRenderContext::render(Object *object)
 
 	assert(glGetError()==GL_NO_ERROR);
 }
+
+
+void GLRenderContext::setLightNodes(const std::list<LightNode*> &lightList) 
+{
+    
+    GLint lightIndex[] = {GL_LIGHT0, GL_LIGHT1, GL_LIGHT2, GL_LIGHT3, GL_LIGHT4, GL_LIGHT5, GL_LIGHT6, GL_LIGHT7};
+
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+
+	std::list<LightNode*>::const_iterator iter;
+
+	if(lightList.begin()!=lightList.end())
+	{
+		// Lighting
+		glEnable(GL_LIGHTING);
+		
+        for (int i = 0; i < 8; i++) {
+            glDisable(lightIndex[i]);
+        }
+
+		int i=0;
+		for (iter=lightList.begin(); iter!=lightList.end() && i<8; iter++)
+		{
+			Light *l = (*iter)->getLight();
+            Matrix4 transform = (*iter)->getTransformation();
+
+
+			glEnable(lightIndex[i]);
+
+			if(l->getType() == Light::DIRECTIONAL)
+			{
+                Vector3 dir = l->getDirection();
+                Vector4 dir4(dir.getX(), dir.getY(), dir.getZ(), 0);
+                dir4 = transform * dir4;
+                
+				float direction[4];
+				direction[0] = dir4.getX();
+				direction[1] = dir4.getY();
+				direction[2] = dir4.getZ();
+				direction[3] = 0.f;
+				glLightfv(lightIndex[i], GL_POSITION, direction);
+			}
+			if(l->getType() == Light::POINT || l->getType() == Light::SPOT)
+			{
+			    Vector3 pos = l->getPosition();
+                Vector4 pos4(pos.getX(), pos.getY(), pos.getZ(), 0);
+                pos4 = transform * pos4;
+                
+				float position[4];
+				position[0] = pos4.getX();
+				position[1] = pos4.getY();
+				position[2] = pos4.getZ();
+				position[3] = 1.f;
+				glLightfv(lightIndex[i], GL_POSITION, position);
+			}
+			if(l->getType() == Light::SPOT)
+			{
+                Vector3 spotDir = l->getSpotDirection();
+                Vector4 spotDir4(spotDir.getX(), spotDir.getY(), spotDir.getZ(), 0);
+                spotDir4 = transform * spotDir4;
+                
+			    
+				float spotDirection[3];
+				spotDirection[0] = spotDir4.getX();
+				spotDirection[1] = spotDir4.getY();
+				spotDirection[2] = spotDir4.getZ();
+				glLightfv(lightIndex[i], GL_SPOT_DIRECTION, spotDirection);
+				glLightf(lightIndex[i], GL_SPOT_EXPONENT, l->getSpotExponent());
+				glLightf(lightIndex[i], GL_SPOT_CUTOFF, l->getSpotCutoff());
+			}
+
+			float diffuse[4];
+			diffuse[0] = l->getDiffuseColor().getX();
+			diffuse[1] = l->getDiffuseColor().getY();
+			diffuse[2] = l->getDiffuseColor().getZ();
+			diffuse[3] = 1.f;
+			glLightfv(lightIndex[i], GL_DIFFUSE, diffuse);
+
+			float ambient[4];
+			ambient[0] = l->getAmbientColor().getX();
+			ambient[1] = l->getAmbientColor().getY();
+			ambient[2] = l->getAmbientColor().getZ();
+			ambient[3] = 0;
+			glLightfv(lightIndex[i], GL_AMBIENT, ambient);
+
+			float specular[4];
+			specular[0] = l->getSpecularColor().getX();
+			specular[1] = l->getSpecularColor().getY();
+			specular[2] = l->getSpecularColor().getZ();
+			specular[3] = 0;
+			glLightfv(lightIndex[i], GL_SPECULAR, specular);
+			
+			i++;
+            
+		}
+	}
+    
+    
+    
+}
+
 
 // Add the following to GLRenderContext.cpp
 

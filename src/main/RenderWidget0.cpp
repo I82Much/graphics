@@ -24,9 +24,12 @@
 #include "SceneManager.h"
 #include "Material.h"
 
+#include "scenegraph/LightNode.h"
 
 #include "scenegraph/Shape3D.h"
 #include "scenegraph/TransformGroup.h"
+#include "scenegraph/CameraNode.h"
+
 #include "Texture.h"
 
 /**
@@ -65,11 +68,17 @@ void RenderWidget0::initSceneEvent()
     
 	sceneManager = new SceneManager();
 
-    initCamera();
-    initLights();
+   
 //    initGeometry();
     initRobot();
+    
+    
     createTestScene();
+	
+	initCamera();
+    
+	initLights();
+    
 	
 	// Show the bunnies by default
     sceneManager->setRoot(geometryGroup);
@@ -362,6 +371,13 @@ void RenderWidget0::initCamera()
 	
 	camera->setFrustum(1, 100, 1, BasicMath::radians(60));
 	camera->changeSettings(cameraCenter, lookAtPoint, upVector);
+	
+	
+    CameraNode * cn = new CameraNode(camera);
+    torsoTransform->addChild(cn);
+    geometryGroup->addChild(cn);
+	
+    
 }
 
 void RenderWidget0::initLights()
@@ -374,7 +390,11 @@ void RenderWidget0::initLights()
     blue->setDiffuseColor(Vector3(0,0,1));
     blue->setSpecularColor(Vector3(1,1,1));
     blue->setSpotDirection(Vector3(0,0,1));
-    blue->setPosition(Vector3(-1,.5,1));
+    //blue->setPosition(Vector3(-1,.5,1));
+    blue->setPosition(Vector3(0,1,0));
+    
+    
+    LightNode * blueLight = new LightNode(blue);
     
     /*
     // Make a green spotlight coming from the right
@@ -394,6 +414,16 @@ void RenderWidget0::initLights()
     white->setDiffuseColor(Vector3(1,1,1));
     white->setAmbientColor(Vector3(.2,.2,.2));
     white->setSpecularColor(Vector3(1,1,1));
+    
+    LightNode * whiteLight = new LightNode(white);
+    
+    
+    
+    
+    robotGroup->addChild(whiteLight);
+
+    
+    leftHand->addChild(blueLight);
     
 }
 

@@ -39,18 +39,18 @@ namespace RE167 {
     	// Called when the render widget is resized.
     	void resizeRenderWidgetEvent(const QSize &s);
 
-    	// Virtual methods of QWidget class. This is a subset. Re-implement any
-    	// that you would like to handle.
-    	void timerEvent(QTimerEvent *t);
-    	void mousePressEvent(QMouseEvent *e);
-    	void mouseMoveEvent(QMouseEvent *e);
-    	void mouseReleaseEvent(QMouseEvent *e);
+        // Virtual methods of QWidget class. This is a subset. Re-implement any
+        // that you would like to handle.
+        void timerEvent(QTimerEvent *t);
+        void mousePressEvent(QMouseEvent *e);
+        void mouseMoveEvent(QMouseEvent *e);
+        void mouseReleaseEvent(QMouseEvent *e);
 
-    	void keyPressEvent ( QKeyEvent * e );
-    	void keyReleaseEvent ( QKeyEvent * e);
+        void keyPressEvent ( QKeyEvent * e );
+        void keyReleaseEvent ( QKeyEvent * e);
 	
         // TODO: this is the reason we have to include Vector3.  Ugh.  I could make it take in a Vector3 & instead.
-    	Vector3 mapToUnitSphere(int x, int y, int width, int height); 
+        Vector3 mapToUnitSphere(int x, int y, int width, int height); 
     	
 
     private:
@@ -58,12 +58,12 @@ namespace RE167 {
         Camera *camera;
 
         // TODO: clean this stuff out
-    	Object *object;
-    	Object *houses;
-    	Object *terrain;
-    	Object *bunny;
+        Object *object;
+        Object *houses;
+        Object *terrain;
+        Object *bunny;
         Object *cube;
-    	Object *dragon;
+        Object *dragon;
         Object *sphere;
         Object *teapot;
         Object *buddha;
@@ -90,12 +90,12 @@ namespace RE167 {
         TransformGroup * robotGroup;
         TransformGroup * geometryGroup;
 	
-    	// Hold the last mouse position
-    	int lastX;
-    	int lastY;
+        // Hold the last mouse position
+        int lastX;
+        int lastY;
 
-    	int timerId;
-    	int counter;
+        int timerId;
+        int counter;
 	
         void initCamera();
         void initLights();

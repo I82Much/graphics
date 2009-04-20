@@ -10,7 +10,8 @@
 #include "Light.h"
 
 namespace RE167 {
-
+    class LightNode;
+    
 	/** This is an abstract class serving as the interface to the low-level
 		API. Currently, only an OpenGL subclass is implemented. You could 
 		also add a DirectX class. You will add a software renderer in a 
@@ -27,6 +28,8 @@ namespace RE167 {
 		virtual void setModelViewMatrix(const Matrix4 &m) = 0;
 		virtual void setProjectionMatrix(const Matrix4 &m) = 0;
         virtual void setLights(const std::list<Light*> &lightList) = 0;
+        
+        virtual void setLightNodes(const std::list<LightNode*> &lights) = 0;
         virtual void setMaterial(const Material *m) = 0;
 		virtual void render(Object *object) = 0;
 	};

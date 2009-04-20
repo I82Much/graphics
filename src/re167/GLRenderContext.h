@@ -13,7 +13,8 @@ namespace RE167 {
     // Forward declarations
     class Light;
     class Material;
-
+    class LightNode;
+    
 	/** This class implements the abstract base class RenderContext and
 		it is the main interface to the low-level graphics OpenGL API.
 	@remarks
@@ -37,6 +38,9 @@ namespace RE167 {
     		RenderContext.h so that the SceneManager can call it.
     	*/
     	void setLights(const std::list<Light*> &lightList);
+    	
+    	void setLightNodes(const std::list<LightNode*> &lightList);
+        
     	
 		void beginFrame();
 		void endFrame();
