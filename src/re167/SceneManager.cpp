@@ -187,7 +187,7 @@ void SceneManager::renderScene()
 	{
 	    // Set up the lights
         std::list<LightNode *> lightNodes;
-        addLightNodes(dynamic_cast<Node *>(root), lightNodes, root->getTransformation());
+        addLightNodes(root, lightNodes, Matrix4::IDENTITY);
         
         //renderContext->setLights(mLightList);
         renderContext->setLightNodes(lightNodes);
