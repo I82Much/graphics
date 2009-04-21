@@ -6,13 +6,16 @@
 
 
 namespace RE167 {
-
+    class Vector4;
+    
 	class RE167_EXPORT Vector3 {
 
 		public:
 			// Default constructor; creates 0 vector
 			Vector3(void);
 			Vector3(float x, float y, float z);
+			
+            Vector3(const Vector4 &fourVec);
 			
 			~Vector3();
 

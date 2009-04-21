@@ -6,19 +6,21 @@
 #include "GeometryFactory.h"
 #include "scenegraph/Group.h"
 #include "Plane.h"
+#include "BezierCurve.h"
 
 using namespace RE167;
 
 int main(int argc, char *argv[])
 {
+    
+    BezierCurve::test();
+    /*
     Plane::test();
     Group::test();
     Vector3::runTestSuite();
-	
-	
-	
-//	Matrix4::runTestSuite();
+	Matrix4::runTestSuite();
     GeometryFactory::runTestSuite();
+    */
 	QApplication app(argc, argv);
     MainWindow window;
     window.show();

@@ -26,6 +26,7 @@
 #include <vector>
 #include "VertexData.h"
 #include "Object.h"
+#include "BezierCurve.h"
 
 using namespace RE167;
 
@@ -244,11 +245,20 @@ void GeometryFactory::createObject(Object *o, char * filepath, bool normalize) {
 
 	vertexData.createIndexBuffer(numIndices, indices);
 
-	if(normals) delete[] normals;
-	if(texcoords) delete[] texcoords;
+	if(normals) {
+	    delete[] normals;
+        normals = NULL;
+    }
+	if(texcoords) {
+	    delete[] texcoords;
+        texcoords = NULL;
+    }
 	delete[] vertices;
+    vertices = NULL;
 	delete[] indices;
+    indices = NULL;
 	delete[] colors;
+    colors = NULL;
 }
 
 
@@ -767,6 +777,7 @@ void GeometryFactory::calculateNormals(float *vertices, int *indices, float *&no
     }
 
     delete[] vNormals;
+    vNormals = NULL;
 
 }
 
@@ -993,6 +1004,10 @@ void GeometryFactory::createSphere(Object *o, int numRows, int numFacesPerRow) {
     delete[] normals;
 	delete[] colors;
     //delete[] normals;
+    indices = NULL;
+    vertices = NULL;
+    normals = NULL;
+    colors = NULL;
 }
 
 /**
@@ -1147,7 +1162,8 @@ void GeometryFactory::createSphere(int numFaceRows,
 
     // Our vertices array is fully filled in; no need for the temporary one
     delete[] tempVertices;
-
+    tempVertices = NULL;
+    
     // Create the color array.  Each triangle section of each face will be
     // a separate color
     //colors = new float[numVertices * 3];
@@ -1167,11 +1183,7 @@ void GeometryFactory::createSphere(int numFaceRows,
 }
 
 
-void GeometryFactory::fillInVertex(float *&vertices, int startIndex, const Vector3 &vertex) {
-    vertices[startIndex  ] = vertex.getX();
-    vertices[startIndex+1] = vertex.getY();
-    vertices[startIndex+2] = vertex.getZ();
-}
+
 
 
 void GeometryFactory::createCylinder(Object *o, int numRows,
@@ -1248,7 +1260,8 @@ void GeometryFactory::createCone(int numRows,
 */
 void GeometryFactory::createTaperedCylinder(Object *o, int numRows,
 									int numFacesPerRow, float topRadius,
-									float bottomRadius) {
+									float bottomRadius) 
+{							
 
 	int *indices = NULL;
 	float *vertices= NULL;
@@ -1280,6 +1293,10 @@ void GeometryFactory::createTaperedCylinder(Object *o, int numRows,
 	delete[] vertices;
     delete[] normals;
 	delete[] colors;
+    indices = NULL;
+    vertices = NULL;
+    normals = NULL;
+    colors = NULL;
 
 }
 
@@ -1585,6 +1602,229 @@ void GeometryFactory::createTaperedCylinder(int numRows,
 	// We no longer need the temparray
 	delete[] tempVertices;
     delete[] tempNormals;
+    tempVertices = NULL;
+    tempNormals = NULL;
+}
+
+void GeometryFactory::createSurfaceOfRevolution(Object *o, 
+    const BezierCurve &generatrix,
+    int numPointsToEvaluateAlongCurve,
+    int numAnglesToRotate)
+{
+    assert (o != NULL);
+    int *indices = NULL;
+	float *vertices= NULL;
+	float *colors = NULL;
+    float *normals = NULL;
+    float *textureCoords = NULL;
+	int numVertices = 0;
+	int numIndices = 0;
+	// Do the heavy lifting with a helper method
+	createSurfaceOfRevolution(generatrix, 
+	    numPointsToEvaluateAlongCurve, 
+	    numAnglesToRotate, 
+	    vertices,  
+	    normals, 
+	    textureCoords,
+	    colors, 
+	    indices,
+	    numVertices,
+        numIndices);
+        
+    assert (indices != NULL);
+    assert (vertices != NULL);
+        
+    // TODO: Make this method take in the texture coordinates too
+	fillInObject(o, vertices, normals, colors, indices, 
+        numVertices, numIndices);
+    
+    
+    delete[] indices;
+    indices = NULL;
+    delete[] vertices;
+    vertices = NULL;
+    if (normals != NULL) {
+        delete[] normals;
+        normals = NULL;
+    }
+    if (colors != NULL) {
+	    delete[] colors;
+        colors = NULL;
+    }
+    if (normals != NULL) {
+        delete[] normals;
+        normals = NULL;
+    }
+    if (textureCoords != NULL) {
+        delete[] textureCoords;
+        textureCoords = NULL;
+    }
+    
+    
+}
+
+/**
+* Given a 2D bezier curve in the xy plane, rotate about the y-axis to produce
+* a 3d surface.  
+**/
+void GeometryFactory::createSurfaceOfRevolution(
+    const BezierCurve &generatrix,
+    int numPointsToEvaluateAlongCurve,
+    int numAnglesToRotate,
+    // outputs
+    float *&vertices,
+    float *&normals,
+    float *&textureCoords,
+    float *&colors,
+    int *&indices,
+    int &numVertices,
+    int &numIndices)
+{
+    assert(numPointsToEvaluateAlongCurve >= 1);
+    assert(numAnglesToRotate >= 1);
+    
+    // Uniformly sample both the points and the tangents
+    std::vector <Vector3> pointsOnCurve = 
+        generatrix.uniformPointSample(numPointsToEvaluateAlongCurve);
+    std::vector <Vector3> tangentVectorsOnCurve = 
+        generatrix.uniformTangentSample(numPointsToEvaluateAlongCurve);
+
+    std::cout << "\n\n\n" << std::endl;
+
+    std::vector<Vector3>::iterator i;
+    for(i=pointsOnCurve.begin(); i != pointsOnCurve.end(); ++i) std::cout << (*i);
+    std::cout << "Size of point array: " << pointsOnCurve.size() << std::endl;
+    std::cout << "numPointsToEvaluateAlongCurve: " << numPointsToEvaluateAlongCurve << std::endl;
+    
+
+    assert (pointsOnCurve.size() == tangentVectorsOnCurve.size());
+    assert (pointsOnCurve.size() == numPointsToEvaluateAlongCurve);    
+        
+    std::vector <std::vector<Vector3> > rotatedPoints;
+    std::vector <std::vector<Vector3> > rotatedTangentVectors;
+    
+      
+    
+    // Sample at numAnglesToRotate positions around the y axis
+    for (int i = 0; i < numAnglesToRotate; i++) {
+        // TODO: Look into this.
+        // Need to subtract 1 in order to ever have 100% (0 based indexing)
+        float proportionAround =   static_cast<float>(i) / 
+                                    static_cast<float>(numAnglesToRotate);
+        float theta = TWO_PI * proportionAround;
+        
+        std::cout << "theta: " << BasicMath::degrees(theta) << std::endl;
+        
+        Matrix4 rotationMatrix = Matrix4::rotateY(theta);
+
+        // Create the std::vector we need to hold all the points at this
+        // angle of rotation
+        rotatedPoints.push_back(std::vector<Vector3>());
+        rotatedTangentVectors.push_back(std::vector<Vector3>());
+        
+
+        // Need to rotate each point along the curve
+        for (int j = 0; j < pointsOnCurve.size(); j++) {
+            Vector3 point = pointsOnCurve[j];
+            Vector3 tangent = tangentVectorsOnCurve[j].normalize();
+            
+            // We need to transform the 3d points to 4d for purposes of 
+            // matrix multiplication
+            Vector4 point4(point);
+            Vector4 tangent4(tangent);
+            
+            Vector4 transformedPoint4 = rotationMatrix * point4;
+            Vector4 transformedTangentVector4 = rotationMatrix * tangent4;
+            
+            // Keep track of rotated point and vector; the rotation does not
+            // change length of vector so we don't need to worry about 
+            // normalzing it
+            rotatedPoints[i].push_back(Vector3(transformedPoint4));
+            rotatedTangentVectors[i].push_back(Vector3(transformedTangentVector4));
+        }
+    }
+    
+    assert(rotatedPoints.size() == numAnglesToRotate);
+    assert(rotatedPoints[0].size() == numPointsToEvaluateAlongCurve);
+            
+    // TODO: 3D normal vector
+    // TODO: texture coordinate
+    
+    // We have all of our points; now we need to connect them up correctly. 
+
+    // how many rows of faces?
+    const int NUM_ROWS = numPointsToEvaluateAlongCurve - 1;
+    const int numFacesPerRow = numAnglesToRotate;
+    const int NUM_COMPONENTS_PER_ROW =
+        NUM_COMPONENTS_PER_RECTANGULAR_FACE * numFacesPerRow;
+    
+    	
+    numVertices = NUM_ROWS * numFacesPerRow;	
+    numIndices = numVertices;
+    
+    // Need 3 times as much space because each vertex has an x,y,z component
+    vertices = new float[3 * numVertices];	
+    indices = new int[numIndices];	
+    	
+	for (int row = 0; row < NUM_ROWS; row++) {
+
+
+		// The "face"th and ("face"+1)%numFacesPerRow vertices in row "row"
+		// form a rectangular face with the "face"th and ("face"+1)%numFacesPerRow
+		// vertices in row "row" + 1.
+		for (int face = 0; face < numFacesPerRow; face++) {
+            
+            // Face 1: Upper right triangle of rectangular face
+            // Vertex 1: Upper left corner
+            Vector3 f1_1 = rotatedPoints[face][row];
+            // Lower right corner
+            Vector3 f1_2 = rotatedPoints[(face+1) % numFacesPerRow][row+1];
+            // Upper right corner
+            Vector3 f1_3 = rotatedPoints[(face+1) % numFacesPerRow][row];
+            
+            
+            // Face 2: Lower left triangle of rectangular face
+            // Upper left corner (same as f1_1)
+            Vector3 f2_1 = f1_1;
+            // Lower left corner
+            Vector3 f2_2 = rotatedPoints[face][row+1];
+            // Lower right corner: (same as f1_2)
+            Vector3 f2_3 = f1_2;
+            
+            // Now we need to actually fill in the vertices array with the
+            // raw float values from our vertices.  We are filling in
+            // 6 vertices, for a total of 18 floats added to the array per
+            // iteration of this inner loop.  
+            int startIndex = (row * NUM_COMPONENTS_PER_ROW) + (NUM_COMPONENTS_PER_RECTANGULAR_FACE * face);
+            
+
+            fillInVertex(vertices, startIndex,    f1_1);
+            fillInVertex(vertices, startIndex+3,  f1_2);
+            fillInVertex(vertices, startIndex+6,  f1_3);
+            fillInVertex(vertices, startIndex+9,  f2_1);
+            fillInVertex(vertices, startIndex+12, f2_2);
+            fillInVertex(vertices, startIndex+15, f2_3);
+/*
+            fillInVertex(normals, startIndex,    f1_1n);
+            fillInVertex(normals, startIndex+3,  f1_2n);
+            fillInVertex(normals, startIndex+6,  f1_3n);
+            fillInVertex(normals, startIndex+9,  f2_1n);
+            fillInVertex(normals, startIndex+12, f2_2n);
+            fillInVertex(normals, startIndex+15, f2_3n);*/
+		}
+	}
+	
+	// Fill in the indices array
+    for (int i = 0; i < numIndices; i++) {
+        indices[i] = i;
+    }
+	   
+	std::cout << "numPointsAlongCurve: " << numPointsToEvaluateAlongCurve <<
+    "numAngles: " << numAnglesToRotate  << "Number of vertices: " << numVertices << std::endl; 
+    
+    
+    
+    
 }
 
 
@@ -1616,6 +1856,7 @@ void GeometryFactory::fillInObject(Object *o, float *vertices, float *normals, f
     VertexData& vertexData = o->vertexData;
 
     assert (vertices != NULL);
+    assert (numVertices >= 1);
 
 	// one element for vertices
 	vertexData.vertexDeclaration.addElement(0, 0, 3, 3*sizeof(float), RE167::VES_POSITION);
@@ -1648,7 +1889,11 @@ void GeometryFactory::fillInObject(Object *o, float *vertices, float *normals, f
     vertexData.vertexDeclaration.addElement(3, 0, 2, 2*sizeof(float),
         RE167::VES_TEXTURE_COORDINATES);
     vertexData.createVertexBuffer(3, numVertices * 2*sizeof(float), (unsigned char*) texCoords);
-    delete[] texCoords;
+    
+    if (texCoords != NULL) {
+        delete[] texCoords;
+        texCoords = NULL;
+    }
         
         
         
@@ -1709,9 +1954,10 @@ void GeometryFactory::runTestSuite() {
         assert (calculateTriangleNormal(test[0], test[1], test[2]) == test[3]);
     }
     
-    
-   
+}
 
-    
-
+void GeometryFactory::fillInVertex(float *&vertices, int startIndex, const Vector3 &vertex) {
+    vertices[startIndex  ] = vertex.getX();
+    vertices[startIndex+1] = vertex.getY();
+    vertices[startIndex+2] = vertex.getZ();
 }

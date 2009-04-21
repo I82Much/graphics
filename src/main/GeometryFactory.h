@@ -11,7 +11,8 @@ namespace RE167 {
     class Object;
     class Vector3;
     class Vector4;
-
+    class BezierCurve;
+    
     class RE167_EXPORT GeometryFactory 
     {
     public:
@@ -43,30 +44,50 @@ namespace RE167 {
     								float bottomRadius = 1.0f);
 	
     	static void createTaperedCylinder(int numRows,
-    								int numFacesPerRow,
-    								float topRadius,
-    								float bottomRadius,
-    								float *&vertices,
-    								float *&normals,
-    								float *&colors,
-    								int *&indices,
-    								int &numVertices,
-    								int &numIndices);
+            int numFacesPerRow,
+            float topRadius,
+            float bottomRadius,
+            float *&vertices,
+            float *&normals,
+            float *&colors,
+            int *&indices,
+            int &numVertices,
+            int &numIndices);
 
 
     	static void createCylinder(Object *o, int numHeightSegments = 1,
-    								int numSlices = 20, float radius = 1.0f);
+            int numSlices = 20, float radius = 1.0f);
 
 
     	static void createCylinder(int numRows,
-    								int numFacesPerRow,
-    								float radius,
-    								float *&vertices,
-    								float *&normals,
-    								float *&colors,
-    								int *&indices,
-    								int &numVertices,
-    								int &numIndices);
+            int numFacesPerRow,
+            float radius,
+            float *&vertices,
+            float *&normals,
+            float *&colors,
+            int *&indices,
+            int &numVertices,
+            int &numIndices);
+        
+        static void createSurfaceOfRevolution(Object *o, 
+            const BezierCurve &generatrix,
+            int numPointsToEvaluateAlongCurve,
+            int numberOfAnglesToRotate);
+
+        static void createSurfaceOfRevolution(
+            const BezierCurve &generatrix,
+            int numPointsToEvaluateAlongCurve,
+            int numberOfAnglesToRotate,
+            // outputs
+            float *&vertices,
+            float *&normals,
+            float *&textureCoords,
+            float *&colors,
+            int *&indices,
+            int &numVertices,
+            int &numIndices);
+                                
+
 
 
     	static void createCone(Object *o, int numHeightSegments = 1,

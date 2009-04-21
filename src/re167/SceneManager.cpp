@@ -173,17 +173,19 @@ void SceneManager::renderScene()
 {
 	RenderContext* renderContext = RenderContext::getSingletonPtr();
 
-
+    // TODO: Put camera stuff back in after the curves work
+    
+    
     // Find the camera node in the scene graph; if there are more than one
     // just pick the first one
     CameraNode * cameraNode = findCamera(root, Matrix4::IDENTITY);
     
-    assert (cameraNode != NULL);
+    //assert (cameraNode != NULL);
     
-    Camera * camera = cameraNode->getCamera();
+    //Camera * camera = cameraNode->getCamera();
 
-//    if (mCamera !=0)
-    if(camera!=0) 
+    if (mCamera !=0)
+//    if(camera!=0) 
 	{
 	    // Set up the lights
         std::list<LightNode *> lightNodes;
@@ -196,9 +198,9 @@ void SceneManager::renderScene()
         renderContext->beginFrame();
 
         renderContext->setProjectionMatrix(mCamera->getProjectionMatrix());
-        //Matrix4 v = mCamera->getViewMatrix();
+        Matrix4 v = mCamera->getViewMatrix();
 
-        Matrix4 v = cameraNode->getTransformation() * camera->getViewMatrix();
+        //Matrix4 v = cameraNode->getTransformation() * camera->getViewMatrix();
 
 
 

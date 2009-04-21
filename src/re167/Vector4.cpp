@@ -26,7 +26,7 @@ const Vector4 Vector4::ORIGIN(0, 0, 0, 1);
 /**
 * Constructor that makes a Vector4 from a Vector3
 */
-Vector4::Vector4(const Vector3 &val) : x(val.getX()), y(val.getY()), z(val.getZ()), w(1) {}
+Vector4::Vector4(const Vector3 &val) : x(val.getX()), y(val.getY()), z(val.getZ()), w(0) {}
 
 
 

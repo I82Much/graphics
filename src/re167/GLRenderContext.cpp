@@ -33,8 +33,10 @@ void GLRenderContext::init()
     
 	glShadeModel(GL_SMOOTH);
 	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_CULL_FACE);
+	//glEnable(GL_CULL_FACE);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	
 	clock = new QTime();
     globalClock = new QTime();
@@ -70,15 +72,20 @@ void GLRenderContext::endFrame()
     
 	glFlush();
 //	std::cout << "Elapsed ms: " << clock->elapsed() << std::endl;
-	
+
+	static bool PRINT_FPS = false;
+    
+
     numFramesRendered++;
     const int NUM_FRAMES_TO_TEST = 1000;
     if (numFramesRendered % NUM_FRAMES_TO_TEST == 0) {
         // Number of milliseconds
         int elapsedTime = globalClock->elapsed();
         float numSeconds = elapsedTime / 1000.0f;
-        std::cout << numSeconds << " num seconds" << std::endl;
-        std::cout << "FPS: " << numFramesRendered / numSeconds << std::endl;
+        if (PRINT_FPS) {
+            std::cout << numSeconds << " num seconds" << std::endl;
+            std::cout << "FPS: " << numFramesRendered / numSeconds << std::endl;
+        }
         numFramesRendered = 0;
         globalClock->restart();
     }

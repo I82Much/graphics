@@ -29,7 +29,8 @@
 #include "scenegraph/Shape3D.h"
 #include "scenegraph/TransformGroup.h"
 #include "scenegraph/CameraNode.h"
-
+#include "BezierCurve.h"
+#include "Vector3.h"
 #include "Texture.h"
 
 /**
@@ -70,10 +71,10 @@ void RenderWidget0::initSceneEvent()
 
    
 //    initGeometry();
-    initRobot();
+    //initRobot();
     
     
-    createTestScene();
+    //createTestScene();
 	
 	initCamera();
     
@@ -81,9 +82,9 @@ void RenderWidget0::initSceneEvent()
     
 	
 	// Show the bunnies by default
-    sceneManager->setRoot(geometryGroup);
+    //sceneManager->setRoot(geometryGroup);
 	
-    //test();
+    test();
 	
 	
 	// Trigger timer event every 5ms.
@@ -190,15 +191,29 @@ void RenderWidget0::initGeometry()
 
 void RenderWidget0::test()
 {
-    Object * cube = sceneManager->createObject();
-    GeometryFactory::createCube(cube);
+
+    // Test the curve stuff
+    Vector3 p1(0,4,0);
+    Vector3 p2(2,2,0);
+    Vector3 p3(2,2,0);
+    Vector3 p4(0,0,0);
     
-    std::cout << "Center: " << cube->getSphereCenter() << " Radius: " << cube->getSphereRadius() << std::endl;
-/*    assert(cube->getSphereCenter() == Vector4(0,0,0,1));
-    assert(cube->getSphereRadius() == sqrt(2.0f));*/
+    BezierCurve b(p1,p2,p3,p4);
+    /*
+    Object * o = sceneManager->createObject();
     
-    sceneManager->getRoot()->addChild(new Shape3D(cube));
+    GeometryFactory::createSurfaceOfRevolution(o, 
+        b,
+        3,
+        4);*/
     
+    /*
+    TransformGroup * tg = new TransformGroup();
+    tg->addChild(new Shape3D(o));
+    sceneManager->setRoot(tg);*/
+
+    
+    // This will form a cone
 }
 
 
@@ -374,8 +389,10 @@ void RenderWidget0::initCamera()
 	
 	
     CameraNode * cn = new CameraNode(camera);
-    torsoTransform->addChild(cn);
-    geometryGroup->addChild(cn);
+//    torsoTransform->addChild(cn);
+  //  geometryGroup->addChild(cn);
+    
+    //sceneManager->getRoot()->addChild(cn);
 	
     
 }
@@ -419,12 +436,12 @@ void RenderWidget0::initLights()
     
     
     
-    
+    /*
     robotGroup->addChild(whiteLight);
 
     
     leftHand->addChild(blueLight);
-    
+    */
 }
 
 
@@ -439,7 +456,7 @@ void RenderWidget0::resizeRenderWidgetEvent(const QSize &s)
 
 void RenderWidget0::timerEvent(QTimerEvent *t)
 {
-    
+    /*
     float SLOW_DEGREES_PER_TICK = 0.1;
     float degree = counter * SLOW_DEGREES_PER_TICK;
     
@@ -467,7 +484,7 @@ void RenderWidget0::timerEvent(QTimerEvent *t)
     rightHand->setTransformation(rightHand->getTransformation() * Matrix4::rotateY(BasicMath::radians(-sign * SLOW_DEGREES_PER_TICK)));
     
     torsoTransform->setTransformation(torsoTransform->getTransformation() * Matrix4::rotateY(BasicMath::radians(-sign * SLOW_DEGREES_PER_TICK)));
-    
+    */
     //earth->setTransformation(earth->getTransformation() * Matrix4::rotateY(0.005));
 	updateScene();
 	counter++;

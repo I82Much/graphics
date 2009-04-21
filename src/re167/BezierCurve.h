@@ -21,9 +21,16 @@ namespace RE167
         
         ~BezierCurve();
         
+        // TODO: there is no symmetry between point and position.
+        std::vector <Vector3> uniformPointSample(int numStraightSegments) const;
+        std::vector <Vector3> uniformTangentSample(int numStraightSegments) const;
         
-        Vector3 position(float t);
-        Vector3 tangent(float t);
+        
+        Vector3 position(float t) const;
+        
+        Vector3 tangent(float t) const;
+
+        static void test();
         
 	private:
 
@@ -32,10 +39,9 @@ namespace RE167
         
         static const Matrix4 WEIGHTS;
         
-        static void test();
         
         void createMatrices();
-        int calculateIndex(float t);
+        static int calculateIndex(float t);
         std::vector <Matrix4> matrices;
 	};
 
