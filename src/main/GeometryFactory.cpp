@@ -28,6 +28,8 @@
 #include "Object.h"
 #include "BezierCurve.h"
 
+using std::cout;
+using std::endl;
 using namespace RE167;
 
 #include "BasicMath.h"
@@ -1704,7 +1706,6 @@ void GeometryFactory::createSurfaceOfRevolution(
     std::vector <std::vector<Vector3> > rotatedPoints;
     std::vector <std::vector<Vector3> > rotatedTangentVectors;
     
-      
     
     // Sample at numAnglesToRotate positions around the y axis
     for (int i = 0; i < numAnglesToRotate; i++) {
@@ -1748,19 +1749,27 @@ void GeometryFactory::createSurfaceOfRevolution(
     assert(rotatedPoints.size() == numAnglesToRotate);
     assert(rotatedPoints[0].size() == numPointsToEvaluateAlongCurve);
             
+            
+    for (int i = 0; i < rotatedPoints.size(); i++) {
+        for (int j = 0; j < rotatedPoints[i].size(); j++) {
+            cout << "i: " << i << "j: " << j << ": " << rotatedPoints[i][j] << endl;
+        }
+    }        
+            
     // TODO: 3D normal vector
     // TODO: texture coordinate
     
     // We have all of our points; now we need to connect them up correctly. 
 
+    // TODO: this seems wrong.  why isn't it - 1?
     // how many rows of faces?
-    const int NUM_ROWS = numPointsToEvaluateAlongCurve + 1;
+    const int NUM_ROWS = numPointsToEvaluateAlongCurve - 1;
     const int numFacesPerRow = numAnglesToRotate;
     const int NUM_COMPONENTS_PER_ROW =
         NUM_COMPONENTS_PER_RECTANGULAR_FACE * numFacesPerRow;
     
     	
-    numVertices = NUM_ROWS * numFacesPerRow;	
+    numVertices = NUM_COMPONENTS_PER_ROW * NUM_ROWS;
     numIndices = numVertices;
     
     // Need 3 times as much space because each vertex has an x,y,z component

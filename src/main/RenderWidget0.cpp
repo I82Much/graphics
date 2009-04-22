@@ -193,10 +193,10 @@ void RenderWidget0::test()
 {
 
     // Test the curve stuff
-    Vector3 p1(0,4,0);
-    Vector3 p2(2,2,0);
-    Vector3 p3(2,2,0);
-    Vector3 p4(0,0,0);
+    Vector3 p1(3,4,0);
+    Vector3 p2(1,2,0);
+    Vector3 p3(2,3,0);
+    Vector3 p4(4,0,0);
     
     BezierCurve b(p1,p2,p3,p4);
     Object * o = sceneManager->createObject();
@@ -204,8 +204,8 @@ void RenderWidget0::test()
     
     GeometryFactory::createSurfaceOfRevolution(o, 
         b,
-        3,
-        4);
+        10,
+        8);
     
     
     TransformGroup * tg = new TransformGroup();
