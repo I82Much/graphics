@@ -46,7 +46,9 @@ SOURCES += src/re167/BasicMath.cpp \
  src/re167/scenegraph/Shape3D.cpp \
  src/re167/Plane.cpp \
  src/re167/scenegraph/LightNode.cpp \
- src/re167/scenegraph/CameraNode.cpp
+ src/re167/scenegraph/CameraNode.cpp \
+ src/re167/BezierCurve.cpp
+ 
 
 
  
@@ -60,7 +62,6 @@ HEADERS += src/re167/BasicMath.h \
  src/main/MainWidget.h \
  src/main/MainWindow.h \
  src/re167/Matrix4.h \
- src/re167/Node.h \
  src/re167/Object.h \
  src/re167/RenderContext.h \
  src/re167/RenderWidget.h \
@@ -97,7 +98,9 @@ HEADERS += src/re167/BasicMath.h \
  src/re167/scenegraph/Shape3D.h \
  src/re167/Plane.h \
  src/re167/scenegraph/LightNode.h \
- src/re167/scenegraph/CameraNode.h
+ src/re167/scenegraph/CameraNode.h \
+ src/re167/BezierCurve.h
+
 
 
 	
