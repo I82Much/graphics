@@ -199,18 +199,18 @@ void RenderWidget0::test()
     Vector3 p4(0,0,0);
     
     BezierCurve b(p1,p2,p3,p4);
-    /*
     Object * o = sceneManager->createObject();
+    
     
     GeometryFactory::createSurfaceOfRevolution(o, 
         b,
         3,
-        4);*/
+        4);
     
-    /*
+    
     TransformGroup * tg = new TransformGroup();
     tg->addChild(new Shape3D(o));
-    sceneManager->setRoot(tg);*/
+    sceneManager->setRoot(tg);
 
     
     // This will form a cone

@@ -1634,6 +1634,7 @@ void GeometryFactory::createSurfaceOfRevolution(Object *o,
     assert (indices != NULL);
     assert (vertices != NULL);
         
+       
     // TODO: Make this method take in the texture coordinates too
 	fillInObject(o, vertices, normals, colors, indices, 
         numVertices, numIndices);
@@ -1753,7 +1754,7 @@ void GeometryFactory::createSurfaceOfRevolution(
     // We have all of our points; now we need to connect them up correctly. 
 
     // how many rows of faces?
-    const int NUM_ROWS = numPointsToEvaluateAlongCurve - 1;
+    const int NUM_ROWS = numPointsToEvaluateAlongCurve + 1;
     const int numFacesPerRow = numAnglesToRotate;
     const int NUM_COMPONENTS_PER_ROW =
         NUM_COMPONENTS_PER_RECTANGULAR_FACE * numFacesPerRow;
@@ -1797,7 +1798,7 @@ void GeometryFactory::createSurfaceOfRevolution(
             // iteration of this inner loop.  
             int startIndex = (row * NUM_COMPONENTS_PER_ROW) + (NUM_COMPONENTS_PER_RECTANGULAR_FACE * face);
             
-
+            
             fillInVertex(vertices, startIndex,    f1_1);
             fillInVertex(vertices, startIndex+3,  f1_2);
             fillInVertex(vertices, startIndex+6,  f1_3);
