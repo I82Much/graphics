@@ -1692,20 +1692,20 @@ void GeometryFactory::createSurfaceOfRevolution(
     std::vector <Vector3> tangentVectorsOnCurve = 
         generatrix.uniformTangentSample(numPointsToEvaluateAlongCurve);
 
-    std::cout << "\n\n\n" << std::endl;
-
-    std::vector<Vector3>::iterator i;
-    for(i=pointsOnCurve.begin(); i != pointsOnCurve.end(); ++i) std::cout << (*i);
-    std::cout << "Size of point array: " << pointsOnCurve.size() << std::endl;
-    std::cout << "numPointsToEvaluateAlongCurve: " << numPointsToEvaluateAlongCurve << std::endl;
-    
-
     assert (pointsOnCurve.size() == tangentVectorsOnCurve.size());
     assert (pointsOnCurve.size() == numPointsToEvaluateAlongCurve);    
         
     std::vector <std::vector<Vector3> > rotatedPoints;
     std::vector <std::vector<Vector3> > rotatedTangentVectors;
+
+    // Will only use the x and y to represent the u and v coordinates 
+    // respectively
+    std::vector <std::vector<Vector3> > textureCoords3;
     
+    
+    // We need to rotate our tangent vectors by 90 degrees about the z-axis
+    // in order to get the normal vectors at each point.
+    Matrix4 rotateZ = Matrix4::rotateZ(BasicMath::radians(90));
     
     // Sample at numAnglesToRotate positions around the y axis
     for (int i = 0; i < numAnglesToRotate; i++) {
@@ -1715,16 +1715,14 @@ void GeometryFactory::createSurfaceOfRevolution(
                                     static_cast<float>(numAnglesToRotate);
         float theta = TWO_PI * proportionAround;
         
-        std::cout << "theta: " << BasicMath::degrees(theta) << std::endl;
-        
         Matrix4 rotationMatrix = Matrix4::rotateY(theta);
 
         // Create the std::vector we need to hold all the points at this
         // angle of rotation
         rotatedPoints.push_back(std::vector<Vector3>());
         rotatedTangentVectors.push_back(std::vector<Vector3>());
+        textureCoords3.push_back(std::vector<Vector3>());
         
-
         // Need to rotate each point along the curve
         for (int j = 0; j < pointsOnCurve.size(); j++) {
             Vector3 point = pointsOnCurve[j];
@@ -1736,33 +1734,36 @@ void GeometryFactory::createSurfaceOfRevolution(
             Vector4 tangent4(tangent);
             
             Vector4 transformedPoint4 = rotationMatrix * point4;
-            Vector4 transformedTangentVector4 = rotationMatrix * tangent4;
+            Vector4 transformedTangentVector4 = rotationMatrix * rotateZ * tangent4;
             
             // Keep track of rotated point and vector; the rotation does not
             // change length of vector so we don't need to worry about 
             // normalzing it
             rotatedPoints[i].push_back(Vector3(transformedPoint4));
             rotatedTangentVectors[i].push_back(Vector3(transformedTangentVector4));
+            
+            // What t value along the curve are we?  
+            float t = static_cast<float>(j) / static_cast<float>(pointsOnCurve.size() - 1);
+
+            // Our u coord is just the curve parameter t, and the v is just 
+            // what proportion rotated around the y axis
+            // (both are in range [0,1])
+            float u = t;
+            float v = proportionAround;
+            textureCoords3[i].push_back(Vector3(u,v,0));
         }
     }
     
     assert(rotatedPoints.size() == numAnglesToRotate);
     assert(rotatedPoints[0].size() == numPointsToEvaluateAlongCurve);
             
-            
-    for (int i = 0; i < rotatedPoints.size(); i++) {
-        for (int j = 0; j < rotatedPoints[i].size(); j++) {
-            cout << "i: " << i << "j: " << j << ": " << rotatedPoints[i][j] << endl;
-        }
-    }        
-            
-    // TODO: 3D normal vector
+    // TODO: 3D normal vector - I think everything is facing wrong
+    // direction
     // TODO: texture coordinate
     
     // We have all of our points; now we need to connect them up correctly. 
 
-    // TODO: this seems wrong.  why isn't it - 1?
-    // how many rows of faces?
+      // how many rows of faces?
     const int NUM_ROWS = numPointsToEvaluateAlongCurve - 1;
     const int numFacesPerRow = numAnglesToRotate;
     const int NUM_COMPONENTS_PER_ROW =
@@ -1774,10 +1775,11 @@ void GeometryFactory::createSurfaceOfRevolution(
     
     // Need 3 times as much space because each vertex has an x,y,z component
     vertices = new float[3 * numVertices];	
+    normals = new float[3 * numVertices];
+    textureCoords = new float[2 * numVertices];
     indices = new int[numIndices];	
     	
 	for (int row = 0; row < NUM_ROWS; row++) {
-
 
 		// The "face"th and ("face"+1)%numFacesPerRow vertices in row "row"
 		// form a rectangular face with the "face"th and ("face"+1)%numFacesPerRow
@@ -1801,26 +1803,85 @@ void GeometryFactory::createSurfaceOfRevolution(
             // Lower right corner: (same as f1_2)
             Vector3 f2_3 = f1_2;
             
+            // Calculate the normals for these faces as well.  They are
+            // exactly the same points etc but taken from the rotatedTangents
+            // vector rather than rotatedPoints.
+            // Face 1: Upper right triangle of rectangular face
+            // Vertex 1: Upper left corner
+            Vector3 f1_1n = rotatedTangentVectors[face][row];
+            // Lower right corner
+            Vector3 f1_2n = rotatedTangentVectors[(face+1) % numFacesPerRow][row+1];
+            // Upper right corner
+            Vector3 f1_3n = rotatedTangentVectors[(face+1) % numFacesPerRow][row];
+            
+            
+            // Face 2: Lower left triangle of rectangular face
+            // Upper left corner (same as f1_1)
+            Vector3 f2_1n = f1_1n;
+            // Lower left corner
+            Vector3 f2_2n = rotatedTangentVectors[face][row+1];
+            // Lower right corner: (same as f1_2)
+            Vector3 f2_3n = f1_2n;
+            
+            
+            // Get the texture coordinates for all 6 vertices
+            Vector3 f1_1uv = textureCoords3[face][row];
+            // Lower right corner
+            Vector3 f1_2uv = textureCoords3[(face+1) % numFacesPerRow][row+1];
+            // Upper right corner
+            Vector3 f1_3uv = textureCoords3[(face+1) % numFacesPerRow][row];
+            
+            // Face 2: Lower left triangle of rectangular face
+            // Upper left corner (same as f1_1)
+            Vector3 f2_1uv = f1_1uv;
+            // Lower left corner
+            Vector3 f2_2uv = textureCoords3[face][row+1];
+            // Lower right corner: (same as f1_2)
+            Vector3 f2_3uv = f1_2uv;
+            
+            
             // Now we need to actually fill in the vertices array with the
             // raw float values from our vertices.  We are filling in
             // 6 vertices, for a total of 18 floats added to the array per
             // iteration of this inner loop.  
             int startIndex = (row * NUM_COMPONENTS_PER_ROW) + (NUM_COMPONENTS_PER_RECTANGULAR_FACE * face);
             
-            
+            // Fill in vertices
             fillInVertex(vertices, startIndex,    f1_1);
             fillInVertex(vertices, startIndex+3,  f1_2);
             fillInVertex(vertices, startIndex+6,  f1_3);
             fillInVertex(vertices, startIndex+9,  f2_1);
             fillInVertex(vertices, startIndex+12, f2_2);
             fillInVertex(vertices, startIndex+15, f2_3);
-/*
+
+            // TODO: why do I need to flip the normals for it to look right?
+            // Fill in normals
             fillInVertex(normals, startIndex,    f1_1n);
             fillInVertex(normals, startIndex+3,  f1_2n);
             fillInVertex(normals, startIndex+6,  f1_3n);
             fillInVertex(normals, startIndex+9,  f2_1n);
             fillInVertex(normals, startIndex+12, f2_2n);
-            fillInVertex(normals, startIndex+15, f2_3n);*/
+            fillInVertex(normals, startIndex+15, f2_3n);
+            
+            
+            static const int numVerticesPerRectangularFace = 
+                NUM_TRIANGLES_PER_RECTANGULAR_FACE * NUM_VERTICES_PER_TRIANGLE;
+            static const int numVerticesPerRow = 
+                numFacesPerRow * numVerticesPerRectangularFace;
+            static const int NUM_TEXTURE_COORDS_PER_VERTEX = 2;
+            
+            int textureStartIndex = 
+                (row * numVerticesPerRow * NUM_TEXTURE_COORDS_PER_VERTEX) + 
+                (numVerticesPerRectangularFace * face * NUM_TEXTURE_COORDS_PER_VERTEX);
+            
+            fillIn2DCoords(textureCoords, textureStartIndex, f1_1uv);
+            fillIn2DCoords(textureCoords, textureStartIndex+2, f1_1uv);
+            fillIn2DCoords(textureCoords, textureStartIndex+4, f1_1uv);
+            fillIn2DCoords(textureCoords, textureStartIndex+6, f1_1uv);
+            fillIn2DCoords(textureCoords, textureStartIndex+8, f1_1uv);
+            fillIn2DCoords(textureCoords, textureStartIndex+10, f1_1uv);
+            
+            
 		}
 	}
 	
@@ -1828,13 +1889,7 @@ void GeometryFactory::createSurfaceOfRevolution(
     for (int i = 0; i < numIndices; i++) {
         indices[i] = i;
     }
-	   
-	std::cout << "numPointsAlongCurve: " << numPointsToEvaluateAlongCurve <<
-    "numAngles: " << numAnglesToRotate  << "Number of vertices: " << numVertices << std::endl; 
-    
-    
-    
-    
+
 }
 
 
@@ -1966,8 +2021,15 @@ void GeometryFactory::runTestSuite() {
     
 }
 
-void GeometryFactory::fillInVertex(float *&vertices, int startIndex, const Vector3 &vertex) {
+void GeometryFactory::fillInVertex(float *&vertices, int startIndex, const Vector3 &vertex)
+{
     vertices[startIndex  ] = vertex.getX();
     vertices[startIndex+1] = vertex.getY();
     vertices[startIndex+2] = vertex.getZ();
+}
+
+void GeometryFactory::fillIn2DCoords(float *&textureCoords, int startIndex, const Vector3 &uv) 
+{
+    textureCoords[startIndex  ] = uv.getX();
+    textureCoords[startIndex+1] = uv.getY();
 }

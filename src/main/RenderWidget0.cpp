@@ -193,23 +193,87 @@ void RenderWidget0::test()
 {
 
     // Test the curve stuff
-    Vector3 p1(3,4,0);
-    Vector3 p2(1,2,0);
-    Vector3 p3(2,3,0);
-    Vector3 p4(4,0,0);
+    Vector3 p1(0,4,0);
+    Vector3 p2(2,3,0);
+    Vector3 p3(2,1,0);
+    Vector3 p4(0,0,0);
     
     BezierCurve b(p1,p2,p3,p4);
+    
+    BezierCurve b2(p4,p3,p2,p1);
+    
+    
+    
+    Vector3 wine1(1,4,0);
+    Vector3 wine2(1,0,0);
+    Vector3 wine3(-.1,3,0);
+    Vector3 wine4(.1,0,0);
+    
+    BezierCurve wineglass(wine1, wine2, wine3, wine4);
+    
+    
+    
+    
+    Vector3 p21(3,0,0);
+    Vector3 p22(3,1,0);
+    Vector3 p23(3,3.5,0);
+    Vector3 p24(3,4,0);
+    
+    BezierCurve cylinder(p24, p23, p22, p21);
+    Material * brass = new Material(Brass);
+    Material * emerald = new Material(Emerald);
+    
+    // http://friday.westnet.com/~crywalt/dymaxion_2003/earthmap10k.reduced.jpg
+    QImage *texImg = new QImage("earthmap.jpg", "jpg");
+    assert(texImg != NULL);
+    Texture *picture = new Texture(texImg);
+    brass->setTexture(picture);
+
+      
+    // http://hi-and-low.typepad.com/my_weblog/images/2007/09/30/stripes_02.jpg
+    QImage *stripeImg = new QImage("stripes_02.jpg", "jpg");
+    assert(stripeImg != NULL);
+    Texture *stripeTex = new Texture(stripeImg);
+    emerald->setTexture(stripeTex);
+    
+    
+    
     Object * o = sceneManager->createObject();
+    Object * o2 = sceneManager->createObject();
+    
+    Object * wineObject = sceneManager->createObject();
+    
+    
+    o->setMaterial(brass);
+    o2->setMaterial(emerald);
+    wineObject->setMaterial(brass);
+    
     
     
     GeometryFactory::createSurfaceOfRevolution(o, 
         b,
         10,
-        8);
+        18);
+    
+    GeometryFactory::createSurfaceOfRevolution(o2, 
+        cylinder,
+        10,
+        18);
+        
+    GeometryFactory::createSurfaceOfRevolution(wineObject, 
+        wineglass,
+        10,
+        18);
+        
+    
+    o2->setTransformation(Matrix4::translate(0,-3,0));
     
     
     TransformGroup * tg = new TransformGroup();
-    tg->addChild(new Shape3D(o));
+//    tg->addChild(new Shape3D(o));
+    tg->addChild(new Shape3D(o2));
+    tg->addChild(new Shape3D(wineObject));
+    
     sceneManager->setRoot(tg);
 
     
@@ -435,7 +499,7 @@ void RenderWidget0::initLights()
     LightNode * whiteLight = new LightNode(white);
     
     
-    
+    sceneManager->getRoot()->addChild(blueLight);
     /*
     robotGroup->addChild(whiteLight);
 

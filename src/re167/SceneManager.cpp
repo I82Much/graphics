@@ -6,7 +6,8 @@
 
 
 using namespace RE167;
-
+using std::cout;
+using std::endl;
 
 const unsigned int SceneManager::MAX_NUM_LIGHTS;
 
@@ -190,9 +191,10 @@ void SceneManager::renderScene()
 	    // Set up the lights
         std::list<LightNode *> lightNodes;
         addLightNodes(root, lightNodes, Matrix4::IDENTITY);
-        
-        //renderContext->setLights(mLightList);
-        renderContext->setLightNodes(lightNodes);
+                
+        // TODO: go back to light nodes
+        renderContext->setLights(mLightList);
+        //renderContext->setLightNodes(lightNodes);
 
 
         renderContext->beginFrame();
