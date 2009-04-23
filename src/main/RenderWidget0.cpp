@@ -191,6 +191,39 @@ void RenderWidget0::initGeometry()
 
 void RenderWidget0::test()
 {
+    
+    
+    // try making table
+    Vector3 t1(0,4,0);
+    Vector3 t2(1,4,0);
+    Vector3 t3(2,4,0);
+    Vector3 t4(3,4,0);
+    // Right side
+    Vector3 t5(3,3.5,0);
+    Vector3 t6(3,3,0);
+    Vector3 t7(3,2.5,0);
+
+    // bottom side
+    Vector3 t8(2,2.5,0);
+    Vector3 t9(1.5,2.5,0);
+    Vector3 t10(.5,2.5,0);
+    
+    // curve 1
+    Vector3 t11(.5,2.5,0);
+    Vector3 t12(.7,2,0);
+    Vector3 t13(.5,-2,0);
+    
+    // Bottom base
+    Vector3 t14(1,-2.5,0);
+    Vector3 t15(2,-3,0);
+    Vector3 t16(3,-3.5,0);
+    
+    
+    
+    Vector3 table[] = {t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,t11,t12,t13,t14,t15,t16};
+    BezierCurve tableCurve(table, 16);
+    
+    
 
     // Test the curve stuff
     Vector3 p1(0,4,0);
@@ -206,10 +239,18 @@ void RenderWidget0::test()
     
     Vector3 wine1(1,4,0);
     Vector3 wine2(1,0,0);
-    Vector3 wine3(-.1,3,0);
-    Vector3 wine4(.1,0,0);
+    Vector3 wine3(-.1,3.0f,0);
+    Vector3 wine4(.1f,0.0f,0);
+    Vector3 wine5(.4f,-.1f,0);
+    Vector3 wine6(.7f,-.2f,0);
+    Vector3 wine7(1.0f,-.3f,0);
     
-    BezierCurve wineglass(wine1, wine2, wine3, wine4);
+    
+    
+    Vector3 wineArray[] = {wine1, wine2, wine3, wine4, wine5,wine6,wine7};
+    BezierCurve wineglass(wineArray, 7);//wine1, wine2, wine3, wine4);
+    
+    
     
     
     
@@ -256,13 +297,13 @@ void RenderWidget0::test()
         18);
     
     GeometryFactory::createSurfaceOfRevolution(o2, 
-        cylinder,
+        tableCurve,
         10,
         18);
         
     GeometryFactory::createSurfaceOfRevolution(wineObject, 
         wineglass,
-        10,
+        18,
         18);
         
     

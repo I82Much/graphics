@@ -1,8 +1,11 @@
 #include "BezierCurve.h"
 #include "Vector3.h"
 #include "Matrix4.h"
+#include <cmath>
 using namespace RE167;
 
+using std::cout;
+using std::endl;
 
 // These represent the coefficients for the Bernstein polynomials
 const Matrix4 BezierCurve::WEIGHTS(-1, 3, -3, 1,
@@ -50,12 +53,22 @@ BezierCurve::~BezierCurve() {}
 
 Vector3 BezierCurve::position(float t) const 
 {
-    // Curve is only defined for values of t between 0 and 1
-    assert(0.0f <= t && t <= 1.0f);
-    
-    int subcurveIndex = calculateIndex(t);
+    // Curve is only defined for values of t between 0 and numCubicSegments
+    assert(0.0f <= t && t <= numCubicSegments);
 
-    Vector4 tVec(t*t*t, t*t, t, 1);
+    int integer;
+    float real;
+    split(t, &integer, &real);
+    
+    int subcurveIndex = integer;
+
+    // We're at the very end of our curve.
+    if (subcurveIndex == numCubicSegments) {
+        subcurveIndex -= 1;
+        real += 1.0f;
+    }
+        
+    Vector4 tVec(real*real*real, real*real, real, 1);
     Vector4 pos = matrices[subcurveIndex] * tVec;
     return Vector3(pos);
 }
@@ -64,20 +77,36 @@ Vector3 BezierCurve::position(float t) const
 Vector3 BezierCurve::tangent(float t) const
 {
     // Curve is only defined for values of t between 0 and 1
-    assert(0.0f <= t && t <= 1.0f);
+    assert(0.0f <= t && t <= numCubicSegments);
+    
+    int integer;
+    float real;
+    split(t, &integer, &real);
+    
+    int subcurveIndex = integer;
+    
+    // We're at the very end of our curve.
+    if (subcurveIndex == numCubicSegments) {
+        subcurveIndex -= 1;
+        real += 1.0f;
+    }
 
-    int subcurveIndex = calculateIndex(t);
-
-    Vector4 tVec(3*t*t, 2*t, 1, 0);
+    Vector4 tVec(3*real*real, 2*real, 1, 0);
     Vector4 tangent = matrices[subcurveIndex] * tVec;
     return Vector3(tangent);
 }
 
-// TODO: fix this
-int BezierCurve::calculateIndex(float t) 
-{
-    return 0;
+/**
+* Given a floating point number, splits it into its integer part
+* and real part, such that integerPart + realPart = real.
+**/
+void BezierCurve::split(float real, int *integerPart, float *realPart) {
+    float integer;
+    (*realPart) = modff(real, &integer);
+    (*integerPart) = static_cast<int>(integer);
 }
+
+
 
 // TODO: precompute the C matrices
 void BezierCurve::createMatrices() {
@@ -109,8 +138,8 @@ std::vector<Vector3> BezierCurve::uniformPointSample(int numPoints) const {
     assert (numPoints >= 2);
     std::vector<Vector3> points;
     for (int i = 0; i < numPoints; i++) {
-        // 0 <= t <= 1
-        float t =   static_cast<float>(i) / 
+        // 0 <= t <= numCubicSegments
+        float t =   static_cast<float>(numCubicSegments * i) / 
                     static_cast<float>(numPoints - 1);
         Vector3 point = position(t);
         points.push_back(point);
@@ -125,8 +154,8 @@ std::vector<Vector3> BezierCurve::uniformTangentSample(int numPoints) const {
     assert (numPoints >= 2);
     std::vector<Vector3> tangents;
     for (int i = 0; i < numPoints; i++) {
-        // 0 <= t <= 1
-        float t =   static_cast<float>(i) / 
+        // 0 <= t <= numCubicSegments
+        float t =   static_cast<float>(numCubicSegments * i) / 
                     static_cast<float>(numPoints - 1);
         Vector3 tangentVector = tangent(t);
         tangents.push_back(tangentVector);
@@ -158,7 +187,10 @@ void BezierCurve::test() {
     
     Vector3 startPos = b.position(0.0f);
     Vector3 midPoint = b.position(0.5f);
+    
     Vector3 endPos = b.position(1.0f);
+    cout << endPos << ", " << p4 << endl;
+
     
     assert(p1 == startPos);
     assert(p4 == endPos);

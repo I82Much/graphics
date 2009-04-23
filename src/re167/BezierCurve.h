@@ -44,8 +44,8 @@ namespace RE167
         
         
         void createMatrices();
-        static int calculateIndex(float t);
         std::vector <Matrix4> matrices;
+        static void split(float real, int *intPart, float *realPart);
 	};
 
 

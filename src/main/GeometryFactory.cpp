@@ -1875,11 +1875,11 @@ void GeometryFactory::createSurfaceOfRevolution(
                 (numVerticesPerRectangularFace * face * NUM_TEXTURE_COORDS_PER_VERTEX);
             
             fillIn2DCoords(textureCoords, textureStartIndex, f1_1uv);
-            fillIn2DCoords(textureCoords, textureStartIndex+2, f1_1uv);
-            fillIn2DCoords(textureCoords, textureStartIndex+4, f1_1uv);
-            fillIn2DCoords(textureCoords, textureStartIndex+6, f1_1uv);
-            fillIn2DCoords(textureCoords, textureStartIndex+8, f1_1uv);
-            fillIn2DCoords(textureCoords, textureStartIndex+10, f1_1uv);
+            fillIn2DCoords(textureCoords, textureStartIndex+2, f1_2uv);
+            fillIn2DCoords(textureCoords, textureStartIndex+4, f1_3uv);
+            fillIn2DCoords(textureCoords, textureStartIndex+6, f2_1uv);
+            fillIn2DCoords(textureCoords, textureStartIndex+8, f2_2uv);
+            fillIn2DCoords(textureCoords, textureStartIndex+10, f2_3uv);
             
             
 		}
