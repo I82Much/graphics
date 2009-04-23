@@ -18,7 +18,10 @@ namespace RE167
                     const Vector3 &p1,
                     const Vector3 &p2,
                     const Vector3 &p3);
-        
+
+        BezierCurve(Vector3 points[], int numPoints);
+
+
         ~BezierCurve();
         
         // TODO: there is no symmetry between point and position.

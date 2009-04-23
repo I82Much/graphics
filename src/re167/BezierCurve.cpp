@@ -26,6 +26,25 @@ BezierCurve::BezierCurve(const Vector3 &p0,
     createMatrices();
 }
 
+BezierCurve::BezierCurve(Vector3 points[], int numPoints)
+{
+    assert (numPoints >= 4);
+    assert ((numPoints - 4) % 3 == 0 && "Piecewise cubic bezier curve must"\
+        " have 3(n - 1) + 4 points; 4, 7, 10, ...");
+    // 4, 7, 10, ...
+    
+    // 3(numCubicSegments − 1) + 4 = numPoints, 
+    // do a little algebra and you get this.
+    numCubicSegments = ((numPoints - 4) / 3) + 1;
+    
+    for (int i = 0; i < numPoints; i++) {
+        controlPoints.push_back(points[i]);
+    }
+    createMatrices();
+}
+
+
+
 BezierCurve::~BezierCurve() {}
                             
 
@@ -117,6 +136,7 @@ std::vector<Vector3> BezierCurve::uniformTangentSample(int numPoints) const {
 
 void BezierCurve::test() {
     
+    
     Vector3 p1(3,2,0);
     Vector3 p2(4,3,0);
     Vector3 p3(5,4,0);
@@ -174,6 +194,18 @@ void BezierCurve::test() {
     
     for(i=tenTangentVectors.begin(); i != tenTangentVectors.end(); ++i) std::cout << (*i);
     
+    Vector3 array[] = {p1,p2,p3,p4};
+    BezierCurve fromArray(array, 4);
+    
+    assert(fromArray.numCubicSegments == 1);
+    
+    Vector3 array2[] = {p1,p2,p3,p4,p3,p2,p1};
+    BezierCurve fromArray2(array2, 7);
+    
+    assert(fromArray2.numCubicSegments == 2);
+    
+
+
     
     /*
     vase:
