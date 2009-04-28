@@ -71,8 +71,8 @@ namespace RE167 {
         
         static void createSurfaceOfRevolution(Object *o, 
             const BezierCurve &generatrix,
-            int numPointsToEvaluateAlongCurve,
-            int numberOfAnglesToRotate);
+            int numPointsToEvaluateAlongCurve = 10,
+            int numberOfAnglesToRotate = 18);
 
         static void createSurfaceOfRevolution(
             const BezierCurve &generatrix,

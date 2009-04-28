@@ -70,20 +70,8 @@ void RenderWidget0::initSceneEvent()
 	sceneManager = new SceneManager();
 
    
-//    initGeometry();
-    //initRobot();
-    
-    
-    //createTestScene();
-	
 	initCamera();
-    
 	initLights();
-    
-	
-	// Show the bunnies by default
-    //sceneManager->setRoot(geometryGroup);
-	
     test();
 	
 	
@@ -197,11 +185,11 @@ void RenderWidget0::test()
     Vector3 t1(0,4,0);
     Vector3 t2(1,4,0);
     Vector3 t3(2,4,0);
-    Vector3 t4(3,4,0);
+    Vector3 t4(5,4,0);
     // Right side
-    Vector3 t5(3,3.5,0);
-    Vector3 t6(3,3,0);
-    Vector3 t7(3,2.5,0);
+    Vector3 t5(5,3.5,0);
+    Vector3 t6(5,3,0);
+    Vector3 t7(5,2.5,0);
 
     // bottom side
     Vector3 t8(2,2.5,0);
@@ -218,263 +206,136 @@ void RenderWidget0::test()
     Vector3 t15(2,-3,0);
     Vector3 t16(3,-3.5,0);
     
-    
-    
     Vector3 table[] = {t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,t11,t12,t13,t14,t15,t16};
     BezierCurve tableCurve(table, 16);
+        
+    // Make the goblet
+    Vector3 goblet1(1,4.3,0);
+    Vector3 goblet2(1,0.3,0);
+    Vector3 goblet3(-.1,3.3f,0);
+    Vector3 goblet4(.1f,0.3f,0);
+    Vector3 goblet5(.4f,.2f,0);
+    Vector3 goblet6(.7f,.1f,0);
+    Vector3 goblet7(1.0f,0.0f,0);
+    
+    Vector3 gobletArray[] = {goblet1, goblet2, goblet3, goblet4, goblet5,goblet6,goblet7};
+    BezierCurve gobletCurve(gobletArray, 7);
+        
+    // Make the pitcher
+    Vector3 pitcher0(44,109+176,0);
+    Vector3 pitcher1(29,61+176,0);
+    Vector3 pitcher2(26,28+176,0);
+    Vector3 pitcher3(34,15+176,0);
+    Vector3 pitcher4(70, -21+176,0);
+    Vector3 pitcher5(104,-55+176,0);
+    Vector3 pitcher6(110,-105+176,0);
+    Vector3 pitcher7(114,-152+176,0);
+    Vector3 pitcher8(86,-172+176,0);
+    Vector3 pitcher9(0,-176+176,0);
+    
+    Vector3 pitcherArray[] = {pitcher0, pitcher1, pitcher2, pitcher3, 
+        pitcher4, pitcher5, pitcher6, pitcher7, pitcher8, pitcher9 };
+    BezierCurve pitcherCurve(pitcherArray, 10);
     
     
+    // Make a plate
+    Vector3 plate0(0,1,0);
+    Vector3 plate1(2,1,0);
+    Vector3 plate2(3,1,0);
+    Vector3 plate3(4,1.6,0);
+    
+    // Little curved lip
+    Vector3 plate4(4.5,1.7,0);
+    Vector3 plate5(4.5,.7,0);
+    Vector3 plate6(4,.6,0);
 
-    // Test the curve stuff
-    Vector3 p1(0,4,0);
-    Vector3 p2(2,3,0);
-    Vector3 p3(2,1,0);
-    Vector3 p4(0,0,0);
+    // Bottom part
+    Vector3 plate7(3,0,0);
+    Vector3 plate8(2,0,0);
+    Vector3 plate9(0,0,0);
     
-    BezierCurve b(p1,p2,p3,p4);
+    Vector3 plateArray[] = {plate0, plate1, plate2, plate3, 
+        plate4, plate5, plate6, plate7, plate8, plate9 };
+    BezierCurve plateCurve(plateArray, 10);
     
-    BezierCurve b2(p4,p3,p2,p1);
+    Material * gobletMaterial = new Material();
+    Material * tableMaterial = new Material(Polished_Gold);
+    Material * plateMaterial = new Material(Pearl);
+    Material * pitcherMaterial = new Material(Jade);
     
-    
-    
-    Vector3 wine1(1,4,0);
-    Vector3 wine2(1,0,0);
-    Vector3 wine3(-.1,3.0f,0);
-    Vector3 wine4(.1f,0.0f,0);
-    Vector3 wine5(.4f,-.1f,0);
-    Vector3 wine6(.7f,-.2f,0);
-    Vector3 wine7(1.0f,-.3f,0);
-    
-    
-    
-    Vector3 wineArray[] = {wine1, wine2, wine3, wine4, wine5,wine6,wine7};
-    BezierCurve wineglass(wineArray, 7);//wine1, wine2, wine3, wine4);
-    
-    
-    
-    
-    
-    
-    Vector3 p21(3,0,0);
-    Vector3 p22(3,1,0);
-    Vector3 p23(3,3.5,0);
-    Vector3 p24(3,4,0);
-    
-    BezierCurve cylinder(p24, p23, p22, p21);
-    Material * brass = new Material(Brass);
-    Material * emerald = new Material(Emerald);
-    
+    // Set up the textures
     // http://friday.westnet.com/~crywalt/dymaxion_2003/earthmap10k.reduced.jpg
     QImage *texImg = new QImage("earthmap.jpg", "jpg");
     assert(texImg != NULL);
-    Texture *picture = new Texture(texImg);
-    brass->setTexture(picture);
+    Texture *earthMap = new Texture(texImg);
+    pitcherMaterial->setTexture(earthMap);
 
-      
     // http://hi-and-low.typepad.com/my_weblog/images/2007/09/30/stripes_02.jpg
     QImage *stripeImg = new QImage("stripes_02.jpg", "jpg");
     assert(stripeImg != NULL);
     Texture *stripeTex = new Texture(stripeImg);
-    emerald->setTexture(stripeTex);
+    tableMaterial->setTexture(stripeTex);
+    
+    // http://colorvisiontesting.com/plate%20with%205.jpg
+    QImage *patternImg = new QImage("plate with 5.jpg", "jpg");
+    assert(patternImg != NULL);
+    Texture *patternTex = new Texture(patternImg);
+    plateMaterial->setTexture(patternTex);
+    
+    // http://images.google.com/hosted/life/f?q=sculpture+source:life&prev=/images%3Fq%3Dsculpture%2Bsource:life%26ndsp%3D18%26hl%3Den%26sa%3DN%26start%3D54&imgurl=f4c508a0f589ee70
+    QImage *davidImg = new QImage("david.jpg", "jpg");
+    assert(davidImg != NULL);
+    Texture *davidTex = new Texture(davidImg);
+    gobletMaterial->setTexture(davidTex);
     
     
+    Object * tableObject = sceneManager->createObject();
+    Object * plateObject = sceneManager->createObject();
+    Object * gobletObject = sceneManager->createObject();
+    Object * pitcherObject = sceneManager->createObject();
     
-    Object * o = sceneManager->createObject();
-    Object * o2 = sceneManager->createObject();
-    
-    Object * wineObject = sceneManager->createObject();
-    
-    
-    o->setMaterial(brass);
-    o2->setMaterial(emerald);
-    wineObject->setMaterial(brass);
-    
+    tableObject->setMaterial(tableMaterial);
+    gobletObject->setMaterial(gobletMaterial);
+    plateObject->setMaterial(plateMaterial);
+    pitcherObject->setMaterial(pitcherMaterial);
     
     
-    GeometryFactory::createSurfaceOfRevolution(o, 
-        b,
-        10,
-        18);
-    
-    GeometryFactory::createSurfaceOfRevolution(o2, 
-        tableCurve,
-        10,
-        18);
-        
-    GeometryFactory::createSurfaceOfRevolution(wineObject, 
-        wineglass,
-        18,
-        18);
-        
-    
-    o2->setTransformation(Matrix4::translate(0,-3,0));
+    GeometryFactory::createSurfaceOfRevolution(pitcherObject,pitcherCurve);
+    GeometryFactory::createSurfaceOfRevolution(tableObject,tableCurve);
+    GeometryFactory::createSurfaceOfRevolution(gobletObject, gobletCurve);        
+    GeometryFactory::createSurfaceOfRevolution(plateObject, plateCurve);    
     
     
-    TransformGroup * tg = new TransformGroup();
-//    tg->addChild(new Shape3D(o));
-    tg->addChild(new Shape3D(o2));
-    tg->addChild(new Shape3D(wineObject));
-    
-    sceneManager->setRoot(tg);
-
-    
-    // This will form a cone
-}
+    TransformGroup * tableGroup = new TransformGroup(Matrix4::scale(0.6,0.6,0.6));
+    tableGroup->addChild(new Shape3D(tableObject));
+    TransformGroup * tableTop = new TransformGroup(Matrix4::translate(0,4,0));
+    tableGroup->addChild(tableTop);
 
 
-// TODO: All these new calls will be memory leaks if we don't free them at the end somewhere
-void RenderWidget0::initRobot()
-{
-    Shader * phongShader = new Shader("src/Shaders/diffuse_shading.vert", 
-        "src/Shaders/diffuse_shading.frag");
-    Shader * texture2D = new Shader("src/Shaders/texture2D.vert", 
-        "src/Shaders/texture2D.frag");
+    TransformGroup * plateGroup = new TransformGroup(Matrix4::translate(0,0,1.5));
+    plateObject->setTransformation(Matrix4::scale(0.5,0.5,0.5));
+    plateGroup->addChild(new Shape3D(plateObject));
+    tableTop->addChild(plateGroup);
     
 
-    Material * brass = new Material(Brass);
-    Material * blackRubber = new Material(Black_Rubber);
-    Material * polishedSilver = new Material(Polished_Silver);
-    Material * pewter = new Material(Pewter);
-    
-    /*brass->setShader(phongShader);
-    pewter->setShader(phongShader);
-    polishedSilver->setShader(phongShader);
-    blackRubber->setShader(phongShader);*/
-    
-    // Create the geometry
-    RE167::Object * cube = sceneManager->createObject();
-    GeometryFactory::createCube(cube);
-    cube->setMaterial(brass);
-    
-    RE167::Object * taperedCylinder = sceneManager->createObject();
-    GeometryFactory::createTaperedCylinder(taperedCylinder, 1, 20, .8f, .5f);
-    taperedCylinder->setTransformation(Matrix4::scale(1,0.5,1));
-    taperedCylinder->setMaterial(brass);
-    
-    
-    // Cylinders used for arms and legs
-    RE167::Object * legCylinder = sceneManager->createObject();
-    GeometryFactory::createCylinder(legCylinder);
-    // Make it so that the origin of the cylinder is at the top of the cylinder
-    // rather than in the middle
-    legCylinder->setTransformation(Matrix4::translate(0,-1,0) * Matrix4::scale(.5,1,.5));
-    legCylinder->setMaterial(polishedSilver);
-    
-    
-    RE167::Object * armCylinder = sceneManager->createObject();
-    GeometryFactory::createCylinder(armCylinder);
-    // Make it so that the origin of the cylinder is at the top of the cylinder
-    // rather than in the middle.  Will be 1.5 units long instead of .75
-    armCylinder->setTransformation(Matrix4::translate(0,-.75,0) * Matrix4::scale(.5,.75,.5));
-    armCylinder->setMaterial(pewter);
-    
-    Shape3D * armShape = new Shape3D(armCylinder);
-    
-
-    // Represents the center of the torso.  Its center is at (0,1,0) relative to pelvis
-    torsoTransform = new TransformGroup(Matrix4::translate(0,1,0));
-    // Right shoulder is at (1,1,0) relative to center of torso.  It also is rotated 90 degrees
-    // about the z axis so that the local coordinate system of the right shoulder points into
-    // the body.
-    TransformGroup * rightShoulderTransform = new TransformGroup(Matrix4::translate(1,1,0) * Matrix4::rotateZ(BasicMath::radians(90)));
-    // Left shoulder is at (-1,1,0)
-    TransformGroup * leftShoulderTransform = new TransformGroup(Matrix4::translate(-1,1,0) * Matrix4::rotateZ(BasicMath::radians(-90)));
-    
-    leftUpperArm = new TransformGroup();
-    rightUpperArm = new TransformGroup();
-    
-    leftUpperArm->addChild(armShape);
-    rightUpperArm->addChild(armShape);
-    
-    
-    leftLowerArm = new TransformGroup(Matrix4::translate(0,-1.5,0));
-    rightLowerArm = new TransformGroup(Matrix4::translate(0,-1.5,0));
-
-    leftUpperArm->addChild(leftLowerArm);
-    rightUpperArm->addChild(rightLowerArm);
+    // We constructed the goblet to have origin at the bottom of it
+    gobletObject->setTransformation(Matrix4::scale(0.6,0.6,0.6));
+    TransformGroup * gobletTransform = new TransformGroup(Matrix4::translate(1.5,0,-2));
+    gobletTransform->addChild(new Shape3D(gobletObject));
+    plateGroup->addChild(gobletTransform);
 
     
-    leftLowerArm->addChild(armShape);
-    rightLowerArm->addChild(armShape);
-    
-    
-    leftHand = new TransformGroup(Matrix4::translate(0,-2,0) * Matrix4::scale(0.3f, 0.5f, 0.3f));
-    rightHand = new TransformGroup(Matrix4::translate(0,-2,0) * Matrix4::scale(0.3f, 0.5f, 0.3f));
-    
-    leftHand->addChild(new Shape3D(cube));
-    rightHand->addChild(new Shape3D(cube));
-    
-    leftLowerArm->addChild(leftHand);
-    rightLowerArm->addChild(rightHand);
-    
-    
-    
-    rightShoulderTransform->addChild(leftUpperArm);
-    
-    leftShoulderTransform->addChild(rightUpperArm);
-    
-    
-    
-    
-    // Center of head is (0,1.5,0) relative to torso
-    TransformGroup * centerOfHeadTransform = new TransformGroup(Matrix4::translate(0,1.5,0));
-    TransformGroup * robotHead = new TransformGroup(Matrix4::scale(0.5,0.5,0.5));
-    robotHead->addChild(new Shape3D(cube));
-    
-    
-    // Represents the center of the pelvis of the robot.  Pelvis itself will be
-    // represented as a shallow cone
-    pelvis = new TransformGroup(Matrix4::translate(0,-1,0));
-    
-    pelvis->addChild(new Shape3D(taperedCylinder));
-    pelvis->addChild(torsoTransform);
-    
+    pitcherObject->setTransformation(Matrix4::scale(0.01, 0.01, 0.01)); 
+    // Make the pitcher be a little to the right of the goblet   
+    TransformGroup * pitcherTransform = new TransformGroup(Matrix4::translate(-2.5,0,-3));
+    pitcherTransform->addChild(new Shape3D(pitcherObject));
+    plateGroup->addChild(pitcherTransform);
     
 
-    centerOfHeadTransform->addChild(robotHead);
     
-    torsoTransform->addChild(new Shape3D(cube));
-    
-    
-    torsoTransform->addChild(centerOfHeadTransform);
-    torsoTransform->addChild(rightShoulderTransform);
-    torsoTransform->addChild(leftShoulderTransform);
+    sceneManager->setRoot(tableGroup);
 
-    
-    
-    // Share the same cylinder object for all the legs
-    
-    // Legs will be positioned relative to the pelvis; slightly below
-    leftLeg = new TransformGroup(Matrix4::translate(-.7f, -.1, 0));
-    rightLeg = new TransformGroup(Matrix4::translate(.7f, -.1, 0));
-    
-    
-    pelvis->addChild(leftLeg);
-    pelvis->addChild(rightLeg);
-    
-    leftLeg->addChild(new Shape3D(legCylinder));
-    rightLeg->addChild(new Shape3D(legCylinder));
-    
-    leftShin = new TransformGroup(Matrix4::translate(0,-2,0));
-    leftShin->addChild(new Shape3D(legCylinder));
 
-    leftLeg->addChild(leftShin);
-    
-    rightShin = new TransformGroup(Matrix4::translate(0,-2,0));
-    rightShin->addChild(new Shape3D(legCylinder));
-    rightLeg->addChild(rightShin);
-    
- 
-   
-    TransformGroup * root = sceneManager->getRoot();
-    root->addChild(pelvis);
-    
-    robotGroup = pelvis;
-    
-    
-    
-    
-    
 }
 
 
@@ -541,12 +402,6 @@ void RenderWidget0::initLights()
     
     
     sceneManager->getRoot()->addChild(blueLight);
-    /*
-    robotGroup->addChild(whiteLight);
-
-    
-    leftHand->addChild(blueLight);
-    */
 }
 
 
@@ -561,37 +416,7 @@ void RenderWidget0::resizeRenderWidgetEvent(const QSize &s)
 
 void RenderWidget0::timerEvent(QTimerEvent *t)
 {
-    /*
-    float SLOW_DEGREES_PER_TICK = 0.1;
-    float degree = counter * SLOW_DEGREES_PER_TICK;
-    
-    float FAST_DEGREES_PER_TICK = 0.2;
-    
-    float MAX_EXTENSION = 45.0f;
-    
-    static float sign = 1.0f;
-
-    if (degree > MAX_EXTENSION) {
-        counter = 0;
-        sign *= -1;
-    }
-    
-    leftLeg->setTransformation(leftLeg->getTransformation() * Matrix4::rotateX(BasicMath::radians(sign * SLOW_DEGREES_PER_TICK)));
-    leftShin->setTransformation(leftShin->getTransformation() * Matrix4::rotateX(BasicMath::radians(sign * FAST_DEGREES_PER_TICK)));
-    
-    leftUpperArm->setTransformation(leftUpperArm->getTransformation() * Matrix4::rotateZ(BasicMath::radians(sign * FAST_DEGREES_PER_TICK)));
-    rightUpperArm->setTransformation(rightUpperArm->getTransformation() * Matrix4::rotateZ(BasicMath::radians(sign * FAST_DEGREES_PER_TICK)));
-    
-    leftLowerArm->setTransformation(leftLowerArm->getTransformation() * Matrix4::rotateX(BasicMath::radians(-sign * FAST_DEGREES_PER_TICK)));
-    rightLowerArm->setTransformation(rightLowerArm->getTransformation() * Matrix4::rotateX(BasicMath::radians(-sign * SLOW_DEGREES_PER_TICK)));
-    
-    leftHand->setTransformation(leftHand->getTransformation() * Matrix4::rotateY(BasicMath::radians(-sign * SLOW_DEGREES_PER_TICK)));
-    rightHand->setTransformation(rightHand->getTransformation() * Matrix4::rotateY(BasicMath::radians(-sign * SLOW_DEGREES_PER_TICK)));
-    
-    torsoTransform->setTransformation(torsoTransform->getTransformation() * Matrix4::rotateY(BasicMath::radians(-sign * SLOW_DEGREES_PER_TICK)));
-    */
-    //earth->setTransformation(earth->getTransformation() * Matrix4::rotateY(0.005));
-	updateScene();
+    updateScene();
 	counter++;
 }
 
@@ -644,8 +469,11 @@ void RenderWidget0::mouseMoveEvent(QMouseEvent *e)
 	// Apply transformation to each object in scene
 	
 
-	// Apply transformation to the camera
-	camera->setViewMatrix(camera->getViewMatrix() * rotation);
+	// Apply transformation to the objects in the scene
+    TransformGroup * root = sceneManager->getRoot();
+    root->setTransformation(rotation * root->getTransformation());
+	
+//	camera->setViewMatrix(camera->getViewMatrix() * rotation);
     
     
     /*
@@ -806,24 +634,6 @@ void RenderWidget0::createTestScene()
     }
 }
 
-void RenderWidget0::switchScene()
-{
-    static bool robot = true;
-    
-    robot = !robot;
-    
-    if (robot) {
-        std::cout << "Switched to robot scene." << std::endl;
-        this->parentWidget()->setWindowTitle("Do the Robot!");
-        sceneManager->setRoot(robotGroup);
-    }
-    else {
-        std::cout << "Switched to rabbit scene." << std::endl;
-        this->parentWidget()->setWindowTitle("Multiply like rabbits!");
-        sceneManager->setRoot(geometryGroup);
-    }
-}
-
 void RenderWidget0::toggleCulling()
 {
     static bool objectLevelCulling = true;
@@ -834,7 +644,9 @@ void RenderWidget0::toggleCulling()
 
 void RenderWidget0::keyPressEvent ( QKeyEvent * k )
 {
-        
+    
+    TransformGroup * root = sceneManager->getRoot();
+         
 	switch ( k->key() )  {
     // reload
     case Qt::Key_R:                               
@@ -850,17 +662,17 @@ void RenderWidget0::keyPressEvent ( QKeyEvent * k )
         break;
     // Move camera left
     case Qt::Key_Left: //Key_A:
-        camera->setViewMatrix(Matrix4::translate(1,0,0) * camera->getViewMatrix());
+        root->setTransformation(Matrix4::translate(1,0,0) * root->getTransformation());
+    
+        //camera->setViewMatrix(Matrix4::translate(1,0,0) * camera->getViewMatrix());
         break;
     // Move camera right
     case Qt::Key_Right: //D:
-        camera->setViewMatrix(Matrix4::translate(-1,0,0) * camera->getViewMatrix());
+        root->setTransformation(Matrix4::translate(-1,0,0) * root->getTransformation());
+    
+        //camera->setViewMatrix(Matrix4::translate(-1,0,0) * camera->getViewMatrix());
         break;
     
-    // Switch scenes    
-    case Qt::Key_S:
-        switchScene();
-        break;
     
     // Toggle object level culling
     case Qt::Key_C:

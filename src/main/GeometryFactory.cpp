@@ -170,6 +170,7 @@ void GeometryFactory::createTerrainFromPGM(Object *o, char * filepath, bool norm
 }
 
 
+
 /**
 * Given an Object and a filepath, load the triangle mesh given
 * in the file and save the vertex data to the Object.
@@ -1608,6 +1609,11 @@ void GeometryFactory::createTaperedCylinder(int numRows,
     tempNormals = NULL;
 }
 
+
+/**
+* Given an object pionter and a 2D BezierCurve in the XY plane, rotates
+* the curve about the Y axis and creates a triangle mesh along the way.
+**/
 void GeometryFactory::createSurfaceOfRevolution(Object *o, 
     const BezierCurve &generatrix,
     int numPointsToEvaluateAlongCurve,
@@ -1785,6 +1791,7 @@ void GeometryFactory::createSurfaceOfRevolution(
 		// form a rectangular face with the "face"th and ("face"+1)%numFacesPerRow
 		// vertices in row "row" + 1.
 		for (int face = 0; face < numFacesPerRow; face++) {
+
             
             // Face 1: Upper right triangle of rectangular face
             // Vertex 1: Upper left corner
