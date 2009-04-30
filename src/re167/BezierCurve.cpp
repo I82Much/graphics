@@ -131,6 +131,8 @@ void BezierCurve::createMatrices() {
     }
 }
 
+
+
 /**
 * Uniformly samples the curve and returns the points along the way
 **/

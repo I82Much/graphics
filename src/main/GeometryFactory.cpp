@@ -1713,12 +1713,14 @@ void GeometryFactory::createSurfaceOfRevolution(
     // in order to get the normal vectors at each point.
     Matrix4 rotateZ = Matrix4::rotateZ(BasicMath::radians(90));
     
-    // Sample at numAnglesToRotate positions around the y axis
-    for (int i = 0; i < numAnglesToRotate; i++) {
+    // Sample at numAnglesToRotate positions around the y axis.  One extra 
+    // point is sampled so that the point at the seam has both 0 and 2PI properties
+    // for when it comes time to texturemap
+    for (int i = 0; i < numAnglesToRotate + 1; i++) {
         // TODO: Look into this.
-        // Need to subtract 1 in order to ever have 100% (0 based indexing)
         float proportionAround =   static_cast<float>(i) / 
                                     static_cast<float>(numAnglesToRotate);
+                                    
         float theta = TWO_PI * proportionAround;
         
         Matrix4 rotationMatrix = Matrix4::rotateY(theta);
@@ -1756,20 +1758,16 @@ void GeometryFactory::createSurfaceOfRevolution(
             // (both are in range [0,1])
             float u = t;
             float v = proportionAround;
+            //std::cout << "(u, v) : " << "(" << u << "," << v <<")" << std::endl;
             textureCoords3[i].push_back(Vector3(u,v,0));
         }
     }
     
-    assert(rotatedPoints.size() == numAnglesToRotate);
+    
+    assert(rotatedPoints.size() == numAnglesToRotate + 1);
     assert(rotatedPoints[0].size() == numPointsToEvaluateAlongCurve);
             
-    // TODO: 3D normal vector - I think everything is facing wrong
-    // direction
-    // TODO: texture coordinate
-    
     // We have all of our points; now we need to connect them up correctly. 
-
-      // how many rows of faces?
     const int NUM_ROWS = numPointsToEvaluateAlongCurve - 1;
     const int numFacesPerRow = numAnglesToRotate;
     const int NUM_COMPONENTS_PER_ROW =
@@ -1797,9 +1795,9 @@ void GeometryFactory::createSurfaceOfRevolution(
             // Vertex 1: Upper left corner
             Vector3 f1_1 = rotatedPoints[face][row];
             // Lower right corner
-            Vector3 f1_2 = rotatedPoints[(face+1) % numFacesPerRow][row+1];
+            Vector3 f1_2 = rotatedPoints[face+1][row+1];
             // Upper right corner
-            Vector3 f1_3 = rotatedPoints[(face+1) % numFacesPerRow][row];
+            Vector3 f1_3 = rotatedPoints[face+1][row];
             
             
             // Face 2: Lower left triangle of rectangular face
@@ -1817,9 +1815,9 @@ void GeometryFactory::createSurfaceOfRevolution(
             // Vertex 1: Upper left corner
             Vector3 f1_1n = rotatedTangentVectors[face][row];
             // Lower right corner
-            Vector3 f1_2n = rotatedTangentVectors[(face+1) % numFacesPerRow][row+1];
+            Vector3 f1_2n = rotatedTangentVectors[face+1][row+1];
             // Upper right corner
-            Vector3 f1_3n = rotatedTangentVectors[(face+1) % numFacesPerRow][row];
+            Vector3 f1_3n = rotatedTangentVectors[face+1][row];
             
             
             // Face 2: Lower left triangle of rectangular face
@@ -1834,9 +1832,9 @@ void GeometryFactory::createSurfaceOfRevolution(
             // Get the texture coordinates for all 6 vertices
             Vector3 f1_1uv = textureCoords3[face][row];
             // Lower right corner
-            Vector3 f1_2uv = textureCoords3[(face+1) % numFacesPerRow][row+1];
+            Vector3 f1_2uv = textureCoords3[face+1][row+1];
             // Upper right corner
-            Vector3 f1_3uv = textureCoords3[(face+1) % numFacesPerRow][row];
+            Vector3 f1_3uv = textureCoords3[face+1][row];
             
             // Face 2: Lower left triangle of rectangular face
             // Upper left corner (same as f1_1)
@@ -1861,7 +1859,6 @@ void GeometryFactory::createSurfaceOfRevolution(
             fillInVertex(vertices, startIndex+12, f2_2);
             fillInVertex(vertices, startIndex+15, f2_3);
 
-            // TODO: why do I need to flip the normals for it to look right?
             // Fill in normals
             fillInVertex(normals, startIndex,    f1_1n);
             fillInVertex(normals, startIndex+3,  f1_2n);
