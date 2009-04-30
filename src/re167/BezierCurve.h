@@ -24,7 +24,11 @@ namespace RE167
 
         ~BezierCurve();
         
-        // TODO: there is no symmetry between point and position.
+        
+        std::vector<Vector3> adaptivePointSample(float allowedError) const;
+        std::vector<Vector3> adaptiveTangentSample(float allowedError) const;
+
+        
         std::vector <Vector3> uniformPointSample(int numStraightSegments) const;
         std::vector <Vector3> uniformTangentSample(int numStraightSegments) const;
         

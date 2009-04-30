@@ -133,6 +133,25 @@ void BezierCurve::createMatrices() {
 
 
 
+
+
+
+std::vector<Vector3> BezierCurve::adaptivePointSample(float allowedError) const 
+{
+    // For each subcurve
+        // Recursively split this subcurve into bezier curves and add the 
+        // points if the points are 
+    
+}
+std::vector<Vector3> BezierCurve::adaptiveTangentSample(float allowedError) const
+{
+    
+}
+
+
+
+
+
 /**
 * Uniformly samples the curve and returns the points along the way
 **/
