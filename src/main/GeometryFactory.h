@@ -68,6 +68,35 @@ namespace RE167 {
             int *&indices,
             int &numVertices,
             int &numIndices);
+
+        static void createLoft(
+            Object * o,
+            const BezierCurve &shape,
+            const BezierCurve &path,
+            const int numPointsToEvaluateAlongShape = 10,
+            const int numPointsToEvaluateAlongPath = 10,
+            const bool normalize = true,
+            const bool adaptiveSampling = false
+        );
+        
+        static void createLoft(
+            const BezierCurve &shape,
+            const BezierCurve &path,
+            const int numPointsToEvaluateAlongShape,
+            const int numPointsToEvaluateAlongPath,
+            bool normalize,
+            bool adaptiveSampling,
+            // Outputs
+            float *&vertices,
+            float *&normals,
+            float *&textureCoords,
+            float *&colors,
+            int *&indices,
+            int &numVertices,
+            int &numIndices
+        );
+        
+        
         
         static void createSurfaceOfRevolution(Object *o, 
             const BezierCurve &generatrix,
@@ -86,6 +115,7 @@ namespace RE167 {
             int *&indices,
             int &numVertices,
             int &numIndices);
+                               
                                 
 
 
@@ -159,9 +189,8 @@ namespace RE167 {
 
 
     private:
-    	static void fillInObject(Object *o, float *vertices, float *normals, float *colors, int *indices,
+    	static void fillInObject(Object *o, float *vertices, float *normals, float * textureCoords, float *colors, int *indices,
     						   int numVertices, int numIndices);
-
     };
 
 }

@@ -102,6 +102,7 @@ namespace RE167 {
         void initMaterials();
         void initGeometry();
         void initRobot();
+        void initStillLife();
         void createTestScene();
     
         void switchScene();

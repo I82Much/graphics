@@ -72,7 +72,7 @@ void RenderWidget0::initSceneEvent()
    
 	initCamera();
 	initLights();
-    test();
+    initStillLife();
 	
 	
 	// Trigger timer event every 5ms.
@@ -177,7 +177,7 @@ void RenderWidget0::initGeometry()
  
 }
 
-void RenderWidget0::test()
+void RenderWidget0::initStillLife()
 {
     
     

@@ -24,10 +24,11 @@ namespace RE167
 
         ~BezierCurve();
         
-        
+        /*
+        std::vector<Vector3> convexHull() const;
         std::vector<Vector3> adaptivePointSample(float allowedError) const;
         std::vector<Vector3> adaptiveTangentSample(float allowedError) const;
-
+        */
         
         std::vector <Vector3> uniformPointSample(int numStraightSegments) const;
         std::vector <Vector3> uniformTangentSample(int numStraightSegments) const;

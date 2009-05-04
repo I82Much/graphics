@@ -134,24 +134,6 @@ void BezierCurve::createMatrices() {
 
 
 
-
-
-std::vector<Vector3> BezierCurve::adaptivePointSample(float allowedError) const 
-{
-    // For each subcurve
-        // Recursively split this subcurve into bezier curves and add the 
-        // points if the points are 
-    
-}
-std::vector<Vector3> BezierCurve::adaptiveTangentSample(float allowedError) const
-{
-    
-}
-
-
-
-
-
 /**
 * Uniformly samples the curve and returns the points along the way
 **/
@@ -256,15 +238,5 @@ void BezierCurve::test() {
     BezierCurve fromArray2(array2, 7);
     
     assert(fromArray2.numCubicSegments == 2);
-    
-
-
-    
-    /*
-    vase:
-    (80,20),
-    (90,40),
-    (80,60),
-    (50,120),
-    (80,180)*/
 }
+

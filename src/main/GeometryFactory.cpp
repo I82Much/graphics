@@ -162,8 +162,9 @@ void GeometryFactory::createTerrainFromPGM(Object *o, char * filepath, bool norm
 	ColorFactory::colorTerrain(colors, vertices, numVertices);
 	ColorFactory::perturb(colors, numVertices * 3);
 
-    // we have not calculated normals for the terrain; ignore.
-	GeometryFactory::fillInObject(o, vertices, NULL, colors, indices,
+    // we have not calculated normals nor texture coordinates for the terrain; 
+    // ignore.
+	GeometryFactory::fillInObject(o, vertices, NULL, NULL, colors, indices,
 									numVertices,
 									numVertices);
 
@@ -688,12 +689,10 @@ void GeometryFactory::createCube(Object *o) {
      calculateNormals(vertices, indices, normals, NUM_VERTICES, NUM_INDICES);
      assert(normals);
 
-	 GeometryFactory::fillInObject(o, vertices, normals, colors, indices,
+     // TODO: Create texture coordinates for cube
+     float * textureCoords = NULL;
+	 GeometryFactory::fillInObject(o, vertices, normals, textureCoords, colors, indices,
 									NUM_VERTICES, NUM_INDICES);
-
-                                
-
-
 }
 
 /**
@@ -783,10 +782,6 @@ void GeometryFactory::calculateNormals(float *vertices, int *indices, float *&no
     vNormals = NULL;
 
 }
-
-
-
-
 
 
 /**
@@ -992,13 +987,15 @@ void GeometryFactory::createSphere(Object *o, int numRows, int numFacesPerRow) {
 	float *vertices= NULL;
 	float *colors = NULL;
     float *normals = NULL;
+    float *textureCoords = NULL;
 	int numVertices = 0;
 	int numIndices = 0;
 	// Do the heavy lifting with a helper method
-	GeometryFactory::createSphere(numRows, numFacesPerRow, vertices, normals, colors, indices,
+	// TODO: Calculate texture coords within helper method
+    GeometryFactory::createSphere(numRows, numFacesPerRow, vertices, normals, colors, indices,
         numVertices, numIndices);
     
-	GeometryFactory::fillInObject(o, vertices, normals, colors, indices, 
+	GeometryFactory::fillInObject(o, vertices, normals, textureCoords, colors, indices, 
         numVertices, numIndices);
     
 
@@ -1289,7 +1286,9 @@ void GeometryFactory::createTaperedCylinder(Object *o, int numRows,
 //    calculateNormals(vertices, indices, normals, numVertices, numIndices);								
     assert(normals);
     
-	GeometryFactory::fillInObject(o, vertices, normals, colors, indices, numVertices,
+    float * textureCoords = NULL;
+    // TODO: Fix the method to calculate texture coords
+	GeometryFactory::fillInObject(o, vertices, normals, textureCoords, colors, indices, numVertices,
 								numIndices);
 
 	delete[] indices;
@@ -1611,7 +1610,107 @@ void GeometryFactory::createTaperedCylinder(int numRows,
 
 
 /**
-* Given an object pionter and a 2D BezierCurve in the XY plane, rotates
+* Extrudes a given shape along a given path.
+*
+* For instance, if shape is a star shape and the path is a circle, we would 
+* have a circle whose cross sections would be stars.
+*
+* @param o      the object which will be filled in with the created geometry
+* @param shape  the curve specifying the shape that will define cross sections
+* @param path   the path that the swept surface will take
+* @param numPointsToEvaluateAlongShape  at how many places along the shape
+*                                       curve will the curve be sampled
+*                                       (higher number will lead to more
+*                                       vertices)
+* @param numPointsToEvaluateAlongPath   at how many places along the path 
+*                                       curve will the curve be sampled
+*                                       (higher number will lead to more
+*                                       vertices)
+* @param normalize          whether or not to make the resulting shape fit
+*                           within the unit cube centered at the origin
+* @param adaptiveSampling   if true, both curves will be sampled at enough
+**/
+void GeometryFactory::createLoft(
+    Object * o,
+    const BezierCurve &shape,
+    const BezierCurve &path,
+    const int numPointsToEvaluateAlongShape,
+    const int numPointsToEvaluateAlongPath,
+    const bool normalize,
+    const bool adaptiveSampling
+)
+{
+    assert(o != NULL);
+    
+    
+    
+    
+}
+
+/**
+* Extrudes a given shape along a given path.
+*
+* For instance, if shape is a star shape and the path is a circle, we would 
+* have a circle whose cross sections would be stars.
+*
+* @param shape  the curve specifying the shape that will define cross sections
+* @param path   the path that the swept surface will take
+* @param numPointsToEvaluateAlongShape  at how many places along the shape
+*                                       curve will the curve be sampled
+*                                       (higher number will lead to more
+*                                       vertices)
+* @param numPointsToEvaluateAlongPath   at how many places along the path 
+*                                       curve will the curve be sampled
+*                                       (higher number will lead to more
+*                                       vertices)
+* @param normalize          whether or not to make the resulting shape fit
+*                           within the unit cube centered at the origin
+* @param adaptiveSampling   if true, both curves will be sampled at enough
+* @param vertices   the array that will be filled in to hold all of the 
+*                   vertices in the object.  Must be freed later
+* @param normals    the array that will be filled in to hold all of the 
+*                   normals in the object.  Must be freed later.
+* @param textureCoords  the array that will be filled in to hold the texture
+*                       coordinates of the object. Must be freed later
+* @param colors         the array that will be filled in to hold the color 
+*                       information of object's surface (separate from texture)
+*                       Must be freed later.
+* @param indices    the array that will be filled in to hold the connectivity
+*                   of all the vertices, normals, colors, texture coords, etc.
+*                   For instance, if the first three elements of this array 
+*                   are 0,2,3 then the first face is made of the vertices at
+*                   position 0, 2, and 3 in the vertices array, and so on
+*                   and so forth.
+* @param numVertices    the number of vertices in the object; indicates
+*                       size of the vertices array (3 * numVertices, since
+*                       each vertex has 3 coordinates), normals array
+*                       (3 * numVertices), colors array (3 * numVertices) and
+*                       textureCoords array (2 * numVertices).
+* @param numIndices     the number of indices we have; indicates size of
+*                       indices array (1 * numIndices)
+**/
+void GeometryFactory::createLoft(
+    const BezierCurve &shape,
+    const BezierCurve &path,
+    const int numPointsToEvaluateAlongShape,
+    const int numPointsToEvaluateAlongPath,
+    bool normalize,
+    bool adaptiveSampling,
+    // Outputs
+    float *&vertices,
+    float *&normals,
+    float *&textureCoords,
+    float *&colors,
+    int *&indices,
+    int &numVertices,
+    int &numIndices
+)
+{
+    
+}
+
+/**
+* Given an object pointer and a 2D BezierCurve in the XY plane, rotates
 * the curve about the Y axis and creates a triangle mesh along the way.
 **/
 void GeometryFactory::createSurfaceOfRevolution(Object *o, 
@@ -1644,7 +1743,7 @@ void GeometryFactory::createSurfaceOfRevolution(Object *o,
         
        
     // TODO: Make this method take in the texture coordinates too
-	fillInObject(o, vertices, normals, colors, indices, 
+	fillInObject(o, vertices, normals, textureCoords, colors, indices, 
         numVertices, numIndices);
     
     
@@ -1756,8 +1855,8 @@ void GeometryFactory::createSurfaceOfRevolution(
             // Our u coord is just the curve parameter t, and the v is just 
             // what proportion rotated around the y axis
             // (both are in range [0,1])
-            float u = t;
-            float v = proportionAround;
+            float u = proportionAround;
+            float v = -t;
             //std::cout << "(u, v) : " << "(" << u << "," << v <<")" << std::endl;
             textureCoords3[i].push_back(Vector3(u,v,0));
         }
@@ -1906,12 +2005,14 @@ void GeometryFactory::createSurfaceOfRevolution(
  * @param o
  * @param vertices			the (x,y,z) locations of all the vertices.  MUST NOT BE NULL
  * @param normals           the vector for normals at each vertex
+ * @param textureCoords     the (u,v) value for each point on surface
  * @param colors			the (r,g,b) values at each vertex
  * @param indices			the indices into the vertices array that make up each triangular face
  * @param numVertices       how many vertices, size of vertices array is 3 * numVertices
  * @param numIndices    	the size of the indices array
 **/
-void GeometryFactory::fillInObject(Object *o, float *vertices, float *normals, float *colors, int *indices,
+void GeometryFactory::fillInObject(Object *o, float *vertices, float *normals, float * textureCoords,
+                                    float *colors, int *indices,
 								   int numVertices, int numIndices) 
 {
     
@@ -1948,23 +2049,21 @@ void GeometryFactory::fillInObject(Object *o, float *vertices, float *normals, f
         vertexData.createVertexBuffer(2, 3 * numVertices * sizeof(float), (unsigned char*) normals);
     }
         
-        
-    // Add spherical texture coordinates to object    
-    float * texCoords = NULL;
-    //createSphericalCoordinates(vertices, normals, indices, texCoords, numVertices, numIndices);
-    createPositionalSphericalCoordinates(vertices, indices, texCoords, numVertices, numIndices);
-    assert(texCoords != NULL);
-
+    // We need texture coordinates somehow; treat object like a sphere and 
+    // calculate them
+    if (textureCoords == NULL) {    
+        // Add spherical texture coordinates to object    
+        //createSphericalCoordinates(vertices, normals, indices, textureCoords, numVertices, numIndices);
+        createPositionalSphericalCoordinates(vertices, indices, textureCoords, numVertices, numIndices);
+        assert(textureCoords != NULL);
+    }
+    
     vertexData.vertexDeclaration.addElement(3, 0, 2, 2*sizeof(float),
         RE167::VES_TEXTURE_COORDINATES);
-    vertexData.createVertexBuffer(3, numVertices * 2*sizeof(float), (unsigned char*) texCoords);
+    vertexData.createVertexBuffer(3, numVertices * 2*sizeof(float), (unsigned char*) textureCoords);
     
-    if (texCoords != NULL) {
-        delete[] texCoords;
-        texCoords = NULL;
-    }
-        
-        
+    // TODO: If we create the positional spherical coordinates within this method
+    // there is no way to reclaim the space.    
         
 	vertexData.createIndexBuffer(numIndices, indices);
 }

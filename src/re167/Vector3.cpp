@@ -39,6 +39,9 @@ Vector3 & Vector3::operator+=(const Vector3 &rhs) {
 	return *this;
 }
 
+
+
+
 /**
 * @see http://www.cs.caltech.edu/courses/cs11/material/cpp/donnie/cpp-ops.html
 * Modified from the + example there
