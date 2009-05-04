@@ -152,13 +152,6 @@ namespace RE167 {
         static void calculateBoundingSphere(float * vertices, int numVertices, 
             Vector4 &center, float & radius);
 
-        static void eliminateDuplicateVertices(float *vertices, 
-                                                int *indices, 
-                                                float *&outVertices,
-                                                int *&outIndices,
-                                                int &numVertices,
-                                                int &numIndices);
-
         static void createSphericalCoordinates(float *vertices,
                                                 float *normals,
                                                 int *indices,

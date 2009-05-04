@@ -108,7 +108,6 @@ void BezierCurve::split(float real, int *integerPart, float *realPart) {
 
 
 
-// TODO: precompute the C matrices
 void BezierCurve::createMatrices() {
     
     // For each curve segment, determine the C matrix (G_Bez * WEIGHTS)

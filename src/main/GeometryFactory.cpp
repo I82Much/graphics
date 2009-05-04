@@ -528,123 +528,7 @@ void GeometryFactory::calculateBoundingSphere(float * vertices, int numVertices,
     radius = (vMax - center3d).magnitude();
 }
 
-/**
-* Given a triangular mesh defined by vertices and indices where there
-* is a one to one correspondence between the vertices and the indices
-* (vertices that are shared by different faces are duplicated rather
-* than reused) this method determines which vertices are duplicates,
-* eliminates them, and updates the indices array such that the
-* connectivity of the mesh is maintained.  Also assumes that the
-* indices array is created such that it's full of consecutive integers
-* (so face one is comprised of vertices 0, 1, 2, face 2 by 3, 4, 5, ...)
-*
-*
-* CALLER IS RESPONSIBLE FOR FREEING MEMORY ALLOCATED IN THIS METHOD
-* FOR outVertices and outIndices
-*/
-void GeometryFactory::eliminateDuplicateVertices(float *vertices,
-                                                int *indices,
-                                                float *&outVertices,
-                                                int *&outIndices,
-                                                int &numVertices,
-                                                int &numIndices)
-{
 
-    assert(vertices);
-    assert(indices);
-    // We only want to eliminate duplicate vertices in the case that
-    // the mesh was defined such that each vertex has one entry in index
-    // table
-    assert(numVertices == numIndices);
-
-    // Create space for the new indices table
-    outIndices = new int[numIndices];
-
-
-    // Create a vector of Vector3s; will hold all of the unique vertices
-    // in the order in which we add them
-    std::vector<Vector3> uniqueSortedVertices;
-
-    // Create a map of Vector3s; will hold all of the unique vertices but
-    // with no particular useful order.  Holds the index where we first
-    // found the unique vertex
-    std::map<Vector3, int> uniqueVerticesMap;
-
-    // Convert our float array into a Vector3 vector.
-    std::vector<Vector3> verticesVector;
-    for (int i = 0; i < numVertices; i++) {
-        int index = 3*i;
-        float x = vertices[index    ];
-        float y = vertices[index + 1];
-        float z = vertices[index + 2];
-        verticesVector.push_back(Vector3(x,y,z));
-
-        std::cout << Vector3(x,y,z) << std::endl;
-
-    }
-
-
-
-
-    // Go through and determine the unique vertices.  At the same time
-    // keep track of the indices into our unique vertices vector.
-    for (unsigned int i = 0; i < verticesVector.size(); i++) {
-        Vector3 vertex = verticesVector[i];
-        // Search our map for this vertex
-        std::map<Vector3, int>::iterator v = uniqueVerticesMap.find(vertex);
-
-        // The vertex has not yet been put in our map; add it to both
-        // the map and the uniqueSortedVertices vector
-        if (v == uniqueVerticesMap.end()) {
-
-
-            int indexInUniqueVertices = uniqueSortedVertices.size();
-            // Store the index in the map for later retrieval
-            uniqueVerticesMap[vertex] = indexInUniqueVertices;
-            uniqueSortedVertices.push_back(vertex);
-            // Keep track in our new indices array where in our unique
-            outIndices[i] = indexInUniqueVertices;
-        }
-        // The vertex has already been placed into both our map and
-        // our uniqueSortedVertices vector; therefore we just need to
-        // retrieve the correct index and place it in the outIndices
-        else {
-            std::cout << "vertex " << vertex << "is a duplicate." << std::endl;
-
-
-            // The map stores (vertex, index)
-            outIndices[i] = v->second;
-        }
-    }
-
-    std::cout << "Size of map: " << uniqueVerticesMap.size() << std::endl;
-    std::cout << "Size of vector: " << uniqueSortedVertices.size() << std::endl;
-
-
-    for( std::map<Vector3, int>::iterator ii=uniqueVerticesMap.begin(); ii!=uniqueVerticesMap.end(); ii++)
-    {
-           std::cout << (*ii).first << ": " << (*ii).second << std::endl;
-    }
-
-    assert(uniqueSortedVertices.size() <= static_cast<unsigned int>(numVertices));
-
-    // Change the parameter to reflect the new number of vertices;
-    // note that the number of indices does not change
-    numVertices = uniqueSortedVertices.size();
-
-    // At this point we have our unique vertices as well as our
-    // indices.  Now all we need to do is convert from our Vector3 vector
-    // into a float array.
-    outVertices = new float[3 * numVertices];
-    for (unsigned int i = 0; i < uniqueSortedVertices.size(); i++) {
-        unsigned int index = 3 * i;
-        outVertices[index    ] = uniqueSortedVertices[i].getX();
-        outVertices[index + 1] = uniqueSortedVertices[i].getY();
-        outVertices[index + 2] = uniqueSortedVertices[i].getZ();
-    }
-
-
-}
 
 /*
 * Creates a cube of side length = 2 centered at (0,0,0)
@@ -1640,11 +1524,55 @@ void GeometryFactory::createLoft(
     const bool adaptiveSampling
 )
 {
-    assert(o != NULL);
-    
-    
-    
-    
+    assert (o != NULL);
+    int *indices = NULL;
+	float *vertices= NULL;
+	float *colors = NULL;
+    float *normals = NULL;
+    float *textureCoords = NULL;
+	int numVertices = 0;
+	int numIndices = 0;
+	// Do the heavy lifting with a helper method
+	createLoft(shape, 
+	    path,
+	    numPointsToEvaluateAlongShape, 
+	    numPointsToEvaluateAlongPath, 
+	    normalize,
+	    adaptiveSampling,
+	    vertices,  
+	    normals, 
+	    textureCoords,
+	    colors, 
+	    indices,
+	    numVertices,
+        numIndices);
+        
+    assert (indices != NULL);
+    assert (vertices != NULL);
+        
+	fillInObject(o, vertices, normals, textureCoords, colors, indices, 
+        numVertices, numIndices);
+     
+    delete[] indices;
+    indices = NULL;
+    delete[] vertices;
+    vertices = NULL;
+    if (normals != NULL) {
+        delete[] normals;
+        normals = NULL;
+    }
+    if (colors != NULL) {
+	    delete[] colors;
+        colors = NULL;
+    }
+    if (normals != NULL) {
+        delete[] normals;
+        normals = NULL;
+    }
+    if (textureCoords != NULL) {
+        delete[] textureCoords;
+        textureCoords = NULL;
+    }
 }
 
 /**
@@ -1706,6 +1634,53 @@ void GeometryFactory::createLoft(
     int &numIndices
 )
 {
+    // Calculate all of the points and tangent vectors for the path curve and
+    // shape curve
+    std::vector<Vector3> shapePoints    = shape.uniformPointSample(numPointsToEvaluateAlongShape);
+    std::vector<Vector3> shapeTangents  = shape.uniformTangentSample(numPointsToEvaluateAlongShape);
+    
+    std::vector<Vector3> pathPoints     = path.uniformPointSample(numPointsToEvaluateAlongPath);
+    std::vector<Vector3> pathTangents   = path.uniformTangentSample(numPointsToEvaluateAlongPath);
+    
+    // For all the points along the path curve
+    for (unsigned int i = 0; i < pathPoints.size(); i++) 
+    {
+        
+        
+    
+        // Determine the corresponding tangent vector 
+        
+        // Calculate the matrix M that brings you from the shape coordinate system
+        // to the local coordinate system, aligned with the tangent vector of
+        // path
+        
+        // Determine the value of the curve parameter for the path curve
+        
+        // Store this as the "u" texture coordinate
+
+        // For each point in the shape curve
+            // Multiply it by M to determine the point on shape at this point
+            // on curve
+            
+            // Keep track of this point
+            
+            // Transform the corresponding tangent vector to be normal to the
+            // surface
+    
+            // Keep track of this normal
+            
+            // Determine the value of the curve parameter for the shape curve
+            // Store this as the "v" texture coordinate
+            
+    }
+    
+    // We now have all of the vertices, normals, and texture coordinates we
+    // need.  Allocate enough space for all of the arrays, and fill them in
+    // with the same face strategy as we use for cylinders.
+    
+    
+    // TODO: Create method that does the cylindrical method, since it comes up
+    // so often
     
 }
 
@@ -1741,12 +1716,9 @@ void GeometryFactory::createSurfaceOfRevolution(Object *o,
     assert (indices != NULL);
     assert (vertices != NULL);
         
-       
-    // TODO: Make this method take in the texture coordinates too
 	fillInObject(o, vertices, normals, textureCoords, colors, indices, 
         numVertices, numIndices);
-    
-    
+     
     delete[] indices;
     indices = NULL;
     delete[] vertices;
@@ -1816,7 +1788,7 @@ void GeometryFactory::createSurfaceOfRevolution(
     // point is sampled so that the point at the seam has both 0 and 2PI properties
     // for when it comes time to texturemap
     for (int i = 0; i < numAnglesToRotate + 1; i++) {
-        // TODO: Look into this.
+
         float proportionAround =   static_cast<float>(i) / 
                                     static_cast<float>(numAnglesToRotate);
                                     
@@ -1983,8 +1955,6 @@ void GeometryFactory::createSurfaceOfRevolution(
             fillIn2DCoords(textureCoords, textureStartIndex+6, f2_1uv);
             fillIn2DCoords(textureCoords, textureStartIndex+8, f2_2uv);
             fillIn2DCoords(textureCoords, textureStartIndex+10, f2_3uv);
-            
-            
 		}
 	}
 	
