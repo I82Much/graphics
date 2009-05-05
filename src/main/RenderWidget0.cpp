@@ -72,7 +72,7 @@ void RenderWidget0::initSceneEvent()
 
     
 	initCamera();
-	initLights();
+	//initLights();
     //initStillLife();
 
     test();
@@ -368,6 +368,7 @@ void RenderWidget0::initCamera()
 void RenderWidget0::initLights()
 {
     
+    
     // Make a blue spotlight coming from the left
     Light * blue = sceneManager->createLight();
     blue->setType(Light::SPOT);
@@ -375,23 +376,11 @@ void RenderWidget0::initLights()
     blue->setDiffuseColor(Vector3(0,0,1));
     blue->setSpecularColor(Vector3(1,1,1));
     blue->setSpotDirection(Vector3(0,0,1));
-    //blue->setPosition(Vector3(-1,.5,1));
     blue->setPosition(Vector3(0,1,0));
     
     
     LightNode * blueLight = new LightNode(blue);
-    
-    /*
-    // Make a green spotlight coming from the right
-    Light * green = sceneManager->createLight();
-    green->setType(Light::SPOT);
-    green->setAmbientColor(Vector3(.2,.2,.2));
-    green->setDiffuseColor(Vector3(0,1,0));
-    green->setSpecularColor(Vector3(1,1,1));
-    green->setSpotDirection(Vector3(0,0,-1));
-    green->setPosition(Vector3(1,.5,1));
-    */
-    
+
     
     // Create a white light
     Light * white = sceneManager->createLight();
@@ -642,26 +631,64 @@ void RenderWidget0::test()
     
     
     Vector3 t1(0,4,0);
-    Vector3 t2(0,3,0);
-    Vector3 t3(0,2,0);
-    Vector3 t4(0,1,0);
-
-    BezierCurve straightLine(t1, t2, t3, t4);
-
-    Vector3 c1(0,0,1);
-    Vector3 c2(1,0,1);
-    Vector3 c3(1,0,-1);
-    Vector3 c4(0,0,-1);
-    Vector3 c5(-1,0,-1);
-    Vector3 c6(-1,0,1);
-    Vector3 c7(0,0,1);
+    Vector3 t2(1,3,0);
+    Vector3 t3(2,2,0);
+    Vector3 t4(3,3,0);
+    Vector3 t5(5,3,0);
+    Vector3 t6(5.5,4,0);
+    Vector3 t7(6,1,0);
     
-    Vector3 array[] = {c1,c2,c3,c4,c5,c6,c7};
+    Vector3 p1(0,4,0);
+    Vector3 p2(1,2,0);
+    Vector3 p3(3,2,0);
+    Vector3 p4(4,4,0);
     
-    BezierCurve curvedLine(array, 7);
+    
+
+    Vector3 pathArray[] = {t1,t2,t3,t4,t5,t6,t7};
+//    Vector3 pathArray[] = {p1,p2,p3,p4};
+
+
+    BezierCurve path(pathArray, 4);
+
+    Vector3 c1(0,0,.5);
+    Vector3 c2(.5,0,.5);
+    Vector3 c3(.5,0,-.5);
+    Vector3 c4(0,0,-.5);
+    Vector3 c5(-.5,0,-.5);
+    Vector3 c6(-.5,0,.5);
+    Vector3 c7(0,0,.5);
+    
+    
+    Vector3 s1(2,0,0);
+    Vector3 s2(1,0,0);
+    Vector3 s3(0,0,2);
+    Vector3 s4(0,0,3);
+    Vector3 s5(0,0,2);
+    Vector3 s6(-1,0,0);
+    Vector3 s7(-2,0,0);
+    
+    
+    Vector3 shapeArray[] = {c1,c2,c3,c4,c5,c6,c7};
+    //Vector3 shapeArray[] = {s1,s2,s3,s4,s5,s6,s7};
+    
+    BezierCurve curvedLine(shapeArray, 7);
     
     Object * loft = sceneManager->createObject();
-    GeometryFactory::createLoft(loft, curvedLine, straightLine,10 ,10);
+    GeometryFactory::createLoft(loft, curvedLine, path,18 ,5);
+    
+    
+    Material * extrudedShapeMaterial = new Material();
+    
+    // Set up the textures
+    // http://friday.westnet.com/~crywalt/dymaxion_2003/earthmap10k.reduced.jpg
+    QImage *texImg = new QImage("earthmap.jpg", "jpg");
+    assert(texImg != NULL);
+    Texture *earthMap = new Texture(texImg);
+    extrudedShapeMaterial->setTexture(earthMap);
+    
+    
+    loft->setMaterial(extrudedShapeMaterial);
     
     sceneManager->getRoot()->addChild(new Shape3D(loft));
     

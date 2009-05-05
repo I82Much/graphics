@@ -1588,29 +1588,40 @@ void GeometryFactory::createLoft(
 **/
 const Matrix4 GeometryFactory::calculatePathTransform(Vector3 pointOnPath, Vector3 tangentOnPath) 
 {
-    
-    std::cout << "Point on path: " << pointOnPath << " tangent OnPath: " << tangentOnPath << std::endl;
-    
     // Assumes that the generatrix curve is in the zy plane
-    const int X_PERTURBATION = 10;
+    const int PERTURBATION = 10;
+    
+    std::cout << "tangent vector: " << tangentOnPath << std::endl;
     
     // x -> u, y -> v, z -> w.  I want the y axis to be aligned with 
     
-    // TODO: the perturbation thing could cause zero vector for uPrime...
     
     // Create an orthonormal basis such that v points in direction of tangent
     // while u and w are orthogonal to v
     Vector3 v = tangentOnPath.normalize();
     // Perturb u slightly to get a linearly independent vector
-    Vector3 vPrime = Vector3(v.getX() + X_PERTURBATION, v.getY(), v.getZ()).normalize();
-
-    // Guaranteed to be unit length 
-    Vector3 u = vPrime.crossProduct(v);
-    Vector3 w = u.crossProduct(v);
     
+    float vXPrime = v.getX() + PERTURBATION;
+    float vYPrime = v.getY();
+    float vZPrime = v.getZ();
+    /*
+    // x is smallest component; perturb it
+    if (vXPrime < vYPrime && vXPrime < vZPrime) {
+        vXPrime += PERTURBATION;
+    }
+    // y is smallest component; perturb it
+    else if (vYPrime < vXPrime && vYPrime < vZPrime) {
+        vYPrime += PERTURBATION;
+    }
+    // z is smallest component; perturb it
+    else {
+        vZPrime += PERTURBATION;
+    }*/
     
-    std::cout << "u: " << u << " v: " << v << " w: " << w << std::endl;
+    Vector3 vPrime = Vector3(vXPrime, vYPrime, vZPrime).normalize();
 
+    Vector3 u = vPrime.crossProduct(v).normalize();
+    Vector3 w = u.crossProduct(v).normalize();
     
 	// Create a rotation matrix out of u,v,w
 	Matrix4 rotate = Matrix4( 	u.getX(), v.getX(), w.getX(), 0,
@@ -1620,10 +1631,12 @@ const Matrix4 GeometryFactory::calculatePathTransform(Vector3 pointOnPath, Vecto
 
 	// Create the translation matrix to move to origin
 	Matrix4 translate = Matrix4::translate(	pointOnPath.getX(), 
-											pointOnPath.getY(),
-											pointOnPath.getZ() );
+        pointOnPath.getY(),
+        pointOnPath.getZ() );
 
-	return rotate * translate;
+    return translate * rotate;
+    
+    //return translate * rotateFromUToX * rotateFromVToY;
 }
 
 
@@ -1726,10 +1739,7 @@ void GeometryFactory::createLoft(
         // coordinate system to the local coordinate system, defined by the
         // current point as the origin and the tangent as one of the
         // bases.
-        // TODO: actually calculate this change of coordinate system method
-        const Matrix4 pathTransform = calculatePathTransform(pointOnPath, tangentOnPath);//Matrix4::translate(pointOnPath.getX(), pointOnPath.getY(), pointOnPath.getZ());
-
-        cout << "pathTransform" << pathTransform << endl;
+        const Matrix4 pathTransform = calculatePathTransform(pointOnPath, tangentOnPath);
 
         // Calculate the matrix needed to rotate a tangent vector on shape
         // curve to be normal to the curve.
@@ -1751,9 +1761,6 @@ void GeometryFactory::createLoft(
             Vector4 curVertex = pathTransform * Vector4(shapePoints[j]);
             vecVertices[i].push_back(Vector3(curVertex));
             
-            std::cout << "curVertex: " << shapePoints[j] << " after transform: " << curVertex << std::endl;
-            
-             
             // Transform the corresponding tangent vector to be normal to the
             // surface, using the rotation matrix defined by rotating about the
             // tangent to the path curve
@@ -1763,9 +1770,8 @@ void GeometryFactory::createLoft(
             // should be orthogonal to the tangent of our path
             // TODO: Not sure if this is true if shape curve does not lie
             // in plane. . .
-/*            assert(shapeTangents[j].dotProduct(tangentOnPath) == 0);
+/*          assert(shapeTangents[j].dotProduct(tangentOnPath) == 0);
             assert(curNormal.dotProduct(Vector4(tangentOnPath)) == 0);*/
-            
             
             vecNormals[i].push_back(Vector3(curNormal));
             
@@ -1779,10 +1785,6 @@ void GeometryFactory::createLoft(
             float u = shapeTValue;
             float v = pathTValue;    
             vecTexCoords[i].push_back(Vector3(u, v, 0));
-            
-            
-            //cout << "i: " << i << "j: " << j << "t_path: " << pathTValue << " t_shape: " << shapeTValue << "cur Vertex: " << vecVertices[i][j] << endl;
-            std::cout << vecVertices[i][j] << endl;
             
         }
     }
@@ -1831,11 +1833,6 @@ void GeometryFactory::createLoft(
             Vector3 f2_2 = vecVertices[row+1][face];
             // Lower right corner: (same as f1_2)
             Vector3 f2_3 = f1_2;
-            
-            /*
-            cout << "row: " << row << " face: " << face;
-            cout << "upper left: " << f1_1 << "lower right: " << f1_2;
-            cout << "upper right: " << f1_3 << endl;*/
             
             // Calculate the normals for these faces as well.  They are
             // exactly the same points etc but taken from the rotatedTangents
@@ -2347,6 +2344,11 @@ void GeometryFactory::runTestSuite() {
     
     cout << "Transformed origin: " << (transform * Vector4(0,0,0,1)) << endl;
     assert(transform * Vector4(0,0,0,1) == Vector4(0,1,0,1));
+    
+    cout << "Transformed point (1,0,0,1) == " << transform * Vector4(1,0,0,1) << endl;
+    
+    //assert(transform * Vector4(1,0,0,1) == Vector4(1,1,0,1));
+    
     
     
     
