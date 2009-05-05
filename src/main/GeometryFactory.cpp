@@ -27,6 +27,7 @@
 #include "VertexData.h"
 #include "Object.h"
 #include "BezierCurve.h"
+#include "Matrix4.h"
 
 using std::cout;
 using std::endl;
@@ -538,7 +539,6 @@ void GeometryFactory::calculateBoundingSphere(float * vertices, int numVertices,
 void GeometryFactory::createCube(Object *o) {
 	// 3 per
 	const int NUM_VERTICES = 24;
-	const int SIZE_OF_VERTICES_ARRAY = NUM_VERTICES * NUM_COMPONENTS_PER_VERTEX;
 	float vertices[] = {-1,-1,1, 1,-1,1, 1,1,1, -1,1,1,		// front face
 						-1,-1,-1, -1,-1,1, -1,1,1, -1,1,-1, // left face
 						1,-1,-1,-1,-1,-1, -1,1,-1, 1,1,-1,  // back face
@@ -1642,35 +1642,66 @@ void GeometryFactory::createLoft(
     std::vector<Vector3> pathPoints     = path.uniformPointSample(numPointsToEvaluateAlongPath);
     std::vector<Vector3> pathTangents   = path.uniformTangentSample(numPointsToEvaluateAlongPath);
     
+    // We will be computing all of the vertices, normals, and texcoords and
+    // then figuring out the connectivity later
+    std::vector <std::vector<Vector3> > vecVertices;
+    std::vector <std::vector<Vector3> > vecNormals;
+    std::vector <std::vector<Vector3> > vecTexCoords;
+    
     // For all the points along the path curve
     for (unsigned int i = 0; i < pathPoints.size(); i++) 
     {
+        // Add a new vector to each of the vertices, normals, texCoords in 
+        // order to make the two dimensional vector complete
+        vecVertices.push_back(std::vector<Vector3>());
+        vecNormals.push_back(std::vector<Vector3>());
+        vecTexCoords.push_back(std::vector<Vector3>());
         
-        
-    
+        Vector3 pointOnPath = pathPoints[i];
         // Determine the corresponding tangent vector 
+        Vector3 tangentOnPath = pathPoints[i];
         
-        // Calculate the matrix M that brings you from the shape coordinate system
-        // to the local coordinate system, aligned with the tangent vector of
-        // path
+        // Calculate the matrix that brings you from the shape curve's
+        // coordinate system to the local coordinate system, defined by the
+        // current point as the origin and the tangent as one of the
+        // bases.
+        // TODO: actually calculate this change of coordinate system method
+        const Matrix4 pathTransform;// = calculatePathTransform(pointOnPath, tangentOnPath);
+
+        // Calculate the matrix needed to rotate a tangent vector on shape
+        // curve to be normal to the curve.
+        const Vector4 unitAxisOfRotation = Vector4(tangentOnPath).normalize();
+        const float radiansToRotate = BasicMath::radians(90);
+        const Matrix4 normalRotationMatrix = Matrix4::rotate(unitAxisOfRotation, radiansToRotate);
         
         // Determine the value of the curve parameter for the path curve
+        float t_curve = 
+            static_cast<float>(i) / static_cast<float>(pathPoints.size() - 1);
         
-        // Store this as the "u" texture coordinate
 
         // For each point in the shape curve
+        for (unsigned int j = 0; j < shapePoints.size(); j++) {
+        
             // Multiply it by M to determine the point on shape at this point
             // on curve
+            // Need to translate Vector3 into Vector4 in order to multiply
+            // by matrices
+            Vector4 curPoint = Vector4(shapePoints[j]);
+            Vector4 curVertex = pathTransform * curPoint;
             
             // Keep track of this point
+            vecVertices[i].push_back(Vector3(curVertex));
             
             // Transform the corresponding tangent vector to be normal to the
             // surface
+            
+            
     
             // Keep track of this normal
             
             // Determine the value of the curve parameter for the shape curve
             // Store this as the "v" texture coordinate
+        }
             
     }
     
@@ -1828,7 +1859,7 @@ void GeometryFactory::createSurfaceOfRevolution(
             // what proportion rotated around the y axis
             // (both are in range [0,1])
             float u = proportionAround;
-            float v = -t;
+            float v = 1.0 - t;
             //std::cout << "(u, v) : " << "(" << u << "," << v <<")" << std::endl;
             textureCoords3[i].push_back(Vector3(u,v,0));
         }
