@@ -103,7 +103,6 @@ namespace RE167 {
         void initGeometry();
         void initRobot();
         void initStillLife();
-        void createTestScene();
     
         void switchScene();
         void toggleCulling();

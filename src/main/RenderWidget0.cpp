@@ -42,7 +42,8 @@
 
 
 using namespace RE167;
-
+using std::cout;
+using std::endl;
 RenderWidget0::RenderWidget0()
 {
 	RenderContext *rs = new GLRenderContext();
@@ -69,11 +70,12 @@ void RenderWidget0::initSceneEvent()
     
 	sceneManager = new SceneManager();
 
-   
+    
 	initCamera();
 	initLights();
-    initStillLife();
-	
+    //initStillLife();
+
+    test();
 	
 	// Trigger timer event every 5ms.
 	timerId = startTimer(5);
@@ -573,66 +575,6 @@ void RenderWidget0::toggleWireframe()
 
 }
 
-/**
-* Sets up a scene with >= 100 instances of a complicated object for testing
-* the Object-Level Culling
-**/
-void RenderWidget0::createTestScene()
-{
-    Material * brass = new Material(Brass);                                 
-    Material * pewter = new Material(Pewter);
-    Material * polishedSilver = new Material(Polished_Silver);
-    Material * blackRubber = new Material(Black_Rubber);
-    Material * ruby = new Material(Ruby);
-    Material * turquoise = new Material(Turquoise);   
-    Material * mattePearl = new Material(Pearl);   
-    Material * defaultMat = new Material();
-    Material * emerald = new Material(Emerald);
-    
-    
-    const int NUM_OBJECTS = 100;
-    const int NUM_ROWS = (int) sqrt(static_cast<float>(NUM_OBJECTS));
-    const int NUM_COLS = NUM_ROWS;
-
-    const float SPACING = 2;
-        
-    RE167::Object * bunny = sceneManager->createObject();
-    GeometryFactory::createObject(bunny, "objects/bunny.obj");
-    
-    // Test object stuff
-    /*   Object * bunny = new Object();
-       GeometryFactory::createObject(bunny, "objects/teapot.obj");*/
-       std::cout << "Center of bunny: " << bunny->getSphereCenter() << " radius of sphere: " << bunny->getSphereRadius() << std::endl;
-    
-    
-    
-    Shape3D * metalBunny = new Shape3D(bunny, polishedSilver);
-    Shape3D * emeraldBunny = new Shape3D(bunny, emerald);
-    Shape3D * rubyBunny = new Shape3D(bunny, ruby);
-    
-    Shape3D * bunnies[] = {
-        new Shape3D(bunny, brass),
-        new Shape3D(bunny, pewter),
-        new Shape3D(bunny, polishedSilver),
-        new Shape3D(bunny, blackRubber),
-        new Shape3D(bunny, ruby),
-        new Shape3D(bunny, turquoise),
-        new Shape3D(bunny, mattePearl),
-        new Shape3D(bunny, defaultMat),
-        new Shape3D(bunny, emerald)
-    };
-    
-    
-    geometryGroup = new TransformGroup();
-    for (int i = 0, counter = 0; i < NUM_ROWS; i++) {
-        for (int j = 0; j < NUM_COLS; j++) {
-            TransformGroup * curBunny = new TransformGroup(Matrix4::translate(i * SPACING, j * SPACING, 0));
-            curBunny->addChild(bunnies[counter % 9]);
-            geometryGroup->addChild(curBunny);
-            counter++;
-        }
-    }
-}
 
 void RenderWidget0::toggleCulling()
 {
@@ -695,5 +637,37 @@ void RenderWidget0::keyReleaseEvent ( QKeyEvent * e)
 
 }
 
+void RenderWidget0::test() 
+{
+    
+    
+    Vector3 t1(0,4,0);
+    Vector3 t2(0,3,0);
+    Vector3 t3(0,2,0);
+    Vector3 t4(0,1,0);
+
+    BezierCurve straightLine(t1, t2, t3, t4);
+
+    Vector3 c1(0,0,1);
+    Vector3 c2(1,0,1);
+    Vector3 c3(1,0,-1);
+    Vector3 c4(0,0,-1);
+    Vector3 c5(-1,0,-1);
+    Vector3 c6(-1,0,1);
+    Vector3 c7(0,0,1);
+    
+    Vector3 array[] = {c1,c2,c3,c4,c5,c6,c7};
+    
+    BezierCurve curvedLine(array, 7);
+    
+    Object * loft = sceneManager->createObject();
+    GeometryFactory::createLoft(loft, curvedLine, straightLine,10 ,10);
+    
+    sceneManager->getRoot()->addChild(new Shape3D(loft));
+    
+    
+    
+    
+}
 
 

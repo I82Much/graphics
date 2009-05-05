@@ -14,13 +14,13 @@ int main(int argc, char *argv[])
 {
     
     BezierCurve::test();
-    /*
+    
     Plane::test();
     Group::test();
     Vector3::runTestSuite();
 	Matrix4::runTestSuite();
     GeometryFactory::runTestSuite();
-    */
+    
     
 	QApplication app(argc, argv);
     MainWindow window;

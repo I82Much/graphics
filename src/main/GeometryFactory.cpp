@@ -31,6 +31,8 @@
 
 using std::cout;
 using std::endl;
+using std::vector;
+
 using namespace RE167;
 
 #include "BasicMath.h"
@@ -1546,6 +1548,9 @@ void GeometryFactory::createLoft(
 	    indices,
 	    numVertices,
         numIndices);
+    
+    
+    
         
     assert (indices != NULL);
     assert (vertices != NULL);
@@ -1574,6 +1579,54 @@ void GeometryFactory::createLoft(
         textureCoords = NULL;
     }
 }
+
+
+/**
+* Given a point on a path and a tangent on a path, creates a transformation
+* matrix that translates from world space to a local coordinate system centered
+* at pointOnPath with the equivalent of the y axis aligned with the tangent vector.
+**/
+const Matrix4 GeometryFactory::calculatePathTransform(Vector3 pointOnPath, Vector3 tangentOnPath) 
+{
+    
+    std::cout << "Point on path: " << pointOnPath << " tangent OnPath: " << tangentOnPath << std::endl;
+    
+    // Assumes that the generatrix curve is in the zy plane
+    const int X_PERTURBATION = 10;
+    
+    // x -> u, y -> v, z -> w.  I want the y axis to be aligned with 
+    
+    // TODO: the perturbation thing could cause zero vector for uPrime...
+    
+    // Create an orthonormal basis such that v points in direction of tangent
+    // while u and w are orthogonal to v
+    Vector3 v = tangentOnPath.normalize();
+    // Perturb u slightly to get a linearly independent vector
+    Vector3 vPrime = Vector3(v.getX() + X_PERTURBATION, v.getY(), v.getZ()).normalize();
+
+    // Guaranteed to be unit length 
+    Vector3 u = vPrime.crossProduct(v);
+    Vector3 w = u.crossProduct(v);
+    
+    
+    std::cout << "u: " << u << " v: " << v << " w: " << w << std::endl;
+
+    
+	// Create a rotation matrix out of u,v,w
+	Matrix4 rotate = Matrix4( 	u.getX(), v.getX(), w.getX(), 0,
+								u.getY(), v.getY(), w.getY(), 0,
+								u.getZ(), v.getZ(), w.getZ(), 0,
+								0,		  0,		0,		  1    );
+
+	// Create the translation matrix to move to origin
+	Matrix4 translate = Matrix4::translate(	pointOnPath.getX(), 
+											pointOnPath.getY(),
+											pointOnPath.getZ() );
+
+	return rotate * translate;
+}
+
+
 
 /**
 * Extrudes a given shape along a given path.
@@ -1634,39 +1687,49 @@ void GeometryFactory::createLoft(
     int &numIndices
 )
 {
+    
+    // TODO: wrong number of faces being sampled
+    // TODO: not drawing it about the correct axis
+    
+    
     // Calculate all of the points and tangent vectors for the path curve and
     // shape curve
-    std::vector<Vector3> shapePoints    = shape.uniformPointSample(numPointsToEvaluateAlongShape);
-    std::vector<Vector3> shapeTangents  = shape.uniformTangentSample(numPointsToEvaluateAlongShape);
+    vector<Vector3> shapePoints    = shape.uniformPointSample(numPointsToEvaluateAlongShape);
+    vector<Vector3> shapeTangents  = shape.uniformTangentSample(numPointsToEvaluateAlongShape);
     
-    std::vector<Vector3> pathPoints     = path.uniformPointSample(numPointsToEvaluateAlongPath);
-    std::vector<Vector3> pathTangents   = path.uniformTangentSample(numPointsToEvaluateAlongPath);
+    vector<Vector3> pathPoints     = path.uniformPointSample(numPointsToEvaluateAlongPath);
+    vector<Vector3> pathTangents   = path.uniformTangentSample(numPointsToEvaluateAlongPath);
     
     // We will be computing all of the vertices, normals, and texcoords and
     // then figuring out the connectivity later
-    std::vector <std::vector<Vector3> > vecVertices;
-    std::vector <std::vector<Vector3> > vecNormals;
-    std::vector <std::vector<Vector3> > vecTexCoords;
+    vector <vector<Vector3> > vecVertices;
+    vector <vector<Vector3> > vecNormals;
+    vector <vector<Vector3> > vecTexCoords;
     
     // For all the points along the path curve
     for (unsigned int i = 0; i < pathPoints.size(); i++) 
     {
         // Add a new vector to each of the vertices, normals, texCoords in 
         // order to make the two dimensional vector complete
-        vecVertices.push_back(std::vector<Vector3>());
-        vecNormals.push_back(std::vector<Vector3>());
-        vecTexCoords.push_back(std::vector<Vector3>());
+        vecVertices.push_back(vector<Vector3>());
+        vecNormals.push_back(vector<Vector3>());
+        vecTexCoords.push_back(vector<Vector3>());
         
         Vector3 pointOnPath = pathPoints[i];
+        
+        std::cout << "point on path: " << pointOnPath << std::endl;
+        
         // Determine the corresponding tangent vector 
-        Vector3 tangentOnPath = pathPoints[i];
+        Vector3 tangentOnPath = pathTangents[i];
         
         // Calculate the matrix that brings you from the shape curve's
         // coordinate system to the local coordinate system, defined by the
         // current point as the origin and the tangent as one of the
         // bases.
         // TODO: actually calculate this change of coordinate system method
-        const Matrix4 pathTransform;// = calculatePathTransform(pointOnPath, tangentOnPath);
+        const Matrix4 pathTransform = calculatePathTransform(pointOnPath, tangentOnPath);//Matrix4::translate(pointOnPath.getX(), pointOnPath.getY(), pointOnPath.getZ());
+
+        cout << "pathTransform" << pathTransform << endl;
 
         // Calculate the matrix needed to rotate a tangent vector on shape
         // curve to be normal to the curve.
@@ -1675,10 +1738,9 @@ void GeometryFactory::createLoft(
         const Matrix4 normalRotationMatrix = Matrix4::rotate(unitAxisOfRotation, radiansToRotate);
         
         // Determine the value of the curve parameter for the path curve
-        float t_curve = 
+        float pathTValue = 
             static_cast<float>(i) / static_cast<float>(pathPoints.size() - 1);
         
-
         // For each point in the shape curve
         for (unsigned int j = 0; j < shapePoints.size(); j++) {
         
@@ -1686,34 +1748,189 @@ void GeometryFactory::createLoft(
             // on curve
             // Need to translate Vector3 into Vector4 in order to multiply
             // by matrices
-            Vector4 curPoint = Vector4(shapePoints[j]);
-            Vector4 curVertex = pathTransform * curPoint;
-            
-            // Keep track of this point
+            Vector4 curVertex = pathTransform * Vector4(shapePoints[j]);
             vecVertices[i].push_back(Vector3(curVertex));
             
+            std::cout << "curVertex: " << shapePoints[j] << " after transform: " << curVertex << std::endl;
+            
+             
             // Transform the corresponding tangent vector to be normal to the
-            // surface
+            // surface, using the rotation matrix defined by rotating about the
+            // tangent to the path curve
+            Vector4 curNormal = normalRotationMatrix * Vector4(shapeTangents[j]);
+            
+            // Both the normal of our shape and the tangent of our shape curve
+            // should be orthogonal to the tangent of our path
+            // TODO: Not sure if this is true if shape curve does not lie
+            // in plane. . .
+/*            assert(shapeTangents[j].dotProduct(tangentOnPath) == 0);
+            assert(curNormal.dotProduct(Vector4(tangentOnPath)) == 0);*/
             
             
-    
-            // Keep track of this normal
+            vecNormals[i].push_back(Vector3(curNormal));
             
             // Determine the value of the curve parameter for the shape curve
             // Store this as the "v" texture coordinate
-        }
+            float shapeTValue = static_cast<float>(j) / 
+                static_cast<float>(shapePoints.size() - 1);
+                
+            // Our texture coordinates are guaranteed to between [0,1] due to
+            // the way curves are defined between t = [0,1]
+            float u = shapeTValue;
+            float v = pathTValue;    
+            vecTexCoords[i].push_back(Vector3(u, v, 0));
             
+            
+            //cout << "i: " << i << "j: " << j << "t_path: " << pathTValue << " t_shape: " << shapeTValue << "cur Vertex: " << vecVertices[i][j] << endl;
+            std::cout << vecVertices[i][j] << endl;
+            
+        }
     }
     
     // We now have all of the vertices, normals, and texture coordinates we
     // need.  Allocate enough space for all of the arrays, and fill them in
     // with the same face strategy as we use for cylinders.
     
+    // We have all of our points; now we need to connect them up correctly. 
+    const int NUM_ROWS = numPointsToEvaluateAlongPath - 1;
+    const int numFacesPerRow = numPointsToEvaluateAlongShape - 1;
+    const int NUM_COMPONENTS_PER_ROW =
+        NUM_COMPONENTS_PER_RECTANGULAR_FACE * numFacesPerRow;
+    
+    	
+    numVertices = NUM_COMPONENTS_PER_ROW * NUM_ROWS;
+    numIndices = numVertices;
+    
+    // Need 3 times as much space because each vertex has an x,y,z component
+    vertices = new float[3 * numVertices];	
+    normals = new float[3 * numVertices];
+    textureCoords = new float[2 * numVertices];
+    indices = new int[numIndices];	
+    	
+	for (int row = 0; row < NUM_ROWS; row++) {
+
+		// The "face"th and ("face"+1)%numFacesPerRow vertices in row "row"
+		// form a rectangular face with the "face"th and ("face"+1)%numFacesPerRow
+		// vertices in row "row" + 1.
+		for (int face = 0; face < numFacesPerRow; face++) {
+
+            
+            // Face 1: Upper right triangle of rectangular face
+            // Vertex 1: Upper left corner
+            Vector3 f1_1 = vecVertices[row][face];
+            // Lower right corner
+            Vector3 f1_2 = vecVertices[row+1][face+1];
+            // Upper right corner
+            Vector3 f1_3 = vecVertices[row][face+1];
+            
+            
+            // Face 2: Lower left triangle of rectangular face
+            // Upper left corner (same as f1_1)
+            Vector3 f2_1 = f1_1;
+            // Lower left corner
+            Vector3 f2_2 = vecVertices[row+1][face];
+            // Lower right corner: (same as f1_2)
+            Vector3 f2_3 = f1_2;
+            
+            /*
+            cout << "row: " << row << " face: " << face;
+            cout << "upper left: " << f1_1 << "lower right: " << f1_2;
+            cout << "upper right: " << f1_3 << endl;*/
+            
+            // Calculate the normals for these faces as well.  They are
+            // exactly the same points etc but taken from the rotatedTangents
+            // vector rather than rotatedPoints.
+            // Face 1: Upper right triangle of rectangular face
+            // Vertex 1: Upper left corner
+            Vector3 f1_1n = vecNormals[row][face];
+            // Lower right corner
+            Vector3 f1_2n = vecNormals[row+1][face+1];
+            // Upper right corner
+            Vector3 f1_3n = vecNormals[row][face+1];
+            
+            
+            // Face 2: Lower left triangle of rectangular face
+            // Upper left corner (same as f1_1)
+            Vector3 f2_1n = f1_1n;
+            // Lower left corner
+            Vector3 f2_2n = vecNormals[row+1][face];
+            // Lower right corner: (same as f1_2)
+            Vector3 f2_3n = f1_2n;
+            
+            
+            // Get the texture coordinates for all 6 vertices
+            Vector3 f1_1uv = vecTexCoords[row][face];
+            // Lower right corner
+            Vector3 f1_2uv = vecTexCoords[row+1][face+1];
+            // Upper right corner
+            Vector3 f1_3uv = vecTexCoords[row][face+1];
+            
+            // Face 2: Lower left triangle of rectangular face
+            // Upper left corner (same as f1_1)
+            Vector3 f2_1uv = f1_1uv;
+            // Lower left corner
+            Vector3 f2_2uv = vecTexCoords[row+1][face];
+            // Lower right corner: (same as f1_2)
+            Vector3 f2_3uv = f1_2uv;
+            
+            
+            // Now we need to actually fill in the vertices array with the
+            // raw float values from our vertices.  We are filling in
+            // 6 vertices, for a total of 18 floats added to the array per
+            // iteration of this inner loop.  
+            int startIndex = (row * NUM_COMPONENTS_PER_ROW) + (NUM_COMPONENTS_PER_RECTANGULAR_FACE * face);
+            
+            // Fill in vertices
+            fillInVertex(vertices, startIndex,    f1_1);
+            fillInVertex(vertices, startIndex+3,  f1_2);
+            fillInVertex(vertices, startIndex+6,  f1_3);
+            fillInVertex(vertices, startIndex+9,  f2_1);
+            fillInVertex(vertices, startIndex+12, f2_2);
+            fillInVertex(vertices, startIndex+15, f2_3);
+
+            // Fill in normals
+            fillInVertex(normals, startIndex,    f1_1n);
+            fillInVertex(normals, startIndex+3,  f1_2n);
+            fillInVertex(normals, startIndex+6,  f1_3n);
+            fillInVertex(normals, startIndex+9,  f2_1n);
+            fillInVertex(normals, startIndex+12, f2_2n);
+            fillInVertex(normals, startIndex+15, f2_3n);
+            
+            
+            static const int numVerticesPerRectangularFace = 
+                NUM_TRIANGLES_PER_RECTANGULAR_FACE * NUM_VERTICES_PER_TRIANGLE;
+            static const int numVerticesPerRow = 
+                numFacesPerRow * numVerticesPerRectangularFace;
+            static const int NUM_TEXTURE_COORDS_PER_VERTEX = 2;
+            
+            int textureStartIndex = 
+                (row * numVerticesPerRow * NUM_TEXTURE_COORDS_PER_VERTEX) + 
+                (numVerticesPerRectangularFace * face * NUM_TEXTURE_COORDS_PER_VERTEX);
+            
+            fillIn2DCoords(textureCoords, textureStartIndex, f1_1uv);
+            fillIn2DCoords(textureCoords, textureStartIndex+2, f1_2uv);
+            fillIn2DCoords(textureCoords, textureStartIndex+4, f1_3uv);
+            fillIn2DCoords(textureCoords, textureStartIndex+6, f2_1uv);
+            fillIn2DCoords(textureCoords, textureStartIndex+8, f2_2uv);
+            fillIn2DCoords(textureCoords, textureStartIndex+10, f2_3uv);
+		}
+	}
+	
+	// Fill in the indices array
+    for (int i = 0; i < numIndices; i++) {
+        indices[i] = i;
+    }
+    
     
     // TODO: Create method that does the cylindrical method, since it comes up
     // so often
     
+    //printVerticesArray(vertices, numVertices * 3, 10);
+    
 }
+
+
+
 
 /**
 * Given an object pointer and a 2D BezierCurve in the XY plane, rotates
@@ -1795,20 +2012,20 @@ void GeometryFactory::createSurfaceOfRevolution(
     assert(numAnglesToRotate >= 1);
     
     // Uniformly sample both the points and the tangents
-    std::vector <Vector3> pointsOnCurve = 
+    vector <Vector3> pointsOnCurve = 
         generatrix.uniformPointSample(numPointsToEvaluateAlongCurve);
-    std::vector <Vector3> tangentVectorsOnCurve = 
+    vector <Vector3> tangentVectorsOnCurve = 
         generatrix.uniformTangentSample(numPointsToEvaluateAlongCurve);
 
     assert (pointsOnCurve.size() == tangentVectorsOnCurve.size());
     assert (pointsOnCurve.size() == numPointsToEvaluateAlongCurve);    
         
-    std::vector <std::vector<Vector3> > rotatedPoints;
-    std::vector <std::vector<Vector3> > rotatedTangentVectors;
+    vector <vector<Vector3> > rotatedPoints;
+    vector <vector<Vector3> > rotatedTangentVectors;
 
     // Will only use the x and y to represent the u and v coordinates 
     // respectively
-    std::vector <std::vector<Vector3> > textureCoords3;
+    vector <vector<Vector3> > textureCoords3;
     
     
     // We need to rotate our tangent vectors by 90 degrees about the z-axis
@@ -1827,11 +2044,11 @@ void GeometryFactory::createSurfaceOfRevolution(
         
         Matrix4 rotationMatrix = Matrix4::rotateY(theta);
 
-        // Create the std::vector we need to hold all the points at this
+        // Create the vector we need to hold all the points at this
         // angle of rotation
-        rotatedPoints.push_back(std::vector<Vector3>());
-        rotatedTangentVectors.push_back(std::vector<Vector3>());
-        textureCoords3.push_back(std::vector<Vector3>());
+        rotatedPoints.push_back(vector<Vector3>());
+        rotatedTangentVectors.push_back(vector<Vector3>());
+        textureCoords3.push_back(vector<Vector3>());
         
         // Need to rotate each point along the curve
         for (int j = 0; j < pointsOnCurve.size(); j++) {
@@ -2111,9 +2328,7 @@ void GeometryFactory::runTestSuite() {
     Vector3 test3[] = {Vector3(1.2, 13.5, -23.5), Vector3(100.5, 23.5, -32.553), Vector3(13.05f, 23, 0),
         Vector3(99.3, 10, -9.053).crossProduct(Vector3(11.85, 9.5, 23.5))};
 
-
-
-    std::vector<Vector3*> tests;
+    vector<Vector3*> tests;
     tests.push_back(test1);
     tests.push_back(test2);
     tests.push_back(test3);
@@ -2122,6 +2337,21 @@ void GeometryFactory::runTestSuite() {
         Vector3 * test = tests[i];
         assert (calculateTriangleNormal(test[0], test[1], test[2]) == test[3]);
     }
+    
+    
+    // Test the path stuff
+    Vector3 origin(0,1,0);
+    Vector3 tangent(0,1,0);
+    
+    const Matrix4 transform = GeometryFactory::calculatePathTransform(origin, tangent);
+    
+    cout << "Transformed origin: " << (transform * Vector4(0,0,0,1)) << endl;
+    assert(transform * Vector4(0,0,0,1) == Vector4(0,1,0,1));
+    
+    
+    
+    
+
     
 }
 
