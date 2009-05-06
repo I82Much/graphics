@@ -1594,8 +1594,10 @@ const Basis GeometryFactory::createPathTransform(Vector3 origin, Vector3 tangent
     Vector3 unitTangent = tangent.normalize();
 
     Vector3 principalNormal;
-    // Straight line segment
-    if (acceleration == Vector3::ZERO_VECTOR) {
+    
+    // Straight line segment or acceleration in same direction as tangent
+    if (acceleration == Vector3::ZERO_VECTOR || 
+        acceleration.crossProduct(unitTangent) == Vector3::ZERO_VECTOR) {
         
         std::cout << "Straight line segment, attempting to find a new principal normal." << std::endl;
         // Pick any unit length vector normal to the tangent vector

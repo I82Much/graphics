@@ -549,12 +549,39 @@ void RenderWidget0::test()
     Vector3 p4(4,1,0);
     
     
+    
+    Vector3 track1(0, -7998, 0);
+    Vector3 track2(0, -3895, 0);
+    Vector3 track3(0, -793, 0);
+    Vector3 track4(209, 11, 0);
+    Vector3 track5(934, 446, 0);
+    Vector3 track6(1777, 22, 0);
+    Vector3 track7(2011, -934, -500);
+    Vector3 track8(2011, -2458, -2536);
+    Vector3 track9(1986, -4130, -4754);
+    
+    Vector3 track10(1986, -4100, -4800);
+    Vector3 track11(3000, -8000, -5000);
+    
+    
+    Vector3 track12(3166, -13013, -4700);
+    Vector3 track13(0, -15000, -5869);
+    
+    Vector3 track14(-2000, -15000, -5869);
+    Vector3 track15(-3000, -15000, -5869);
+    Vector3 track16(-4000, -13000, -5869);
 
-    Vector3 pathArray[] = {t1,t2,t3,t4,t5,t6,t7};
+    
+    
+
+//    Vector3 pathArray[] = {t1,t2,t3,t4,t5,t6,t7};
     //Vector3 pathArray[] = {p1,p2,p3,p4};
+    Vector3 pathArray[] = {track1, track2, track3, track4, track5, track6, 
+        track7, track8, track9, track10, track11, track12, track13, track14, track15, track16};
 
+    BezierCurve path(pathArray, sizeof(pathArray)/ sizeof(Vector3));
 
-    BezierCurve path(pathArray, 7);
+    path.setTransformation(Matrix4::scale(.001, .001, .001));
 
     Vector3 goblet1(1,4.3,0);
     Vector3 goblet2(1,0.3,0);
@@ -620,7 +647,7 @@ void RenderWidget0::test()
     
     
     Object * loft = sceneManager->createObject();
-    GeometryFactory::createLoft(loft, curvedLine, path, 4 ,18);
+    GeometryFactory::createLoft(loft, curvedLine, path, 10 ,50);
     
     
     Material * extrudedShapeMaterial = new Material();
