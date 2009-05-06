@@ -72,7 +72,7 @@ void RenderWidget0::initSceneEvent()
 
     
 	initCamera();
-	//initLights();
+	initLights();
     //initStillLife();
 
     test();
@@ -638,10 +638,10 @@ void RenderWidget0::test()
     Vector3 t6(5.5,4,4);
     Vector3 t7(6,1,5);
     
-    Vector3 p1(0,4,0);
-    Vector3 p2(0,3,0);
-    Vector3 p3(0,2,0);
-    Vector3 p4(0,1,0);
+    Vector3 p1(1,4,0);
+    Vector3 p2(2,3,0);
+    Vector3 p3(3,2,0);
+    Vector3 p4(4,1,0);
     
     
 
