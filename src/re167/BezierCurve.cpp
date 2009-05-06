@@ -19,7 +19,7 @@ const Matrix4 BezierCurve::WEIGHTS(-1, 3, -3, 1,
 BezierCurve::BezierCurve(const Vector3 &p0, 
                         const Vector3 &p1,
                         const Vector3 &p2,
-                        const Vector3 &p3)
+                        const Vector3 &p3) : transformation(Matrix4::IDENTITY)
 {
     controlPoints.push_back(p0);
     controlPoints.push_back(p1);
@@ -29,7 +29,7 @@ BezierCurve::BezierCurve(const Vector3 &p0,
     createMatrices();
 }
 
-BezierCurve::BezierCurve(Vector3 points[], int numPoints)
+BezierCurve::BezierCurve(Vector3 points[], int numPoints) : transformation(Matrix4::IDENTITY)
 {
     assert (numPoints >= 4);
     assert ((numPoints - 4) % 3 == 0 && "Piecewise cubic bezier curve must"\
@@ -132,15 +132,17 @@ void BezierCurve::split(float real, int *integerPart, float *realPart) {
 
 void BezierCurve::createMatrices() {
     
+    matrices.clear();
+    
     // For each curve segment, determine the C matrix (G_Bez * WEIGHTS)
     for (int i = 0; i < numCubicSegments; i++) {
         // The curves are made of control points 0,1,2,3; 3,4,5,6...
         // Thus the starting segment is 3*i.
         int index = 3 * i;
-        Vector3 P0 = controlPoints[index];
-        Vector3 P1 = controlPoints[index+1];
-        Vector3 P2 = controlPoints[index+2];
-        Vector3 P3 = controlPoints[index+3];
+        Vector3 P0 = transformation * Vector4::homogeneousPoint(controlPoints[index]);
+        Vector3 P1 = transformation * Vector4::homogeneousPoint(controlPoints[index+1]);
+        Vector3 P2 = transformation * Vector4::homogeneousPoint(controlPoints[index+2]);
+        Vector3 P3 = transformation * Vector4::homogeneousPoint(controlPoints[index+3]);
         
         Matrix4 G_Bez(  P0.getX(), P1.getX(), P2.getX(), P3.getX(),
                         P0.getY(), P1.getY(), P2.getY(), P3.getY(),

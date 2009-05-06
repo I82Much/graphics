@@ -669,10 +669,34 @@ void RenderWidget0::test()
     Vector3 s7(-2,0,0);
     
     
-    Vector3 shapeArray[] = {c1,c2,c3,c4,c5,c6,c7};
+    // Top
+    Vector3 box1(0,0,3);
+    Vector3 box2(1,0,3);
+    Vector3 box3(2,0,3);
+    Vector3 box4(3,0,3);
+    
+    // Right
+    Vector3 box5(3,0,2);
+    Vector3 box6(3,0,1);
+    Vector3 box7(3,0,0);
+
+    // Bottom
+    Vector3 box8(2,0,0);
+    Vector3 box9(1,0,0);
+    Vector3 box10(0,0,0);
+
+    // Left
+    Vector3 box11(0,0,1);
+    Vector3 box12(0,0,2);
+    Vector3 box13(0,0,3);
+    
+    Vector3 shapeArray[] = {box1,box2,box3,box4,box5,box6,box7, box8, box9, box10, box11, box12, box13};
+//    Vector3 shapeArray[] = {c1,c2,c3,c4,c5,c6,c7};
     //Vector3 shapeArray[] = {s1,s2,s3,s4,s5,s6,s7};
     
-    BezierCurve curvedLine(shapeArray, 7);
+    BezierCurve curvedLine(shapeArray, 13);
+    //curvedLine.setTransformation(Matrix4::scale(2,.5,.1));
+    
     
     Object * loft = sceneManager->createObject();
     GeometryFactory::createLoft(loft, curvedLine, path,18 ,18);

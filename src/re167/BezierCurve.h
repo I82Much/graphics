@@ -2,18 +2,18 @@
 #define BEZIERCURVE_H_C38IIXGN
 #include "RE167_global.h"
 #include <vector>
+#include "Matrix4.h"
+
 
 namespace RE167
 {
     class Vector3;
-    class Matrix4;
     /**
     * Class represents a two-dimensional piecewise Bezier curve in the xy plane
     **/
 	class RE167_EXPORT BezierCurve
 	{
 	public:
-        BezierCurve();
         BezierCurve(const Vector3 &p0, 
                     const Vector3 &p1,
                     const Vector3 &p2,
@@ -40,6 +40,9 @@ namespace RE167
         
         Vector3 acceleration(float t) const;
 
+        inline Matrix4 getTransformation() { return transformation; }
+        void setTransformation(const Matrix4 &t) { transformation = t; createMatrices(); }
+
         static void test();
         
 	private:
@@ -53,6 +56,9 @@ namespace RE167
         void createMatrices();
         std::vector <Matrix4> matrices;
         static void split(float real, int *intPart, float *realPart);
+        
+        Matrix4 transformation;
+        
 	};
 
 

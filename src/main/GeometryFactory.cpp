@@ -1657,6 +1657,10 @@ const Basis GeometryFactory::createPathTransform(Vector3 origin, Vector3 tangent
 
 
 
+
+// TODO: add twists
+
+
 /**
 * Extrudes a given shape along a given path.
 *
@@ -1738,6 +1742,7 @@ void GeometryFactory::createLoft(
     // parallel with shape spline
     Basis oldCoordSystem = createPathTransform(pathPoints[0], pathTangents[0], path.acceleration(0));
 
+
     // For all the points along the path curve
     for (unsigned int i = 0; i < pathPoints.size(); i++) 
     {
@@ -1765,6 +1770,7 @@ void GeometryFactory::createLoft(
         
         Matrix4 rotationMatrix;
         
+
         // Both tangents are in the same direction; no rotation necessary
         if (newTangent == oldTangent) {
             rotationMatrix = Matrix4::IDENTITY;
@@ -1825,7 +1831,6 @@ void GeometryFactory::createLoft(
             // rotate about the Y axis 90 degrees.
             Matrix4 rotationMatrix = Matrix4::rotateY(BasicMath::radians(90));
             // TODO: Figure out the deal with rotating these normals
-            
             
             
             // Transform the corresponding tangent vector to be normal to the
@@ -1992,6 +1997,9 @@ void GeometryFactory::createLoft(
     //printVerticesArray(vertices, numVertices * 3, 10);
     
 }
+
+
+
 
 
 
