@@ -49,7 +49,7 @@ BezierCurve::BezierCurve(Vector3 points[], int numPoints)
 
 
 BezierCurve::~BezierCurve() {}
-                            
+
 
 Vector3 BezierCurve::position(float t) const 
 {
@@ -73,7 +73,6 @@ Vector3 BezierCurve::position(float t) const
     return Vector3(pos);
 }
 
-// TODO: fix this
 Vector3 BezierCurve::tangent(float t) const
 {
     // Curve is only defined for values of t between 0 and 1
@@ -94,6 +93,29 @@ Vector3 BezierCurve::tangent(float t) const
     Vector4 tVec(3*real*real, 2*real, 1, 0);
     Vector4 tangent = matrices[subcurveIndex] * tVec;
     return Vector3(tangent);
+}
+
+Vector3 BezierCurve::acceleration(float t) const
+{
+    // Curve is only defined for values of t between 0 and 1
+    assert(0.0f <= t && t <= numCubicSegments);
+    
+    int integer;
+    float real;
+    split(t, &integer, &real);
+    
+    int subcurveIndex = integer;
+    
+    // We're at the very end of our curve.
+    if (subcurveIndex == numCubicSegments) {
+        subcurveIndex -= 1;
+        real += 1.0f;
+    }
+    // Second derivative 
+    Vector4 tVec(6*real, 2, 0, 0);
+    Vector4 acceleration = matrices[subcurveIndex] * tVec;
+    return Vector3(acceleration);
+    
 }
 
 /**
@@ -164,6 +186,24 @@ std::vector<Vector3> BezierCurve::uniformTangentSample(int numPoints) const {
     }
     return tangents;
 }
+
+/**
+* Uniformly samples the curve and returns the tangent vectors along the way
+**/
+std::vector<Vector3> BezierCurve::uniformAccelerationSample(int numPoints) const {
+    assert (numPoints >= 2);
+    std::vector<Vector3> accelerationVectors;
+    for (int i = 0; i < numPoints; i++) {
+        // 0 <= t <= numCubicSegments
+        float t =   static_cast<float>(numCubicSegments * i) / 
+                    static_cast<float>(numPoints - 1);
+        Vector3 accelerationVector = acceleration(t);
+        accelerationVectors.push_back(accelerationVector);
+    }
+    return accelerationVectors;
+}
+
+// TODO: remove all this redundant stuff
 
 void BezierCurve::test() {
     

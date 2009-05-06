@@ -28,6 +28,7 @@
 #include "Object.h"
 #include "BezierCurve.h"
 #include "Matrix4.h"
+#include "Basis.h"
 
 using std::cout;
 using std::endl;
@@ -1581,13 +1582,109 @@ void GeometryFactory::createLoft(
 }
 
 
+const Basis GeometryFactory::createPathTransform(Vector3 origin, Vector3 tangent, Vector3 acceleration) 
+{
+    
+    cout << "Origin: " << origin << endl;
+    cout << "Tangent: " << tangent << endl;
+    cout << "Acceleration: " << acceleration << endl;
+    
+    // TODO: Handle the case where acceleration is 0
+    
+    Vector3 unitTangent = tangent.normalize();
+
+    Vector3 principalNormal;
+    // Straight line segment
+    if (acceleration == Vector3::ZERO_VECTOR) {
+        
+        std::cout << "Straight line segment, attempting to find a new principal normal." << std::endl;
+        // Pick any unit length vector normal to the tangent vector
+        
+        // TODO: remove magic number and dehack
+        
+        Vector3 linearlyIndependentVector = Vector3(unitTangent.getX(), unitTangent.getY(), unitTangent.getZ() + 10).normalize();
+        principalNormal = linearlyIndependentVector.crossProduct(unitTangent).normalize();
+        
+    }
+    // The principal normal we can calculate by using the acceleration vector
+    else {
+        principalNormal = 
+            unitTangent.crossProduct(acceleration).crossProduct(unitTangent).normalize();
+    }
+    
+    Vector3 binormal = unitTangent.crossProduct(principalNormal).normalize();
+    
+    // We now have a reference frame defined by unitTangent, principalNormal, and biNormal
+    Vector3 u = principalNormal;
+    Vector3 v = unitTangent;
+    Vector3 w = binormal;
+
+    return Basis(u,v,w,origin);
+    /*
+    std::cout << "New coordinate frame: \tprincipalNormal: " << principalNormal << "\t unitTangent:" << unitTangent << "\tbinormal: " << binormal << std::endl;
+
+    // Create a rotation matrix out of u,v,w
+	Matrix4 rotate = Matrix4( 	u.getX(), v.getX(), w.getX(), 0,
+								u.getY(), v.getY(), w.getY(), 0,
+								u.getZ(), v.getZ(), w.getZ(), 0,
+								0,		  0,		0,		  1    );
+
+	// Create the translation matrix to move to origin
+	Matrix4 translate = Matrix4::translate(	origin.getX(), origin.getY(), origin.getZ() );
+    
+    return translate * rotate;*/
+    
+    
+    
+}
+
+
 /**
 * Given a point on a path and a tangent on a path, creates a transformation
 * matrix that translates from world space to a local coordinate system centered
 * at pointOnPath with the equivalent of the y axis aligned with the tangent vector.
+
+
+* @param pointOnPath    the origin of the new coordinate system
+* @param tangentOnPath  a vector in world space representing the new y axis
+* @param normalOnPath   a vector in world space representing the old x axis
 **/
-const Matrix4 GeometryFactory::calculatePathTransform(Vector3 pointOnPath, Vector3 tangentOnPath) 
+const Matrix4 GeometryFactory::calculatePathTransform(Vector3 pointOnPath, 
+                                                    Vector3 tangentOnPath,
+                                                    Vector3 normalOnPath) 
 {
+    /*
+    const Vector3 Y_AXIS(0,1,0);
+    
+    // x -> u, y -> v, z -> w.  The new y axis will be aligned with the
+    // tangent vector
+    
+    Vector3 v = tangentOnPath.normalize();
+    
+    // Calculate the matrix that rotates from the old y axis to the new
+    // v axis
+    
+    Matrix4 yToVTransform;
+    if (v == Y_AXIS) {
+        yToVTransform = Matrix4::IDENTITY;
+    }
+    else if (v == -Y_AXIS) {
+        yToVTransform = Matrix4::rotateX(BasicMath::radians(180));
+    }
+    else {
+        // Determine what angle to rotate the old Y axis about
+        Vector3 axisOfRotation = v.crossProduct(y);
+        Vector4 unitAxis(axisOfRotation.getX(), axisOfRotation.getY(),
+            axisOfRotation.getZ(), 0);
+            
+        float radiansBetweenUAndY = Vector3::angleBetween(u, y);
+        yToVTransform = Marix4::rotate(unitAxis, radiansBetweenUAndY);
+    }
+    
+    // Apply the transformation to the old x axis to get the new 
+    Vector3 u = yToVTransform * normalOnPath
+    */
+    
     // Assumes that the generatrix curve is in the zy plane
     const int PERTURBATION = 10;
     
@@ -1604,19 +1701,7 @@ const Matrix4 GeometryFactory::calculatePathTransform(Vector3 pointOnPath, Vecto
     float vXPrime = v.getX() + PERTURBATION;
     float vYPrime = v.getY();
     float vZPrime = v.getZ();
-    /*
-    // x is smallest component; perturb it
-    if (vXPrime < vYPrime && vXPrime < vZPrime) {
-        vXPrime += PERTURBATION;
-    }
-    // y is smallest component; perturb it
-    else if (vYPrime < vXPrime && vYPrime < vZPrime) {
-        vYPrime += PERTURBATION;
-    }
-    // z is smallest component; perturb it
-    else {
-        vZPrime += PERTURBATION;
-    }*/
+    
     
     Vector3 vPrime = Vector3(vXPrime, vYPrime, vZPrime).normalize();
 
@@ -1702,7 +1787,7 @@ void GeometryFactory::createLoft(
 {
     
     // TODO: wrong number of faces being sampled
-    // TODO: not drawing it about the correct axis
+    
     
     
     // Calculate all of the points and tangent vectors for the path curve and
@@ -1712,12 +1797,25 @@ void GeometryFactory::createLoft(
     
     vector<Vector3> pathPoints     = path.uniformPointSample(numPointsToEvaluateAlongPath);
     vector<Vector3> pathTangents   = path.uniformTangentSample(numPointsToEvaluateAlongPath);
+    vector<Vector3> pathAccelerations = path.uniformAccelerationSample(numPointsToEvaluateAlongPath);
+    
     
     // We will be computing all of the vertices, normals, and texcoords and
     // then figuring out the connectivity later
     vector <vector<Vector3> > vecVertices;
     vector <vector<Vector3> > vecNormals;
     vector <vector<Vector3> > vecTexCoords;
+    
+    // Calculate the initial reference frame
+    Basis oldCoordSystem = createPathTransform(pathPoints[0], pathTangents[0], pathAccelerations[0]);
+
+    Vector3 oldPoint = pathPoints[0];
+    Vector3 oldTangent = pathTangents[0];
+
+    
+    
+    
+
     
     // For all the points along the path curve
     for (unsigned int i = 0; i < pathPoints.size(); i++) 
@@ -1730,20 +1828,62 @@ void GeometryFactory::createLoft(
         
         Vector3 pointOnPath = pathPoints[i];
         
-        std::cout << "point on path: " << pointOnPath << std::endl;
+        //std::cout << "point on path: " << pointOnPath << std::endl;
         
-        // Determine the corresponding tangent vector 
-        Vector3 tangentOnPath = pathTangents[i];
         
         // Calculate the matrix that brings you from the shape curve's
         // coordinate system to the local coordinate system, defined by the
         // current point as the origin and the tangent as one of the
         // bases.
-        const Matrix4 pathTransform = calculatePathTransform(pointOnPath, tangentOnPath);
+        
+        
+        Vector3 newPoint = pathPoints[i];
+        Vector3 newTangent = pathTangents[i];
+        
+        Matrix4 rotationMatrix;
+        
+        std::cout << "Old tangent: " << oldTangent << "new tangent: " << newTangent << std::endl;
+        
+        
+        if (newTangent == oldTangent) {
+            rotationMatrix = Matrix4::IDENTITY;
+        }
+        else {
+            Vector3 axis = oldTangent.crossProduct(newTangent).normalize();
+            Vector4 axisOfRotationVec4(axis.getX(), axis.getY(), axis.getZ(), 0);
+        
+            float angle = Vector3::angleBetween(oldTangent, newTangent);
+            rotationMatrix = Matrix4::rotate(axisOfRotationVec4, angle);
+        }
+        
+        Vector3 translation = newPoint - oldPoint;
+        Matrix4 translationMatrix = Matrix4::translate(translation.getX(),
+            translation.getY(), translation.getZ());
+        
+        
+        
+        const Matrix4 pathTransform = oldCoordSystem.getTransformation();
+        cout << "Path transform: " << pathTransform << endl;
+
+        
+        
+        
+        //const Matrix4 pathTransform = (translationMatrix * rotationMatrix) * oldPathTransform;
+        
+        oldPoint = newPoint;
+        oldTangent = newTangent;
+        //oldPathTransform = pathTransform;
+        
+        //const Matrix4 pathTransform = calculatePathTransform(pathPoints[i], pathTangents[i], pathAccelerations[i]);
+        
+        oldCoordSystem = createPathTransform(pathPoints[i], pathTangents[i], pathAccelerations[i]);
+        
+
+        //TODO: fix the normal rotation; that won't work right.  Or maybe it will
 
         // Calculate the matrix needed to rotate a tangent vector on shape
         // curve to be normal to the curve.
-        const Vector4 unitAxisOfRotation = Vector4(tangentOnPath).normalize();
+        const Vector4 unitAxisOfRotation = Vector4(oldTangent).normalize();
         const float radiansToRotate = BasicMath::radians(90);
         const Matrix4 normalRotationMatrix = Matrix4::rotate(unitAxisOfRotation, radiansToRotate);
         
@@ -2337,7 +2477,7 @@ void GeometryFactory::runTestSuite() {
     
     
     // Test the path stuff
-    Vector3 origin(0,1,0);
+    /*Vector3 origin(0,1,0);
     Vector3 tangent(0,1,0);
     
     const Matrix4 transform = GeometryFactory::calculatePathTransform(origin, tangent);
@@ -2348,7 +2488,7 @@ void GeometryFactory::runTestSuite() {
     cout << "Transformed point (1,0,0,1) == " << transform * Vector4(1,0,0,1) << endl;
     
     //assert(transform * Vector4(1,0,0,1) == Vector4(1,1,0,1));
-    
+    */
     
     
     

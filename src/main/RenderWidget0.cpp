@@ -639,17 +639,17 @@ void RenderWidget0::test()
     Vector3 t7(6,1,0);
     
     Vector3 p1(0,4,0);
-    Vector3 p2(1,2,0);
-    Vector3 p3(3,2,0);
-    Vector3 p4(4,4,0);
+    Vector3 p2(0,3,0);
+    Vector3 p3(0,2,0);
+    Vector3 p4(0,1,0);
     
     
 
     Vector3 pathArray[] = {t1,t2,t3,t4,t5,t6,t7};
-//    Vector3 pathArray[] = {p1,p2,p3,p4};
+    //Vector3 pathArray[] = {p1,p2,p3,p4};
 
 
-    BezierCurve path(pathArray, 4);
+    BezierCurve path(pathArray, 7);
 
     Vector3 c1(0,0,.5);
     Vector3 c2(.5,0,.5);
@@ -675,7 +675,7 @@ void RenderWidget0::test()
     BezierCurve curvedLine(shapeArray, 7);
     
     Object * loft = sceneManager->createObject();
-    GeometryFactory::createLoft(loft, curvedLine, path,18 ,5);
+    GeometryFactory::createLoft(loft, curvedLine, path,18 ,18);
     
     
     Material * extrudedShapeMaterial = new Material();

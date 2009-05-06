@@ -32,11 +32,13 @@ namespace RE167
         
         std::vector <Vector3> uniformPointSample(int numStraightSegments) const;
         std::vector <Vector3> uniformTangentSample(int numStraightSegments) const;
-        
+        std::vector <Vector3> uniformAccelerationSample(int numStraightSegments) const;
         
         Vector3 position(float t) const;
         
         Vector3 tangent(float t) const;
+        
+        Vector3 acceleration(float t) const;
 
         static void test();
         

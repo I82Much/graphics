@@ -13,6 +13,7 @@ namespace RE167 {
     class Vector4;
     class BezierCurve;
     class Matrix4;
+    class Basis;
     
     class RE167_EXPORT GeometryFactory 
     {
@@ -170,8 +171,11 @@ namespace RE167 {
         static void calculateNormals(float *vertices, int *indices, float *&normals,
             int numVertices, int numIndices);
 
-        static const Matrix4 calculatePathTransform(Vector3 pointOnPath, Vector3 tangentOnPath);
+        static const Matrix4 calculatePathTransform(Vector3 pointOnPath, Vector3 tangentOnPath, Vector3 normalOnPath);
         
+        static const Basis createPathTransform(Vector3 origin, Vector3 tangent, Vector3 acceleration);
+        
+
     
         /**
         * Return a unit vector that is the normal to the
