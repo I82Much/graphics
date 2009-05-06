@@ -45,6 +45,7 @@ void MainWindow::createMenus()
     animationMenu = menuBar()->addMenu(tr("&Animation"));
     animationMenu->addAction(startAct);
     animationMenu->addAction(stopAct);
+    animationMenu->addAction(wireframeAct);
 }
 
 void MainWindow::startAnimation()

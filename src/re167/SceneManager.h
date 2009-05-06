@@ -30,17 +30,9 @@ namespace RE167 {
         TransformGroup * getRoot() { return root; }
         void setRoot(TransformGroup * root) { this->root = root; }
         
-        
-                         
-        
-        
-        
 		/** This method creates a default camera.
 		*/
 		Camera *createCamera();
-
-
-
 
 		/** This method creates an object and adds it to the list of object
 			stored in the scene manager.
@@ -68,7 +60,6 @@ namespace RE167 {
         inline void setObjectLevelCulling(bool b) { objectLevelCulling = b; }
         inline bool getObjectLevelCulling() { return objectLevelCulling; }
         
-
 
 	private:
 		Camera *mCamera;

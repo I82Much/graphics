@@ -4,7 +4,6 @@
 #include "Object.h"
 
 #include "SWWidget.h"
-//#include "SWRenderContext.h"
 #include "GLRenderContext.h"
 
 #include "GLWidget.h"
@@ -36,7 +35,7 @@
 /**
 * This class is an OpenGL window, with support for mouse dragging
 * and key presses.
-* @modified Nicholas Dunn
+* @modified Nicholas Basis
 * @date   February 21, 2009
 */
 
@@ -46,11 +45,10 @@ using std::cout;
 using std::endl;
 RenderWidget0::RenderWidget0()
 {
-	RenderContext *rs = new GLRenderContext();
-    //rs->init();
-
-
-	sceneManager = 0;
+    // Store a reference for later
+    this->rs = new GLRenderContext();
+        
+    sceneManager = 0;
 	counter = 0;
 	QWidget::grabKeyboard();
 }
@@ -72,7 +70,7 @@ void RenderWidget0::initSceneEvent()
 
     
 	initCamera();
-	initLights();
+	//initLights();
     //initStillLife();
 
     test();
@@ -84,100 +82,7 @@ void RenderWidget0::initSceneEvent()
 void RenderWidget0::initMaterials()
 {}
 
-void RenderWidget0::initGeometry()
-{
-    
-      
-    
-    Shader * phongShader = new Shader("src/Shaders/diffuse_shading.vert", 
-        "src/Shaders/diffuse_shading.frag");
-    Shader * texture2D = new Shader("src/Shaders/texture2D.vert", 
-        "src/Shaders/texture2D.frag");
-    
-    Material * brass = new Material(Brass);                                 
-    Material * pewter = new Material(Pewter);
-    Material * polishedSilver = new Material(Polished_Silver);
-    Material * blackRubber = new Material(Black_Rubber);
-    Material * ruby = new Material(Ruby);
-    Material * turquoise = new Material(Turquoise);   
-    Material * mattePearl = new Material(Pearl);   
-    Material * defaultMat = new Material();
-    Material * emerald = new Material(Emerald);
-    brass->setShader(phongShader);
-    pewter->setShader(phongShader);
-    polishedSilver->setShader(phongShader);
-    blackRubber->setShader(phongShader);
-    ruby->setShader(phongShader);
-    turquoise->setShader(phongShader);
-    mattePearl->setShader(phongShader);
-    emerald->setShader(phongShader);
-    
-    mattePearl->setShininess(2);
-    
-    // Textured materials
-    Material * earthMat = new Material();
-    Material * stripes = new Material();
-    earthMat->setShader(texture2D);
-    stripes->setShader(texture2D);
-    
 
-    // Make a shiny brass pedestal
-    RE167::Object * pedestal1 = sceneManager->createObject();
-    GeometryFactory::createCylinder(pedestal1, 1, 40, 1.0f);
-    pedestal1->setTransformation(Matrix4::scale(1,2,1) * Matrix4::translate(-2,0,0));
-    pedestal1->setMaterial(brass);
-
-
-    // Create the pedestal for the globe
-    RE167::Object * pedestal2 = sceneManager->createObject();
-    GeometryFactory::createCylinder(pedestal2, 1, 40, 1.0f);
-    pedestal2->setTransformation(Matrix4::scale(1,2,1) * Matrix4::translate(2,0,0));
-    pedestal2->setMaterial(polishedSilver);
-
-    
-    earth = sceneManager->createObject();
-    GeometryFactory::createSphere(earth, 30, 30);
-    earth->setTransformation(Matrix4::translate(2,3,0));
-    earth->setMaterial(earthMat);
-    
-    RE167::Object * cube = sceneManager->createObject();
-    GeometryFactory::createCube(cube);
-    cube->setTransformation(Matrix4::translate(0,2,0));
-    cube->setMaterial(pewter);
-    
-    
-    RE167::Object * teapot = sceneManager->createObject();
-    GeometryFactory::createObject(teapot, "objects/teapot.obj");
-    teapot->setTransformation(Matrix4::translate(-2,2,0));
-    teapot->setMaterial(mattePearl);
-    
-          
-    // http://friday.westnet.com/~crywalt/dymaxion_2003/earthmap10k.reduced.jpg
-    QImage *texImg = new QImage("earthmap.jpg", "jpg");
-    assert(texImg != NULL);
-    Texture *picture = new Texture(texImg);
-    earthMat->setTexture(picture);
-
-      
-    // http://hi-and-low.typepad.com/my_weblog/images/2007/09/30/stripes_02.jpg
-    QImage *stripeImg = new QImage("stripes_02.jpg", "jpg");
-    assert(stripeImg != NULL);
-    Texture *stripeTex = new Texture(stripeImg);
-    stripes->setTexture(stripeTex);
-   
-    bunny = sceneManager->createObject();
-    GeometryFactory::createObject(bunny, "objects/bunny.obj");
-    bunny->setTransformation(Matrix4::translate(0,4,0));
-    bunny->setMaterial(stripes);
-    
-    geometryGroup = new TransformGroup();
-    geometryGroup->addChild(new Shape3D(bunny));
-    //world->addChild(new Shape3D(bunny));
-    
-    
-    
- 
-}
 
 void RenderWidget0::initStillLife()
 {
@@ -559,11 +464,6 @@ void RenderWidget0::stopAnimation()
 	}
 }
 
-void RenderWidget0::toggleWireframe()
-{
-
-}
-
 
 void RenderWidget0::toggleCulling()
 {
@@ -610,7 +510,6 @@ void RenderWidget0::keyPressEvent ( QKeyEvent * k )
         toggleCulling();
         break;
     
-    
     // Move camera up
     case Qt::Key_Q:
         camera->setViewMatrix(Matrix4::translate(0,-1,0) * camera->getViewMatrix());
@@ -625,6 +524,12 @@ void RenderWidget0::keyReleaseEvent ( QKeyEvent * e)
 {
 
 }
+
+void RenderWidget0::toggleWireframe()
+{
+    rs->toggleWireframe();
+}
+
 
 void RenderWidget0::test() 
 {
@@ -651,6 +556,19 @@ void RenderWidget0::test()
 
     BezierCurve path(pathArray, 7);
 
+    Vector3 goblet1(1,4.3,0);
+    Vector3 goblet2(1,0.3,0);
+    Vector3 goblet3(-.1,3.3f,0);
+    Vector3 goblet4(.1f,0.3f,0);
+    Vector3 goblet5(.4f,.2f,0);
+    Vector3 goblet6(.7f,.1f,0);
+    Vector3 goblet7(1.0f,0.0f,0);
+    
+    Vector3 gobletArray[] = {goblet1, goblet2, goblet3, goblet4, goblet5,goblet6,goblet7};
+    BezierCurve gobletCurve(gobletArray, 7);
+    
+
+
     Vector3 c1(0,0,.5);
     Vector3 c2(.5,0,.5);
     Vector3 c3(.5,0,-.5);
@@ -670,36 +588,39 @@ void RenderWidget0::test()
     
     
     // Top
-    Vector3 box1(0,0,3);
-    Vector3 box2(1,0,3);
-    Vector3 box3(2,0,3);
-    Vector3 box4(3,0,3);
+    Vector3 box1(-2,0,5);
+    Vector3 box2(1,1,3);
+    Vector3 box3(2,1,3);
+    Vector3 box4(5,0,5);
     
     // Right
     Vector3 box5(3,0,2);
     Vector3 box6(3,0,1);
-    Vector3 box7(3,0,0);
+    Vector3 box7(5,0,-2);
 
     // Bottom
     Vector3 box8(2,0,0);
     Vector3 box9(1,0,0);
-    Vector3 box10(0,0,0);
+    Vector3 box10(-2,0,-2);
 
     // Left
     Vector3 box11(0,0,1);
     Vector3 box12(0,0,2);
     Vector3 box13(0,0,3);
     
-    Vector3 shapeArray[] = {box1,box2,box3,box4,box5,box6,box7, box8, box9, box10, box11, box12, box13};
-//    Vector3 shapeArray[] = {c1,c2,c3,c4,c5,c6,c7};
+    //Vector3 shapeArray[] = {box1,box2,box3,box4,box5,box6,box7, box8, box9, box10, box11, box12, box13};
+    Vector3 shapeArray[] = {c1,c2,c3,c4,c5,c6,c7};
     //Vector3 shapeArray[] = {s1,s2,s3,s4,s5,s6,s7};
     
-    BezierCurve curvedLine(shapeArray, 13);
-    //curvedLine.setTransformation(Matrix4::scale(2,.5,.1));
+    int numElements = sizeof(shapeArray) / sizeof(Vector3);
+    
+
+    BezierCurve curvedLine(shapeArray, numElements);
+    curvedLine.setTransformation(Matrix4::scale(.2,.2,.2));
     
     
     Object * loft = sceneManager->createObject();
-    GeometryFactory::createLoft(loft, curvedLine, path,18 ,18);
+    GeometryFactory::createLoft(loft, curvedLine, path, 4 ,18);
     
     
     Material * extrudedShapeMaterial = new Material();

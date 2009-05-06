@@ -107,6 +107,9 @@ namespace RE167 {
         void switchScene();
         void toggleCulling();
         void test();
+        
+        GLRenderContext * rs;
+        
     };
 
 }
