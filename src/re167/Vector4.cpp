@@ -28,6 +28,16 @@ const Vector4 Vector4::ORIGIN(0, 0, 0, 1);
 */
 Vector4::Vector4(const Vector3 &val) : x(val.getX()), y(val.getY()), z(val.getZ()), w(1) {}
 
+const Vector4 Vector4::homogeneousPoint(const Vector3 &val) 
+{
+    return Vector4(val.getX(), val.getY(), val.getZ(), 1);
+    
+}
+const Vector4 Vector4::homogeneousVector(const Vector3 &val) 
+{
+    return Vector4(val.getX(), val.getY(), val.getZ(), 0);
+}
+
 
 
 // Addition operator for vectors

@@ -630,13 +630,13 @@ void RenderWidget0::test()
 {
     
     
-    Vector3 t1(0,4,0);
-    Vector3 t2(1,3,0);
-    Vector3 t3(2,2,0);
-    Vector3 t4(3,3,0);
-    Vector3 t5(5,3,0);
-    Vector3 t6(5.5,4,0);
-    Vector3 t7(6,1,0);
+    Vector3 t1(0,4,1);
+    Vector3 t2(1,3,5);
+    Vector3 t3(2,2,6);
+    Vector3 t4(3,3,3);
+    Vector3 t5(5,3,2);
+    Vector3 t6(5.5,4,4);
+    Vector3 t7(6,1,5);
     
     Vector3 p1(0,4,0);
     Vector3 p2(0,3,0);

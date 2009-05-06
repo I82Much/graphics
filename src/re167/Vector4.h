@@ -17,6 +17,10 @@ namespace RE167 {
             Vector4(const Vector3 &val);
 			~Vector4();
 
+            static const Vector4 homogeneousPoint(const Vector3 &val);
+            static const Vector4 homogeneousVector(const Vector3 &val);
+            
+
             static const Vector4 ZERO_VECTOR;
             static const Vector4 ORIGIN;
 
