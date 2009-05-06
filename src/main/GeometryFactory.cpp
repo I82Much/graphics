@@ -1619,8 +1619,9 @@ const Basis GeometryFactory::createPathTransform(Vector3 origin, Vector3 tangent
     Vector3 v = unitTangent;
     Vector3 w = binormal;
 
-    return Basis(u,v,w,origin);
-    /*
+    Basis basis(u,v,w,origin);
+
+  //    return Basis(u,v,w,origin);
     std::cout << "New coordinate frame: \tprincipalNormal: " << principalNormal << "\t unitTangent:" << unitTangent << "\tbinormal: " << binormal << std::endl;
 
     // Create a rotation matrix out of u,v,w
@@ -1632,7 +1633,20 @@ const Basis GeometryFactory::createPathTransform(Vector3 origin, Vector3 tangent
 	// Create the translation matrix to move to origin
 	Matrix4 translate = Matrix4::translate(	origin.getX(), origin.getY(), origin.getZ() );
     
-    return translate * rotate;*/
+    
+    
+    //return translate * rotate;
+
+    /*
+    std::cout << "Rotation by itself: " << endl << rotate << std::endl;
+    std::cout << "Translation by itself: " << endl << translate << std::endl;
+    
+    std::cout << "Originally calculated: " << endl << translate * rotate << std::endl;
+    std::cout << "Basis transform: " << endl << basis.getTransformation() << std::endl;
+    */
+    assert((translate * rotate) == basis.getTransformation());
+    
+    return basis;
     
     
     
@@ -1809,13 +1823,6 @@ void GeometryFactory::createLoft(
     // Calculate the initial reference frame
     Basis oldCoordSystem = createPathTransform(pathPoints[0], pathTangents[0], pathAccelerations[0]);
 
-    Vector3 oldPoint = pathPoints[0];
-    Vector3 oldTangent = pathTangents[0];
-
-    
-    
-    
-
     
     // For all the points along the path curve
     for (unsigned int i = 0; i < pathPoints.size(); i++) 
@@ -1837,12 +1844,16 @@ void GeometryFactory::createLoft(
         // bases.
         
         
-        Vector3 newPoint = pathPoints[i];
-        Vector3 newTangent = pathTangents[i];
+        Vector3 newTangent = pathTangents[i].normalize();
+        // We created the coordinate system such that the V vector points
+        // in direction of tangent to curve
+        Vector3 oldNormal = oldCoordSystem.getU();
+        Vector3 oldTangent = oldCoordSystem.getV();
+        Vector3 oldBinormal = oldCoordSystem.getW();
         
         Matrix4 rotationMatrix;
         
-        std::cout << "Old tangent: " << oldTangent << "new tangent: " << newTangent << std::endl;
+        std::cout << "Old tangent: " << oldTangent << " New tangent: " << newTangent << std::endl;
         
         
         if (newTangent == oldTangent) {
@@ -1856,28 +1867,27 @@ void GeometryFactory::createLoft(
             rotationMatrix = Matrix4::rotate(axisOfRotationVec4, angle);
         }
         
-        Vector3 translation = newPoint - oldPoint;
-        Matrix4 translationMatrix = Matrix4::translate(translation.getX(),
-            translation.getY(), translation.getZ());
         
+        // Rotate the old reference frame such that the old tangent vector
+        // is aligned with the new tangent vector
+        // Multiply the old tangent vector and old bitangent vectors by rotation
+        // matrix to calculate the transformed ones.
         
+        Vector4 newNormalVec4 = rotationMatrix * Vector4(oldNormal.getX(), oldNormal.getY(), oldNormal.getZ(), 0);
+        Vector4 newBinormalVec4 = rotationMatrix * Vector4(oldBinormal.getX(), oldBinormal.getY(), oldBinormal.getZ(), 0);
         
-        const Matrix4 pathTransform = oldCoordSystem.getTransformation();
+        Vector3 newNormal = Vector3(newNormalVec4);
+        Vector3 newBinormal = Vector3(newBinormalVec4);
+        Vector3 newOrigin = pathPoints[i];
+        
+        // Create a new coordinate system out of the new tangent, new normal, 
+        // and new binormal
+        const Basis newCoordSystem(newNormal, newTangent, newBinormal, newOrigin);
+        
+        const Matrix4 pathTransform = newCoordSystem.getTransformation();
         cout << "Path transform: " << pathTransform << endl;
 
-        
-        
-        
-        //const Matrix4 pathTransform = (translationMatrix * rotationMatrix) * oldPathTransform;
-        
-        oldPoint = newPoint;
-        oldTangent = newTangent;
-        //oldPathTransform = pathTransform;
-        
-        //const Matrix4 pathTransform = calculatePathTransform(pathPoints[i], pathTangents[i], pathAccelerations[i]);
-        
-        oldCoordSystem = createPathTransform(pathPoints[i], pathTangents[i], pathAccelerations[i]);
-        
+        oldCoordSystem = newCoordSystem;
 
         //TODO: fix the normal rotation; that won't work right.  Or maybe it will
 
