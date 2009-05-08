@@ -47,7 +47,9 @@ SOURCES += src/re167/BasicMath.cpp \
  src/re167/Plane.cpp \
  src/re167/scenegraph/LightNode.cpp \
  src/re167/scenegraph/CameraNode.cpp \
- src/re167/BezierCurve.cpp
+ src/re167/BezierCurve.cpp \
+ src/re167/Basis.cpp
+
  
 
 
@@ -99,7 +101,9 @@ HEADERS += src/re167/BasicMath.h \
  src/re167/Plane.h \
  src/re167/scenegraph/LightNode.h \
  src/re167/scenegraph/CameraNode.h \
- src/re167/BezierCurve.h
+ src/re167/BezierCurve.h \
+ src/re167/Basis.h \
+ src/re167/Spline.h	
 
 
 
