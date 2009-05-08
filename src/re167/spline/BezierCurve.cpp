@@ -19,7 +19,7 @@ const Matrix4 BezierCurve::WEIGHTS(-1, 3, -3, 1,
 BezierCurve::BezierCurve(const Vector3 &p0, 
                         const Vector3 &p1,
                         const Vector3 &p2,
-                        const Vector3 &p3) : transformation(Matrix4::IDENTITY)
+                        const Vector3 &p3) 
 {
     controlPoints.push_back(p0);
     controlPoints.push_back(p1);
@@ -29,7 +29,7 @@ BezierCurve::BezierCurve(const Vector3 &p0,
     createMatrices();
 }
 
-BezierCurve::BezierCurve(Vector3 points[], int numPoints) : transformation(Matrix4::IDENTITY)
+BezierCurve::BezierCurve(Vector3 points[], int numPoints) 
 {
     assert (numPoints >= 4);
     assert ((numPoints - 4) % 3 == 0 && "Piecewise cubic bezier curve must"\

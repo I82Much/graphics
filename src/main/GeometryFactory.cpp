@@ -26,7 +26,7 @@
 #include <vector>
 #include "VertexData.h"
 #include "Object.h"
-#include "spline/BezierCurve.h"
+#include "spline/Spline.h"
 #include "Matrix4.h"
 #include "Basis.h"
 
@@ -1517,8 +1517,8 @@ void GeometryFactory::createTaperedCylinder(int numRows,
 **/
 void GeometryFactory::createLoft(
     Object * o,
-    const BezierCurve &shape,
-    const BezierCurve &path,
+    const Spline &shape,
+    const Spline &path,
     const int numPointsToEvaluateAlongShape,
     const int numPointsToEvaluateAlongPath,
     const bool normalize,
@@ -1671,8 +1671,8 @@ const Basis GeometryFactory::createPathTransform(Vector3 origin, Vector3 tangent
 *                       indices array (1 * numIndices)
 **/
 void GeometryFactory::createLoft(
-    const BezierCurve &shape,
-    const BezierCurve &path,
+    const Spline &shape,
+    const Spline &path,
     const int numPointsToEvaluateAlongShape,
     const int numPointsToEvaluateAlongPath,
     bool normalize,
@@ -1949,11 +1949,11 @@ void GeometryFactory::createConnectivity(const vector <vector<Vector3> > &values
     
 
 /**
-* Given an object pointer and a 2D BezierCurve in the XY plane, rotates
+* Given an object pointer and a 2D Spline in the XY plane, rotates
 * the curve about the Y axis and creates a triangle mesh along the way.
 **/
 void GeometryFactory::createSurfaceOfRevolution(Object *o, 
-    const BezierCurve &generatrix,
+    const Spline &generatrix,
     int numPointsToEvaluateAlongCurve,
     int numAnglesToRotate)
 {
@@ -2012,7 +2012,7 @@ void GeometryFactory::createSurfaceOfRevolution(Object *o,
 * a 3d surface.  
 **/
 void GeometryFactory::createSurfaceOfRevolution(
-    const BezierCurve &generatrix,
+    const Spline &generatrix,
     int numPointsToEvaluateAlongCurve,
     int numAnglesToRotate,
     // outputs

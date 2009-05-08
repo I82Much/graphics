@@ -3,6 +3,7 @@
 
 #include "RE167_global.h"
 #include <vector>
+#include "Matrix4.h"
 
 namespace RE167 {
     class Vector3;
@@ -10,16 +11,23 @@ namespace RE167 {
     class RE167_EXPORT Spline
     {
     public:
+        Spline();
+        virtual ~Spline() {}
         
-        virtual std::vector <Vector3> uniformPointSample(int numStraightSegments) const = 0;
-        virtual std::vector <Vector3> uniformTangentSample(int numStraightSegments) const = 0;
-        virtual std::vector <Vector3> uniformAccelerationSample(int numStraightSegments) const = 0;
+        virtual std::vector <Vector3> uniformPointSample(int numPoints) const;
+        virtual std::vector <Vector3> uniformTangentSample(int numPoints) const;
+        virtual std::vector <Vector3> uniformAccelerationSample(int numPoints) const;        
         
         virtual Vector3 position(float t) const = 0;
         virtual Vector3 tangent(float t) const = 0;
         virtual Vector3 acceleration(float t) const = 0;
 
-        //inline Matrix4 getTransformation() { return transformation; }
+        virtual inline Matrix4 getTransformation() { return transformation; }
+        virtual void setTransformation(const Matrix4 &t) { transformation = t; }
+        
+        
+    protected:
+        Matrix4 transformation;
     };
 }
 

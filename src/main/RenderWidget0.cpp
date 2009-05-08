@@ -29,6 +29,8 @@
 #include "scenegraph/TransformGroup.h"
 #include "scenegraph/CameraNode.h"
 #include "spline/BezierCurve.h"
+#include "spline/Circle.h"
+
 #include "Vector3.h"
 #include "Texture.h"
 
@@ -68,10 +70,10 @@ void RenderWidget0::initSceneEvent()
 
     
 	initCamera();
-	initLights();
-    initStillLife();
+	//initLights();
+    //initStillLife();
 
-    //test();
+    test();
 	
 	// Trigger timer event every 5ms.
 	timerId = startTimer(5);
@@ -573,7 +575,10 @@ void RenderWidget0::test()
     //Vector3 pathArray[] = {track1, track2, track3, track4, track5, track6, 
 //        track7, track8, track9, track10, track11, track12, track13, track14, track15, track16};
 
-    BezierCurve path(pathArray, sizeof(pathArray)/ sizeof(Vector3));
+    //BezierCurve path(pathArray, sizeof(pathArray)/ sizeof(Vector3));
+
+    Circle path;
+
 
     //path.setTransformation(Matrix4::scale(.001, .001, .001));
 
@@ -640,8 +645,11 @@ void RenderWidget0::test()
     curvedLine.setTransformation(Matrix4::scale(.2,.2,.2));
     
     
+    
+    path.setTransformation(Matrix4::scale(5,2,1));
+    
     Object * loft = sceneManager->createObject();
-    GeometryFactory::createLoft(loft, curvedLine, path, 10 ,10);
+    GeometryFactory::createLoft(loft, curvedLine, path, 10 ,20);
     
     
     Material * extrudedShapeMaterial = new Material();

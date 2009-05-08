@@ -9,9 +9,9 @@ namespace RE167 {
     class Object;
     class Vector3;
     class Vector4;
-    class BezierCurve;
     class Matrix4;
     class Basis;
+    class Spline;
     
     class RE167_EXPORT GeometryFactory 
     {
@@ -71,8 +71,8 @@ namespace RE167 {
 
         static void createLoft(
             Object * o,
-            const BezierCurve &shape,
-            const BezierCurve &path,
+            const Spline &shape,
+            const Spline &path,
             const int numPointsToEvaluateAlongShape = 10,
             const int numPointsToEvaluateAlongPath = 10,
             const bool normalize = true,
@@ -80,8 +80,8 @@ namespace RE167 {
         );
         
         static void createLoft(
-            const BezierCurve &shape,
-            const BezierCurve &path,
+            const Spline &shape,
+            const Spline &path,
             const int numPointsToEvaluateAlongShape,
             const int numPointsToEvaluateAlongPath,
             bool normalize,
@@ -99,12 +99,12 @@ namespace RE167 {
         
         
         static void createSurfaceOfRevolution(Object *o, 
-            const BezierCurve &generatrix,
+            const Spline &generatrix,
             int numPointsToEvaluateAlongCurve = 10,
             int numberOfAnglesToRotate = 18);
 
         static void createSurfaceOfRevolution(
-            const BezierCurve &generatrix,
+            const Spline &generatrix,
             int numPointsToEvaluateAlongCurve,
             int numberOfAnglesToRotate,
             // outputs

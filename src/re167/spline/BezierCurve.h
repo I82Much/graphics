@@ -24,12 +24,6 @@ namespace RE167
 
         ~BezierCurve();
         
-        /*
-        std::vector<Vector3> convexHull() const;
-        std::vector<Vector3> adaptivePointSample(float allowedError) const;
-        std::vector<Vector3> adaptiveTangentSample(float allowedError) const;
-        */
-        
         std::vector <Vector3> uniformPointSample(int numStraightSegments) const;
         std::vector <Vector3> uniformTangentSample(int numStraightSegments) const;
         std::vector <Vector3> uniformAccelerationSample(int numStraightSegments) const;
@@ -40,7 +34,6 @@ namespace RE167
         
         Vector3 acceleration(float t) const;
 
-        inline Matrix4 getTransformation() { return transformation; }
         void setTransformation(const Matrix4 &t) { transformation = t; createMatrices(); }
 
         static void test();
@@ -56,8 +49,6 @@ namespace RE167
         void createMatrices();
         std::vector <Matrix4> matrices;
         static void split(float real, int *intPart, float *realPart);
-        
-        Matrix4 transformation;
         
 	};
 
