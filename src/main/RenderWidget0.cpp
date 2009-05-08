@@ -32,6 +32,8 @@
 #include "spline/Circle.h"
 #include "spline/Helix.h"
 #include "spline/Morpher.h"
+#include "spline/Square.h"
+
 
 
 
@@ -667,10 +669,15 @@ void RenderWidget0::test()
     Morpher morpher(&circle, &circle);
     
     
-//    path.setTransformation(Matrix4::scale(1,1,5));
+    Square square;
+    
+    square.setTransformation(Matrix4::rotateX(BasicMath::radians(90)) * Matrix4::scale(.2,.2,1));
     
     Object * loft = sceneManager->createObject();
-    GeometryFactory::createLoft(loft, morpher, path, 10 ,5);
+    
+
+    
+    GeometryFactory::createLoft(loft, square, circle , 9 ,9);
     
     
     Material * extrudedShapeMaterial = new Material();
