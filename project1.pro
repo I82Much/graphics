@@ -51,6 +51,7 @@ SOURCES += src/re167/BasicMath.cpp \
  src/re167/spline/Spline.cpp \
  src/re167/spline/Circle.cpp \
  src/re167/spline/Helix.cpp \
+ src/re167/spline/Morpher.cpp \
  src/re167/Basis.cpp
 
  
@@ -108,6 +109,8 @@ HEADERS += src/re167/BasicMath.h \
  src/re167/spline/Spline.h	\
  src/re167/spline/BezierCurve.h \
  src/re167/spline/Helix.h \
+ src/re167/spline/Morpher.h \
+
 
 
 
