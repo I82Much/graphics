@@ -590,6 +590,9 @@ void RenderWidget0::test()
     //Circle path;
     //Helix path(10);
 
+    Helix helix(2);
+//    helix.setTransformation(Matrix4::scale(1,1,20));
+
     //path.setTransformation(Matrix4::scale(.001, .001, .001));
 
     Vector3 goblet1(1,4.3,0);
@@ -603,8 +606,6 @@ void RenderWidget0::test()
     Vector3 gobletArray[] = {goblet1, goblet2, goblet3, goblet4, goblet5,goblet6,goblet7};
     BezierCurve gobletCurve(gobletArray, 7);
     
-
-
     Vector3 c1(0,0,.5);
     Vector3 c2(.5,0,.5);
     Vector3 c3(.5,0,-.5);
@@ -662,12 +663,7 @@ void RenderWidget0::test()
     
     BezierCurve nearCircle(shapeArray, numElements);
     
-    
-    
-    
-    
     Morpher morpher(&circle, &circle);
-    
     
     Square square;
     
@@ -675,10 +671,8 @@ void RenderWidget0::test()
     
     Object * loft = sceneManager->createObject();
     
-
     
-    GeometryFactory::createLoft(loft, square, circle , 9 ,9);
-    
+    GeometryFactory::createLoft(loft, square, helix , 9 ,40);
     
     Material * extrudedShapeMaterial = new Material();
     
@@ -693,9 +687,6 @@ void RenderWidget0::test()
     loft->setMaterial(extrudedShapeMaterial);
     
     sceneManager->getRoot()->addChild(new Shape3D(loft));
-    
-    
-    
     
 }
 

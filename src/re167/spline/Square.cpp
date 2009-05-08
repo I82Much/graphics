@@ -22,9 +22,8 @@ const int Square::LEFT(3);
 
 /**
 * Represents a unit square in the xy plane centered at the origin.  Square is
-* drawn clockwise in order top, right, bottom, left
+* drawn clockwise in order top, right, bottom, left.
 **/
-
 
 Vector3 Square::position(float t) const
 {

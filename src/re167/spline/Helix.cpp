@@ -12,7 +12,6 @@ using namespace RE167;
 Helix::Helix(float numTurns_) : numTurns(numTurns_) 
 {
 
-
     Vector3 s1(1,1,1);
     Vector3 s2(2,2,1);
     Vector3 s3(2,2,1);
@@ -21,7 +20,6 @@ Helix::Helix(float numTurns_) : numTurns(numTurns_)
     scaleCurve = new BezierCurve(s1,s2,s3,s4);
     
     //scaleCurve = new Circle();
-    
 }
 
 Helix::~Helix()
@@ -43,8 +41,6 @@ Vector3 Helix::position(float t) const
     float yScale = scale.getY();
     float zScale = scale.getZ();
     Matrix4 scaleMatrix = Matrix4::scale(xScale, yScale, zScale);
-    
-    
     
     Vector4 vec4Result = transformation * scaleMatrix * Vector4(cos(tPrime), sin(tPrime), t , 1);
     return Vector3(vec4Result);
