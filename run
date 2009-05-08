@@ -1,0 +1,3 @@
+#! /bin/sh
+ 
+./bin/project1.app/Contents/MacOS/project1
