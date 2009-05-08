@@ -2,7 +2,7 @@
 #define BEZIERCURVE_H_C38IIXGN
 #include "RE167_global.h"
 #include <vector>
-#include "Matrix4.h"
+#include "../Matrix4.h"
 #include "Spline.h"
 
 namespace RE167

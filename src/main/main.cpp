@@ -6,7 +6,7 @@
 #include "GeometryFactory.h"
 #include "scenegraph/Group.h"
 #include "Plane.h"
-#include "BezierCurve.h"
+#include "spline/BezierCurve.h"
 
 using namespace RE167;
 

@@ -28,7 +28,7 @@
 #include "scenegraph/Shape3D.h"
 #include "scenegraph/TransformGroup.h"
 #include "scenegraph/CameraNode.h"
-#include "BezierCurve.h"
+#include "spline/BezierCurve.h"
 #include "Vector3.h"
 #include "Texture.h"
 

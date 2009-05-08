@@ -26,7 +26,7 @@
 #include <vector>
 #include "VertexData.h"
 #include "Object.h"
-#include "BezierCurve.h"
+#include "spline/BezierCurve.h"
 #include "Matrix4.h"
 #include "Basis.h"
 
