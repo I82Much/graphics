@@ -3,7 +3,12 @@
 
 using namespace RE167;
 
-Spline::Spline() : transformation(Matrix4::IDENTITY) {}
+Spline::Spline() : transformation(Matrix4::IDENTITY) 
+{
+    
+    
+    
+}
 
 std::vector <Vector3> Spline::uniformPointSample(int numPoints) const
 {

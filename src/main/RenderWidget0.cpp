@@ -30,6 +30,8 @@
 #include "scenegraph/CameraNode.h"
 #include "spline/BezierCurve.h"
 #include "spline/Circle.h"
+#include "spline/Helix.h"
+
 
 #include "Vector3.h"
 #include "Texture.h"
@@ -577,8 +579,8 @@ void RenderWidget0::test()
 
     //BezierCurve path(pathArray, sizeof(pathArray)/ sizeof(Vector3));
 
-    Circle path;
-
+    //Circle path;
+    Helix path(10);
 
     //path.setTransformation(Matrix4::scale(.001, .001, .001));
 
@@ -646,10 +648,10 @@ void RenderWidget0::test()
     
     
     
-    path.setTransformation(Matrix4::scale(5,2,1));
+    path.setTransformation(Matrix4::scale(1,1,5));
     
     Object * loft = sceneManager->createObject();
-    GeometryFactory::createLoft(loft, curvedLine, path, 10 ,20);
+    GeometryFactory::createLoft(loft, curvedLine, path, 10 ,200);
     
     
     Material * extrudedShapeMaterial = new Material();

@@ -2,9 +2,7 @@
 #define CIRCLE_H_A4MI90N6
 
 #include "../RE167_global.h"
-#include <vector>
 #include "Spline.h"
-
 
 namespace RE167 {
     class Vector3;

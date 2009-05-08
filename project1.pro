@@ -50,6 +50,7 @@ SOURCES += src/re167/BasicMath.cpp \
  src/re167/spline/BezierCurve.cpp \
  src/re167/spline/Spline.cpp \
  src/re167/spline/Circle.cpp \
+ src/re167/spline/Helix.cpp \
  src/re167/Basis.cpp
 
  
@@ -106,6 +107,8 @@ HEADERS += src/re167/BasicMath.h \
  src/re167/Basis.h \
  src/re167/spline/Spline.h	\
  src/re167/spline/BezierCurve.h \
+ src/re167/spline/Helix.h \
+
 
 
 
