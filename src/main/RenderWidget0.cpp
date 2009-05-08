@@ -61,8 +61,6 @@ RenderWidget0::~RenderWidget0()
 	}
 }
 
-
-
 void RenderWidget0::initSceneEvent()
 {
     
@@ -70,10 +68,10 @@ void RenderWidget0::initSceneEvent()
 
     
 	initCamera();
-	//initLights();
-    //initStillLife();
+	initLights();
+    initStillLife();
 
-    test();
+    //test();
 	
 	// Trigger timer event every 5ms.
 	timerId = startTimer(5);
@@ -81,8 +79,6 @@ void RenderWidget0::initSceneEvent()
 
 void RenderWidget0::initMaterials()
 {}
-
-
 
 void RenderWidget0::initStillLife()
 {
@@ -245,8 +241,6 @@ void RenderWidget0::initStillLife()
 
 }
 
-
-
 void RenderWidget0::initCamera()
 {
     Vector3 cameraCenter = Vector3(0,0,10);
@@ -400,7 +394,8 @@ void RenderWidget0::mouseMoveEvent(QMouseEvent *e)
 * on the unit sphere.  Note: If the point could not lie on the unit sphere,
 * this method will force it to lie on the sphere by normalizing the (x,y) vector.
 */
-Vector3 RenderWidget0::mapToUnitSphere(int x, int y, int width, int height) {
+Vector3 RenderWidget0::mapToUnitSphere(int x, int y, int width, int height) 
+{
 	int smallerSide = std::min(width, height);
 
 	// Since we want the trackball to remain a sphere, we make
@@ -543,10 +538,10 @@ void RenderWidget0::test()
     Vector3 t6(5.5,4,4);
     Vector3 t7(6,1,5);
     
-    Vector3 p1(1,4,0);
-    Vector3 p2(2,3,0);
-    Vector3 p3(3,2,0);
-    Vector3 p4(4,1,0);
+    Vector3 p1(0,4,0);
+    Vector3 p2(0,3,0);
+    Vector3 p3(0,2,0);
+    Vector3 p4(0,1,0);
     
     
     
@@ -572,16 +567,15 @@ void RenderWidget0::test()
     Vector3 track16(-4000, -13000, -5869);
 
     
-    
 
-//    Vector3 pathArray[] = {t1,t2,t3,t4,t5,t6,t7};
+    Vector3 pathArray[] = {t1,t2,t3,t4,t5,t6,t7};
     //Vector3 pathArray[] = {p1,p2,p3,p4};
-    Vector3 pathArray[] = {track1, track2, track3, track4, track5, track6, 
-        track7, track8, track9, track10, track11, track12, track13, track14, track15, track16};
+    //Vector3 pathArray[] = {track1, track2, track3, track4, track5, track6, 
+//        track7, track8, track9, track10, track11, track12, track13, track14, track15, track16};
 
     BezierCurve path(pathArray, sizeof(pathArray)/ sizeof(Vector3));
 
-    path.setTransformation(Matrix4::scale(.001, .001, .001));
+    //path.setTransformation(Matrix4::scale(.001, .001, .001));
 
     Vector3 goblet1(1,4.3,0);
     Vector3 goblet2(1,0.3,0);
@@ -647,7 +641,7 @@ void RenderWidget0::test()
     
     
     Object * loft = sceneManager->createObject();
-    GeometryFactory::createLoft(loft, curvedLine, path, 10 ,50);
+    GeometryFactory::createLoft(loft, curvedLine, path, 10 ,10);
     
     
     Material * extrudedShapeMaterial = new Material();

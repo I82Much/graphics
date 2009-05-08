@@ -1104,8 +1104,6 @@ void GeometryFactory::createCylinder(int numRows,
 											numIndices);
 }
 
-
-
 void GeometryFactory::createCone(Object *o, int numRows,
 								 int numFacesPerRow, float bottomRadius) {
 
@@ -1589,8 +1587,6 @@ const Basis GeometryFactory::createPathTransform(Vector3 origin, Vector3 tangent
     cout << "Tangent: " << tangent << endl;
     cout << "Acceleration: " << acceleration << endl;
     
-    // TODO: Handle the case where acceleration is 0
-    
     Vector3 unitTangent = tangent.normalize();
 
     Vector3 principalNormal;
@@ -1623,44 +1619,13 @@ const Basis GeometryFactory::createPathTransform(Vector3 origin, Vector3 tangent
 
     Basis basis(u,v,w,origin);
 
-  //    return Basis(u,v,w,origin);
     std::cout << "New coordinate frame: \tprincipalNormal: " << principalNormal << "\t unitTangent:" << unitTangent << "\tbinormal: " << binormal << std::endl;
-
-    // Create a rotation matrix out of u,v,w
-	Matrix4 rotate = Matrix4( 	u.getX(), v.getX(), w.getX(), 0,
-								u.getY(), v.getY(), w.getY(), 0,
-								u.getZ(), v.getZ(), w.getZ(), 0,
-								0,		  0,		0,		  1    );
-
-	// Create the translation matrix to move to origin
-	Matrix4 translate = Matrix4::translate(	origin.getX(), origin.getY(), origin.getZ() );
-    
-    
-    
-    //return translate * rotate;
-
-    /*
-    std::cout << "Rotation by itself: " << endl << rotate << std::endl;
-    std::cout << "Translation by itself: " << endl << translate << std::endl;
-    
-    std::cout << "Originally calculated: " << endl << translate * rotate << std::endl;
-    std::cout << "Basis transform: " << endl << basis.getTransformation() << std::endl;
-    */
-    assert((translate * rotate) == basis.getTransformation());
-    
     return basis;
-    
-    
-    
 }
 
 
-
-
-
-
-
 // TODO: add twists
+// TODO: add ability (to all geometry) to specify repetition of the textures
 
 
 /**
@@ -1733,6 +1698,17 @@ void GeometryFactory::createLoft(
     vector<Vector3> pathPoints     = path.uniformPointSample(numPointsToEvaluateAlongPath);
     vector<Vector3> pathTangents   = path.uniformTangentSample(numPointsToEvaluateAlongPath);
     
+    // Rotate all of the tangents 90 degrees about the Y axis to make them
+    // normal to the curve
+    Matrix4 normalRotationMatrix = Matrix4::rotateY(BasicMath::radians(90));
+    vector<Vector3> shapeNormals;
+    for (std::vector<Vector3>::iterator i = shapeTangents.begin(); i != shapeTangents.end(); i++) 
+    {
+        Vector4 normal = normalRotationMatrix * Vector4::homogeneousVector(*i);
+        shapeNormals.push_back(Vector3(normal));
+    }
+    
+    
     // We will be computing all of the vertices, normals, and texcoords and
     // then figuring out the connectivity later
     vector <vector<Vector3> > vecVertices;
@@ -1744,6 +1720,9 @@ void GeometryFactory::createLoft(
     // parallel with shape spline
     Basis oldCoordSystem = createPathTransform(pathPoints[0], pathTangents[0], path.acceleration(0));
 
+    // This doesn't quite work when coordinate systems go 180
+    // x -> u, y ->v, z->w
+    //Basis oldCoordSystem(Vector3(1,0,0), Vector3(0,1,0), Vector3(0,0,1), pathPoints[0]);
 
     // For all the points along the path curve
     for (unsigned int i = 0; i < pathPoints.size(); i++) 
@@ -1771,8 +1750,6 @@ void GeometryFactory::createLoft(
         Vector3 oldBinormal = oldCoordSystem.getW();
         
         Matrix4 rotationMatrix;
-        
-
         // Both tangents are in the same direction; no rotation necessary
         if (newTangent == oldTangent) {
             rotationMatrix = Matrix4::IDENTITY;
@@ -1807,14 +1784,6 @@ void GeometryFactory::createLoft(
 
         oldCoordSystem = newCoordSystem;
 
-        //TODO: fix the normal rotation; that won't work right.  Or maybe it will
-
-        // Calculate the matrix needed to rotate a tangent vector on shape
-        // curve to be normal to the curve.
-        const Vector4 unitAxisOfRotation = Vector4(newTangent).normalize();
-        const float radiansToRotate = BasicMath::radians(90);
-        const Matrix4 normalRotationMatrix = Matrix4::rotate(unitAxisOfRotation, radiansToRotate);
-        
         // Determine the value of the curve parameter for the path curve
         float pathTValue = 
             static_cast<float>(i) / static_cast<float>(pathPoints.size() - 1);
@@ -1829,16 +1798,10 @@ void GeometryFactory::createLoft(
             Vector4 curVertex = pathTransform * Vector4(shapePoints[j]);
             vecVertices[i].push_back(Vector3(curVertex));
             
-            // Transform the tangent vector into current reference frame, and then
-            // rotate about the Y axis 90 degrees.
-            Matrix4 rotationMatrix = Matrix4::rotateY(BasicMath::radians(90));
-            // TODO: Figure out the deal with rotating these normals
             
-            
-            // Transform the corresponding tangent vector to be normal to the
-            // surface, using the rotation matrix defined by rotating about the
-            // tangent to the path curve
-            Vector4 curNormal = normalRotationMatrix * pathTransform * Vector4::homogeneousVector(shapeTangents[j]);
+            // Translate the normal vector into the correct coordinate system
+            Vector4 curNormal = pathTransform * Vector4::homogeneousVector(shapeNormals[j]);
+            vecNormals[i].push_back(Vector3(curNormal));
             
             // Both the normal of our shape and the tangent of our shape curve
             // should be orthogonal to the tangent of our path
@@ -1847,7 +1810,6 @@ void GeometryFactory::createLoft(
 /*          assert(shapeTangents[j].dotProduct(tangentOnPath) == 0);
             assert(curNormal.dotProduct(Vector4(tangentOnPath)) == 0);*/
             
-            vecNormals[i].push_back(Vector3(curNormal));
             
             // Determine the value of the curve parameter for the shape curve
             // Store this as the "v" texture coordinate
@@ -1872,7 +1834,6 @@ void GeometryFactory::createLoft(
     const int numFacesPerRow = numPointsToEvaluateAlongShape - 1;
     const int NUM_COMPONENTS_PER_ROW =
         NUM_COMPONENTS_PER_RECTANGULAR_FACE * numFacesPerRow;
-    
     	
     numVertices = NUM_COMPONENTS_PER_ROW * NUM_ROWS;
     numIndices = numVertices;
@@ -1882,129 +1843,110 @@ void GeometryFactory::createLoft(
     normals = new float[3 * numVertices];
     textureCoords = new float[2 * numVertices];
     indices = new int[numIndices];	
-    	
-	for (int row = 0; row < NUM_ROWS; row++) {
+    
+    createConnectivity(vecVertices,
+                    vecNormals,
+                    vecTexCoords,
+                    numPointsToEvaluateAlongPath,
+                    numPointsToEvaluateAlongShape,
+                    vertices,
+                    normals,
+                    textureCoords);
+	
+	// Fill in the indices array
+    for (int i = 0; i < numIndices; i++)
+    {
+        indices[i] = i;
+    }
+}
 
-		// The "face"th and ("face"+1)%numFacesPerRow vertices in row "row"
-		// form a rectangular face with the "face"th and ("face"+1)%numFacesPerRow
-		// vertices in row "row" + 1.
-		for (int face = 0; face < numFacesPerRow; face++) {
 
-            
-            // Face 1: Upper right triangle of rectangular face
+/**
+* Given a two d vector of vertices, normals, and texture coordintes, 
+* picks out the faces and fills in the raw float arrays.
+**/
+void GeometryFactory::createConnectivity(const vector <vector<Vector3> > &vecVertices,
+                        const vector <vector<Vector3> > &vecNormals,
+                        const vector <vector<Vector3> > &vecTexCoords,
+                        int numPointsRows,
+                        int numPointsCols,
+                        float *&vertices,
+                        float *&normals,
+                        float *&textureCoords) 
+{
+    createConnectivity(vecVertices, numPointsRows, numPointsCols, vertices, 3);
+    createConnectivity(vecNormals, numPointsRows, numPointsCols, normals, 3);
+    createConnectivity(vecTexCoords, numPointsRows, numPointsCols, textureCoords, 2);
+}
+
+/**
+* Given a two dimensional vector of some sort of aspect of the geometry, go
+* through and pick out the points at each face and fill them in sequentially
+* in a raw float array.
+* Assumes that the two dimensional vector is laid out in such a way that 
+* values[i][j] is position of the ith vertex row and the jth vertex column.
+**/
+void GeometryFactory::createConnectivity(const vector <vector<Vector3> > &values,
+                        int numPointsRows,
+                        int numPointsCols,
+                        float *&floatValues,
+                        int numComponents)
+{
+    
+    // Two triangles per rectangular face, each of which has 3 points
+    const int NUM_POINTS_PER_FACE = 6;
+    const int NUM_COMPONENTS_PER_FACE = numComponents * NUM_POINTS_PER_FACE;
+
+    // There is always one fewer row of faces than there are points
+    const int NUM_ROWS = numPointsRows - 1;
+
+    // There is always one fewer face per row than there are points per row
+    const int NUM_FACES_PER_ROW = numPointsCols - 1;
+    const int NUM_COMPONENTS_PER_ROW = NUM_COMPONENTS_PER_FACE * NUM_FACES_PER_ROW;
+
+    for (int row = 0; row < NUM_ROWS; row++) {
+		for (int face = 0; face < NUM_FACES_PER_ROW; face++) {
+
+            //Face 1: Upper right triangle of rectangular face
             // Vertex 1: Upper left corner
-            Vector3 f1_1 = vecVertices[row][face];
+            Vector3 f1_1 = values[row][face];
             // Lower right corner
-            Vector3 f1_2 = vecVertices[row+1][face+1];
+            Vector3 f1_2 = values[row+1][face+1];
             // Upper right corner
-            Vector3 f1_3 = vecVertices[row][face+1];
-            
-            
+            Vector3 f1_3 = values[row][face+1];
+
             // Face 2: Lower left triangle of rectangular face
             // Upper left corner (same as f1_1)
             Vector3 f2_1 = f1_1;
             // Lower left corner
-            Vector3 f2_2 = vecVertices[row+1][face];
+            Vector3 f2_2 = values[row+1][face];
             // Lower right corner: (same as f1_2)
             Vector3 f2_3 = f1_2;
             
-            // Calculate the normals for these faces as well.  They are
-            // exactly the same points etc but taken from the rotatedTangents
-            // vector rather than rotatedPoints.
-            // Face 1: Upper right triangle of rectangular face
-            // Vertex 1: Upper left corner
-            Vector3 f1_1n = vecNormals[row][face];
-            // Lower right corner
-            Vector3 f1_2n = vecNormals[row+1][face+1];
-            // Upper right corner
-            Vector3 f1_3n = vecNormals[row][face+1];
-            
-            
-            // Face 2: Lower left triangle of rectangular face
-            // Upper left corner (same as f1_1)
-            Vector3 f2_1n = f1_1n;
-            // Lower left corner
-            Vector3 f2_2n = vecNormals[row+1][face];
-            // Lower right corner: (same as f1_2)
-            Vector3 f2_3n = f1_2n;
-            
-            
-            // Get the texture coordinates for all 6 vertices
-            Vector3 f1_1uv = vecTexCoords[row][face];
-            // Lower right corner
-            Vector3 f1_2uv = vecTexCoords[row+1][face+1];
-            // Upper right corner
-            Vector3 f1_3uv = vecTexCoords[row][face+1];
-            
-            // Face 2: Lower left triangle of rectangular face
-            // Upper left corner (same as f1_1)
-            Vector3 f2_1uv = f1_1uv;
-            // Lower left corner
-            Vector3 f2_2uv = vecTexCoords[row+1][face];
-            // Lower right corner: (same as f1_2)
-            Vector3 f2_3uv = f1_2uv;
-            
-            
-            // Now we need to actually fill in the vertices array with the
-            // raw float values from our vertices.  We are filling in
-            // 6 vertices, for a total of 18 floats added to the array per
-            // iteration of this inner loop.  
-            int startIndex = (row * NUM_COMPONENTS_PER_ROW) + (NUM_COMPONENTS_PER_RECTANGULAR_FACE * face);
-            
-            // Fill in vertices
-            fillInVertex(vertices, startIndex,    f1_1);
-            fillInVertex(vertices, startIndex+3,  f1_2);
-            fillInVertex(vertices, startIndex+6,  f1_3);
-            fillInVertex(vertices, startIndex+9,  f2_1);
-            fillInVertex(vertices, startIndex+12, f2_2);
-            fillInVertex(vertices, startIndex+15, f2_3);
-
-            // Fill in normals
-            fillInVertex(normals, startIndex,    f1_1n);
-            fillInVertex(normals, startIndex+3,  f1_2n);
-            fillInVertex(normals, startIndex+6,  f1_3n);
-            fillInVertex(normals, startIndex+9,  f2_1n);
-            fillInVertex(normals, startIndex+12, f2_2n);
-            fillInVertex(normals, startIndex+15, f2_3n);
-            
-            
-            static const int numVerticesPerRectangularFace = 
-                NUM_TRIANGLES_PER_RECTANGULAR_FACE * NUM_VERTICES_PER_TRIANGLE;
-            static const int numVerticesPerRow = 
-                numFacesPerRow * numVerticesPerRectangularFace;
-            static const int NUM_TEXTURE_COORDS_PER_VERTEX = 2;
-            
-            int textureStartIndex = 
-                (row * numVerticesPerRow * NUM_TEXTURE_COORDS_PER_VERTEX) + 
-                (numVerticesPerRectangularFace * face * NUM_TEXTURE_COORDS_PER_VERTEX);
-            
-            fillIn2DCoords(textureCoords, textureStartIndex, f1_1uv);
-            fillIn2DCoords(textureCoords, textureStartIndex+2, f1_2uv);
-            fillIn2DCoords(textureCoords, textureStartIndex+4, f1_3uv);
-            fillIn2DCoords(textureCoords, textureStartIndex+6, f2_1uv);
-            fillIn2DCoords(textureCoords, textureStartIndex+8, f2_2uv);
-            fillIn2DCoords(textureCoords, textureStartIndex+10, f2_3uv);
-		}
-	}
-	
-	// Fill in the indices array
-    for (int i = 0; i < numIndices; i++) {
-        indices[i] = i;
+            int startIndex = (row * NUM_COMPONENTS_PER_ROW) + (NUM_COMPONENTS_PER_FACE * face);
+                        
+                        
+            // TODO: really shouldn't need two separate methods for this.
+            if (numComponents == 2) {
+                fillIn2DCoords(floatValues, startIndex + (0 * numComponents), f1_1);
+                fillIn2DCoords(floatValues, startIndex + (1 * numComponents), f1_2);
+                fillIn2DCoords(floatValues, startIndex + (2 * numComponents), f1_3);
+                fillIn2DCoords(floatValues, startIndex + (3 * numComponents), f2_1);
+                fillIn2DCoords(floatValues, startIndex + (4 * numComponents), f2_2);
+                fillIn2DCoords(floatValues, startIndex + (5 * numComponents), f2_3);
+            }
+            else {
+                fillInVertex(floatValues, startIndex + (0 * numComponents), f1_1);
+                fillInVertex(floatValues, startIndex + (1 * numComponents), f1_2);
+                fillInVertex(floatValues, startIndex + (2 * numComponents), f1_3);
+                fillInVertex(floatValues, startIndex + (3 * numComponents), f2_1);
+                fillInVertex(floatValues, startIndex + (4 * numComponents), f2_2);
+                fillInVertex(floatValues, startIndex + (5 * numComponents), f2_3);
+            }
+        }
     }
-    
-    
-    // TODO: Create method that does the cylindrical method, since it comes up
-    // so often
-    
-    //printVerticesArray(vertices, numVertices * 3, 10);
-    
 }
-
-
-
-
-
-
+    
 
 /**
 * Given an object pointer and a 2D BezierCurve in the XY plane, rotates
@@ -2105,34 +2047,34 @@ void GeometryFactory::createSurfaceOfRevolution(
     // We need to rotate our tangent vectors by 90 degrees about the z-axis
     // in order to get the normal vectors at each point.
     Matrix4 rotateZ = Matrix4::rotateZ(BasicMath::radians(90));
-    
-    // Sample at numAnglesToRotate positions around the y axis.  One extra 
-    // point is sampled so that the point at the seam has both 0 and 2PI properties
-    // for when it comes time to texturemap
-    for (int i = 0; i < numAnglesToRotate + 1; i++) {
-
-        float proportionAround =   static_cast<float>(i) / 
-                                    static_cast<float>(numAnglesToRotate);
-                                    
-        float theta = TWO_PI * proportionAround;
-        
-        Matrix4 rotationMatrix = Matrix4::rotateY(theta);
-
+     
+    for(size_t i = 0; i < pointsOnCurve.size(); ++i)
+    {
         // Create the vector we need to hold all the points at this
-        // angle of rotation
+        // position on curve
         rotatedPoints.push_back(vector<Vector3>());
         rotatedTangentVectors.push_back(vector<Vector3>());
         textureCoords3.push_back(vector<Vector3>());
-        
-        // Need to rotate each point along the curve
-        for (int j = 0; j < pointsOnCurve.size(); j++) {
-            Vector3 point = pointsOnCurve[j];
-            Vector3 tangent = tangentVectorsOnCurve[j].normalize();
+
+        // Sample at numAnglesToRotate positions around the y axis.  One extra 
+        // point is sampled so that the point at the seam has both 0 and 2PI properties
+        // for when it comes time to texturemap
+        for(size_t j = 0; j < numAnglesToRotate + 1; ++j)
+        {
+            Vector3 point = pointsOnCurve[i];
+            Vector3 tangent = tangentVectorsOnCurve[i].normalize();
+            
+            
+            float proportionAround =   static_cast<float>(j) / 
+                                        static_cast<float>(numAnglesToRotate);
+            float theta = TWO_PI * proportionAround;
+            Matrix4 rotationMatrix = Matrix4::rotateY(theta);
+            
             
             // We need to transform the 3d points to 4d for purposes of 
             // matrix multiplication
-            Vector4 point4(point);
-            Vector4 tangent4(tangent);
+            Vector4 point4 = Vector4::homogeneousPoint(point);
+            Vector4 tangent4 = Vector4::homogeneousVector(tangent);
             
             Vector4 transformedPoint4 = rotationMatrix * point4;
             Vector4 transformedTangentVector4 = rotationMatrix * rotateZ * tangent4;
@@ -2144,21 +2086,20 @@ void GeometryFactory::createSurfaceOfRevolution(
             rotatedTangentVectors[i].push_back(Vector3(transformedTangentVector4));
             
             // What t value along the curve are we?  
-            float t = static_cast<float>(j) / static_cast<float>(pointsOnCurve.size() - 1);
+            float t = static_cast<float>(i) / static_cast<float>(pointsOnCurve.size() - 1);
 
             // Our u coord is just the curve parameter t, and the v is just 
             // what proportion rotated around the y axis
             // (both are in range [0,1])
             float u = proportionAround;
             float v = 1.0 - t;
-            //std::cout << "(u, v) : " << "(" << u << "," << v <<")" << std::endl;
+
             textureCoords3[i].push_back(Vector3(u,v,0));
         }
     }
-    
-    
-    assert(rotatedPoints.size() == numAnglesToRotate + 1);
-    assert(rotatedPoints[0].size() == numPointsToEvaluateAlongCurve);
+
+    assert(rotatedPoints[0].size() == numAnglesToRotate + 1);
+    assert(rotatedPoints.size() == numPointsToEvaluateAlongCurve);
             
     // We have all of our points; now we need to connect them up correctly. 
     const int NUM_ROWS = numPointsToEvaluateAlongCurve - 1;
@@ -2175,116 +2116,20 @@ void GeometryFactory::createSurfaceOfRevolution(
     normals = new float[3 * numVertices];
     textureCoords = new float[2 * numVertices];
     indices = new int[numIndices];	
-    	
-	for (int row = 0; row < NUM_ROWS; row++) {
-
-		// The "face"th and ("face"+1)%numFacesPerRow vertices in row "row"
-		// form a rectangular face with the "face"th and ("face"+1)%numFacesPerRow
-		// vertices in row "row" + 1.
-		for (int face = 0; face < numFacesPerRow; face++) {
-
-            
-            // Face 1: Upper right triangle of rectangular face
-            // Vertex 1: Upper left corner
-            Vector3 f1_1 = rotatedPoints[face][row];
-            // Lower right corner
-            Vector3 f1_2 = rotatedPoints[face+1][row+1];
-            // Upper right corner
-            Vector3 f1_3 = rotatedPoints[face+1][row];
-            
-            
-            // Face 2: Lower left triangle of rectangular face
-            // Upper left corner (same as f1_1)
-            Vector3 f2_1 = f1_1;
-            // Lower left corner
-            Vector3 f2_2 = rotatedPoints[face][row+1];
-            // Lower right corner: (same as f1_2)
-            Vector3 f2_3 = f1_2;
-            
-            // Calculate the normals for these faces as well.  They are
-            // exactly the same points etc but taken from the rotatedTangents
-            // vector rather than rotatedPoints.
-            // Face 1: Upper right triangle of rectangular face
-            // Vertex 1: Upper left corner
-            Vector3 f1_1n = rotatedTangentVectors[face][row];
-            // Lower right corner
-            Vector3 f1_2n = rotatedTangentVectors[face+1][row+1];
-            // Upper right corner
-            Vector3 f1_3n = rotatedTangentVectors[face+1][row];
-            
-            
-            // Face 2: Lower left triangle of rectangular face
-            // Upper left corner (same as f1_1)
-            Vector3 f2_1n = f1_1n;
-            // Lower left corner
-            Vector3 f2_2n = rotatedTangentVectors[face][row+1];
-            // Lower right corner: (same as f1_2)
-            Vector3 f2_3n = f1_2n;
-            
-            
-            // Get the texture coordinates for all 6 vertices
-            Vector3 f1_1uv = textureCoords3[face][row];
-            // Lower right corner
-            Vector3 f1_2uv = textureCoords3[face+1][row+1];
-            // Upper right corner
-            Vector3 f1_3uv = textureCoords3[face+1][row];
-            
-            // Face 2: Lower left triangle of rectangular face
-            // Upper left corner (same as f1_1)
-            Vector3 f2_1uv = f1_1uv;
-            // Lower left corner
-            Vector3 f2_2uv = textureCoords3[face][row+1];
-            // Lower right corner: (same as f1_2)
-            Vector3 f2_3uv = f1_2uv;
-            
-            
-            // Now we need to actually fill in the vertices array with the
-            // raw float values from our vertices.  We are filling in
-            // 6 vertices, for a total of 18 floats added to the array per
-            // iteration of this inner loop.  
-            int startIndex = (row * NUM_COMPONENTS_PER_ROW) + (NUM_COMPONENTS_PER_RECTANGULAR_FACE * face);
-            
-            // Fill in vertices
-            fillInVertex(vertices, startIndex,    f1_1);
-            fillInVertex(vertices, startIndex+3,  f1_2);
-            fillInVertex(vertices, startIndex+6,  f1_3);
-            fillInVertex(vertices, startIndex+9,  f2_1);
-            fillInVertex(vertices, startIndex+12, f2_2);
-            fillInVertex(vertices, startIndex+15, f2_3);
-
-            // Fill in normals
-            fillInVertex(normals, startIndex,    f1_1n);
-            fillInVertex(normals, startIndex+3,  f1_2n);
-            fillInVertex(normals, startIndex+6,  f1_3n);
-            fillInVertex(normals, startIndex+9,  f2_1n);
-            fillInVertex(normals, startIndex+12, f2_2n);
-            fillInVertex(normals, startIndex+15, f2_3n);
-            
-            
-            static const int numVerticesPerRectangularFace = 
-                NUM_TRIANGLES_PER_RECTANGULAR_FACE * NUM_VERTICES_PER_TRIANGLE;
-            static const int numVerticesPerRow = 
-                numFacesPerRow * numVerticesPerRectangularFace;
-            static const int NUM_TEXTURE_COORDS_PER_VERTEX = 2;
-            
-            int textureStartIndex = 
-                (row * numVerticesPerRow * NUM_TEXTURE_COORDS_PER_VERTEX) + 
-                (numVerticesPerRectangularFace * face * NUM_TEXTURE_COORDS_PER_VERTEX);
-            
-            fillIn2DCoords(textureCoords, textureStartIndex, f1_1uv);
-            fillIn2DCoords(textureCoords, textureStartIndex+2, f1_2uv);
-            fillIn2DCoords(textureCoords, textureStartIndex+4, f1_3uv);
-            fillIn2DCoords(textureCoords, textureStartIndex+6, f2_1uv);
-            fillIn2DCoords(textureCoords, textureStartIndex+8, f2_2uv);
-            fillIn2DCoords(textureCoords, textureStartIndex+10, f2_3uv);
-		}
-	}
-	
-	// Fill in the indices array
+        
+    createConnectivity(rotatedPoints,
+                    rotatedTangentVectors,
+                    textureCoords3,
+                    numPointsToEvaluateAlongCurve,
+                    numAnglesToRotate + 1,
+                    vertices,
+                    normals,
+                    textureCoords);	
+                    
+   	// Fill in the indices array
     for (int i = 0; i < numIndices; i++) {
         indices[i] = i;
     }
-
 }
 
 

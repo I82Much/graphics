@@ -3,7 +3,7 @@
 #include "RE167_global.h"
 #include <vector>
 #include "Matrix4.h"
-
+#include "Spline.h"
 
 namespace RE167
 {
@@ -11,7 +11,7 @@ namespace RE167
     /**
     * Class represents a two-dimensional piecewise Bezier curve in the xy plane
     **/
-	class RE167_EXPORT BezierCurve
+	class RE167_EXPORT BezierCurve : public Spline
 	{
 	public:
         BezierCurve(const Vector3 &p0, 

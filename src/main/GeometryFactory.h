@@ -1,10 +1,8 @@
 #ifndef _GEOMETRY_FACTORY_H__
 #define _GEOMETRY_FACTORY_H__
 
-// TODO: Figure out a way to eliminate this import
-//#include "Vector3.h"
-
 #include "RE167_global.h"
+#include <vector>
 
 namespace RE167 {
 
@@ -186,8 +184,28 @@ namespace RE167 {
 
 
     private:
-    	static void fillInObject(Object *o, float *vertices, float *normals, float * textureCoords, float *colors, int *indices,
-    						   int numVertices, int numIndices);
+        static void fillInObject(Object *o, float *vertices, float *normals, float * textureCoords, float *colors, int *indices,
+            int numVertices, int numIndices);
+
+        static void createConnectivity(
+            const std::vector <std::vector<Vector3> > &values,
+            int numPointsRows,
+            int numPointsCols,
+            float *&floatValues,
+            int numComponents
+        );
+                           
+        static void createConnectivity(
+            const std::vector <std::vector<Vector3> > &vecVertices,
+            const std::vector <std::vector<Vector3> > &vecNormals,
+            const std::vector <std::vector<Vector3> > &vecTexCoords,
+            int numVerticesRows,
+            int numVerticesCols,
+            float *&vertices,
+            float *&normals,
+            float *&textureCoords
+        );                       
+
     };
 
 }
