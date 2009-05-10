@@ -16,7 +16,7 @@ MainWindow::MainWindow()
     // Ensure that the window never gets bigger than this amount
     setMaximumSize(MAX_WIDTH, MAX_HEIGHT);
 
-	renderWidget = new RenderWidget0();
+	renderWidget = new RE167::RenderWidget0();
 	setCentralWidget(renderWidget);
 }
 
@@ -45,6 +45,7 @@ void MainWindow::createMenus()
     animationMenu = menuBar()->addMenu(tr("&Animation"));
     animationMenu->addAction(startAct);
     animationMenu->addAction(stopAct);
+    animationMenu->addAction(wireframeAct);
 }
 
 void MainWindow::startAnimation()

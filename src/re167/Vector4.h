@@ -17,7 +17,12 @@ namespace RE167 {
             Vector4(const Vector3 &val);
 			~Vector4();
 
+            static const Vector4 homogeneousPoint(const Vector3 &val);
+            static const Vector4 homogeneousVector(const Vector3 &val);
+            
+
             static const Vector4 ZERO_VECTOR;
+            static const Vector4 ORIGIN;
 
 			static float angleBetween(const Vector4 &first, const Vector4 &second);
 
@@ -32,6 +37,10 @@ namespace RE167 {
 			// Unary negation; returns vector pointing in opposite direction
 			// but with same magnitude
 			friend Vector4 operator-(const Vector4 &other);
+
+            // Less than operator (for weak ordering/sorting)
+            const bool operator<(const Vector4 &other) const;
+            
 
 			// Addition operator for vectors
 			Vector4 & operator+=(const Vector4 &rhs);

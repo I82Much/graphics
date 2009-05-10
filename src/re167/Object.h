@@ -2,11 +2,15 @@
 #define __Object_h__
 
 #include "RE167_global.h"
-#include "VertexData.h"
+
 #include "Matrix4.h"
-#include "Material.h"
+#include "Vector4.h"
+#include "VertexData.h"
 
 namespace RE167 {
+
+    class Material;
+    
 
 	/** This class provides an abstraction of scene objects.
 	@remarks
@@ -16,7 +20,8 @@ namespace RE167 {
 	class RE167_EXPORT Object
 	{
 	public:
-		inline void resetTransformation() { mTransformation = Matrix4::IDENTITY; }
+	    
+	 	inline void resetTransformation() { mTransformation = Matrix4::IDENTITY; }
 		inline void setTransformation(const Matrix4 &t) { mTransformation = t; }
 		inline Matrix4 getTransformation() const { return mTransformation; }
 		VertexData vertexData;
@@ -28,6 +33,13 @@ namespace RE167 {
 
         inline void setMaterial(Material * m) { material = m; }
         inline Material * getMaterial() { return material; }
+                
+        inline void setSphereCenter(const Vector4 &center) { sphereCenter = center; }
+        inline void setSphereRadius(const float radius) { sphereRadius = radius; }
+        
+        inline Vector4 getSphereCenter() { return sphereCenter; }
+        inline float getSphereRadius() { return sphereRadius; }
+        
         
 	protected:
 		Object() : mTransformation(Matrix4::IDENTITY), material(NULL) {} 
@@ -39,6 +51,9 @@ namespace RE167 {
 	private:
 	    Material * material;
         
+        // Hold bounding sphere information
+        Vector4 sphereCenter;
+        float sphereRadius;
 	};
 
 }

@@ -1,5 +1,13 @@
 #include "GLRenderContext.h"
+#include "Light.h"
+#include "VertexDeclaration.h"
+#include "Material.h"
+#include "Texture.h"
+#include "Shader.h"
+#include "VertexData.h"
+#include "scenegraph/LightNode.h"
 
+#include <qdatetime.h>
 
 using namespace RE167;
 
@@ -25,12 +33,19 @@ void GLRenderContext::init()
     
 	glShadeModel(GL_SMOOTH);
 	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_CULL_FACE);
+	//glEnable(GL_CULL_FACE);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	
+	clock = new QTime();
+    globalClock = new QTime();
+    globalClock->start();
 }
 
 void GLRenderContext::toggleWireframe() {
 	wireframe = !wireframe;
+	std::cout << "Wireframe: " << (wireframe ? "on" : "off") << std::endl;
 	if (wireframe) {
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	}
@@ -49,11 +64,33 @@ void GLRenderContext::setViewport(int width, int height)
 void GLRenderContext::beginFrame()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	clock->start();
 }
 
 void GLRenderContext::endFrame()
 {
+    static int numFramesRendered = 0;
+    
 	glFlush();
+//	std::cout << "Elapsed ms: " << clock->elapsed() << std::endl;
+
+	static bool PRINT_FPS = false;
+    
+
+    numFramesRendered++;
+    const int NUM_FRAMES_TO_TEST = 1000;
+    if (numFramesRendered % NUM_FRAMES_TO_TEST == 0) {
+        // Number of milliseconds
+        int elapsedTime = globalClock->elapsed();
+        float numSeconds = elapsedTime / 1000.0f;
+        if (PRINT_FPS) {
+            std::cout << numSeconds << " num seconds" << std::endl;
+            std::cout << "FPS: " << numFramesRendered / numSeconds << std::endl;
+        }
+        numFramesRendered = 0;
+        globalClock->restart();
+    }
+	
 }
 
 void GLRenderContext::setModelViewMatrix(const Matrix4 &m)
@@ -70,8 +107,6 @@ void GLRenderContext::setProjectionMatrix(const Matrix4 &m)
 
 void GLRenderContext::render(Object *object)
 {
-    setMaterial(object->getMaterial());
-    
 	VertexData& vertexData = object->vertexData;
 	VertexDeclaration& vertexDeclaration = vertexData.vertexDeclaration;
 	VertexBufferBinding& vertexBufferBinding = vertexData.vertexBufferBinding;
@@ -114,6 +149,9 @@ void GLRenderContext::render(Object *object)
 				glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 				glTexCoordPointer(vertexSize, GL_FLOAT, vertexStride, buf+offset);
 				break;
+			case VES_SPECULAR:
+                std::cerr << "Error: Found VES_SPECULAR in the vertex data of object " << object << std::endl;
+                assert(false);
 		}
 	}
 	
@@ -139,11 +177,116 @@ void GLRenderContext::render(Object *object)
 			case VES_TEXTURE_COORDINATES :
 				glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 				break;
+		    case VES_SPECULAR:
+                std::cerr << "Error: Found VES_SPECULAR in the vertex data of object " << object << std::endl;
+                assert(false);	
 		}
 	}
 
 	assert(glGetError()==GL_NO_ERROR);
 }
+
+
+void GLRenderContext::setLightNodes(const std::list<LightNode*> &lightList) 
+{
+    
+    GLint lightIndex[] = {GL_LIGHT0, GL_LIGHT1, GL_LIGHT2, GL_LIGHT3, GL_LIGHT4, GL_LIGHT5, GL_LIGHT6, GL_LIGHT7};
+
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+
+	std::list<LightNode*>::const_iterator iter;
+
+	if(lightList.begin()!=lightList.end())
+	{
+		// Lighting
+		glEnable(GL_LIGHTING);
+		
+        for (int i = 0; i < 8; i++) {
+            glDisable(lightIndex[i]);
+        }
+
+		int i=0;
+		for (iter=lightList.begin(); iter!=lightList.end() && i<8; iter++)
+		{
+			Light *l = (*iter)->getLight();
+            Matrix4 transform = (*iter)->getTransformation();
+
+
+			glEnable(lightIndex[i]);
+
+			if(l->getType() == Light::DIRECTIONAL)
+			{
+                Vector3 dir = l->getDirection();
+                Vector4 dir4(dir.getX(), dir.getY(), dir.getZ(), 0);
+                dir4 = transform * dir4;
+                
+				float direction[4];
+				direction[0] = dir4.getX();
+				direction[1] = dir4.getY();
+				direction[2] = dir4.getZ();
+				direction[3] = 0.f;
+				glLightfv(lightIndex[i], GL_POSITION, direction);
+			}
+			if(l->getType() == Light::POINT || l->getType() == Light::SPOT)
+			{
+			    Vector3 pos = l->getPosition();
+                Vector4 pos4(pos.getX(), pos.getY(), pos.getZ(), 0);
+                pos4 = transform * pos4;
+                
+				float position[4];
+				position[0] = pos4.getX();
+				position[1] = pos4.getY();
+				position[2] = pos4.getZ();
+				position[3] = 1.f;
+				glLightfv(lightIndex[i], GL_POSITION, position);
+			}
+			if(l->getType() == Light::SPOT)
+			{
+                Vector3 spotDir = l->getSpotDirection();
+                Vector4 spotDir4(spotDir.getX(), spotDir.getY(), spotDir.getZ(), 0);
+                spotDir4 = transform * spotDir4;
+                
+			    
+				float spotDirection[3];
+				spotDirection[0] = spotDir4.getX();
+				spotDirection[1] = spotDir4.getY();
+				spotDirection[2] = spotDir4.getZ();
+				glLightfv(lightIndex[i], GL_SPOT_DIRECTION, spotDirection);
+				glLightf(lightIndex[i], GL_SPOT_EXPONENT, l->getSpotExponent());
+				glLightf(lightIndex[i], GL_SPOT_CUTOFF, l->getSpotCutoff());
+			}
+
+			float diffuse[4];
+			diffuse[0] = l->getDiffuseColor().getX();
+			diffuse[1] = l->getDiffuseColor().getY();
+			diffuse[2] = l->getDiffuseColor().getZ();
+			diffuse[3] = 1.f;
+			glLightfv(lightIndex[i], GL_DIFFUSE, diffuse);
+
+			float ambient[4];
+			ambient[0] = l->getAmbientColor().getX();
+			ambient[1] = l->getAmbientColor().getY();
+			ambient[2] = l->getAmbientColor().getZ();
+			ambient[3] = 0;
+			glLightfv(lightIndex[i], GL_AMBIENT, ambient);
+
+			float specular[4];
+			specular[0] = l->getSpecularColor().getX();
+			specular[1] = l->getSpecularColor().getY();
+			specular[2] = l->getSpecularColor().getZ();
+			specular[3] = 0;
+			glLightfv(lightIndex[i], GL_SPECULAR, specular);
+			
+			i++;
+            
+		}
+	}
+    
+    
+    
+}
+
 
 // Add the following to GLRenderContext.cpp
 

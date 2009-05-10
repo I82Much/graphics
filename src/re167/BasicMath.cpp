@@ -1,6 +1,10 @@
 #include "BasicMath.h"
+#include <math.h>
 #include <assert.h>
 #include <cstdlib> 
+#include "Vector4.h"
+#include "Vector3.h"
+
 
 using namespace RE167;
 
@@ -32,3 +36,25 @@ float BasicMath::randBetween(const float min, const float max) {
 	return ((max-min)*((float)rand()/RAND_MAX))+min;
 }
 
+
+Vector4 BasicMath::lerp(const Vector4 &first, const Vector4 &second, float proportion)
+{
+    assert(0 <= proportion && proportion <= 1.0);
+    return ((1.0 - proportion) * first) + (proportion * second);
+}
+
+Vector3 BasicMath::lerp(const Vector3 &first, const Vector3 &second, float proportion)
+{
+    assert(0 <= proportion && proportion <= 1.0);
+    return ((1.0 - proportion) * first) + (proportion * second);
+}
+
+/**
+* Given a floating point number, splits it into its integer part
+* and real part, such that integerPart + realPart = real.
+**/
+void BasicMath::split(float real, int &integerPart, float &realPart) {
+    float integer;
+    realPart = modff(real, &integer);
+    integerPart = static_cast<int>(integer);
+}

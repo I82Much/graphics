@@ -18,11 +18,21 @@
 #include <assert.h>          // for assertions
 #include <iostream>
 #include "Vector3.h"
+#include "Vector4.h"
 #include "ColorFactory.h"
 #include "ObjReader.h"
 #include "PGMReader.h"
 #include <map>
 #include <vector>
+#include "VertexData.h"
+#include "Object.h"
+#include "spline/Spline.h"
+#include "Matrix4.h"
+#include "Basis.h"
+
+using std::cout;
+using std::endl;
+using std::vector;
 
 using namespace RE167;
 
@@ -51,7 +61,7 @@ const int GeometryFactory::NUM_COMPONENTS_PER_RECTANGULAR_FACE =
 * Creates a terrain from a PGM file and stores it in this
 * object
 **/
-void GeometryFactory::createTerrainFromPGM(RE167::Object *o, char * filepath, bool normalize) 
+void GeometryFactory::createTerrainFromPGM(Object *o, char * filepath, bool normalize) 
 {
 	assert(o != NULL);
 	int imageWidth = 0;
@@ -156,12 +166,14 @@ void GeometryFactory::createTerrainFromPGM(RE167::Object *o, char * filepath, bo
 	ColorFactory::colorTerrain(colors, vertices, numVertices);
 	ColorFactory::perturb(colors, numVertices * 3);
 
-    // we have not calculated normals for the terrain; ignore.
-	GeometryFactory::fillInObject(o, vertices, NULL, colors, indices,
+    // we have not calculated normals nor texture coordinates for the terrain; 
+    // ignore.
+	GeometryFactory::fillInObject(o, vertices, NULL, NULL, colors, indices,
 									numVertices,
 									numVertices);
 
 }
+
 
 
 /**
@@ -172,7 +184,7 @@ void GeometryFactory::createTerrainFromPGM(RE167::Object *o, char * filepath, bo
 * @param filePath	the path to the .obj file
 * @param normalize	whether or not to make the object fit into unit cube centered at origin
 **/
-void GeometryFactory::createObject(RE167::Object *o, char * filepath, bool normalize) {
+void GeometryFactory::createObject(Object *o, char * filepath, bool normalize) {
 	int numVertices;
 	float *vertices;
 	float *normals;
@@ -193,6 +205,14 @@ void GeometryFactory::createObject(RE167::Object *o, char * filepath, bool norma
     //std::fill(&colors[0], &colors[3 * numVertices], 1.0f);
 
 
+    // Calculate the bounding sphere and save it to the object
+     float radius;
+     Vector4 center;
+     calculateBoundingSphere(vertices, numVertices, center, radius);
+     o->setSphereCenter(center);
+     o->setSphereRadius(radius);
+
+
 	VertexData& vertexData = o->vertexData;
 	vertexData.vertexDeclaration.addElement(0, 0, 3, 3*sizeof(float), RE167::VES_POSITION);
 	vertexData.createVertexBuffer(0, numVertices*3*sizeof(float), (unsigned char*)vertices);
@@ -203,9 +223,6 @@ void GeometryFactory::createObject(RE167::Object *o, char * filepath, bool norma
 
 	if(normals)
 	{
-
-	    std::cout << "normals num vertices: " << numVertices << " num indices:" << numIndices << std::endl;
-
 		vertexData.vertexDeclaration.addElement(2, 0, 3, 3*sizeof(float), RE167::VES_NORMAL);
 		vertexData.createVertexBuffer(2, numVertices *3*sizeof(float), (unsigned char*)normals);
 	}
@@ -236,11 +253,20 @@ void GeometryFactory::createObject(RE167::Object *o, char * filepath, bool norma
 
 	vertexData.createIndexBuffer(numIndices, indices);
 
-	if(normals) delete[] normals;
-	if(texcoords) delete[] texcoords;
+	if(normals) {
+	    delete[] normals;
+        normals = NULL;
+    }
+	if(texcoords) {
+	    delete[] texcoords;
+        texcoords = NULL;
+    }
 	delete[] vertices;
+    vertices = NULL;
 	delete[] indices;
+    indices = NULL;
 	delete[] colors;
+    colors = NULL;
 }
 
 
@@ -426,11 +452,16 @@ void GeometryFactory::createPositionalSphericalCoordinates(float *vertices,
 }
 
 /**
-*/
+* Given an array of vertices defining an object, calculates the smallest
+* axis-aligned bounding box that fits all the points.
+* Has the side effect of changing vMin to contain the smallest x, y, and z
+* value in the point set, and vMax to contain the largest x, y, and z values.
+**/
 void GeometryFactory::calculateBoundingBox(float *vertices, int numVertices,
-                                            RE167::Vector3 &vMin,
-                                            RE167::Vector3 &vMax)
+                                            Vector3 &vMin,
+                                            Vector3 &vMax)
 {
+    
     float xMin, yMin, zMin;
 	float xMax, yMax, zMax;
 
@@ -455,6 +486,9 @@ void GeometryFactory::calculateBoundingBox(float *vertices, int numVertices,
 		if (x > xMax) { xMax = x; }
 		if (y > yMax) { yMax = y; }
 		if (z > zMax) { zMax = z; }
+		
+		//std::cout << "Vertex " << i << ": " << Vector3(x,y,z) << std::endl;
+		//std::cout << "xMin: " << xMin << " yMin: " << yMin << " zMin: " << zMin << std::endl;
 
 	}
     vMin.setX(xMin);
@@ -466,129 +500,39 @@ void GeometryFactory::calculateBoundingBox(float *vertices, int numVertices,
     vMax.setZ(zMax);
 }
 
-
-
-
-
-
-
 /**
-* Given a triangular mesh defined by vertices and indices where there
-* is a one to one correspondence between the vertices and the indices
-* (vertices that are shared by different faces are duplicated rather
-* than reused) this method determines which vertices are duplicates,
-* eliminates them, and updates the indices array such that the
-* connectivity of the mesh is maintained.  Also assumes that the
-* indices array is created such that it's full of consecutive integers
-* (so face one is comprised of vertices 0, 1, 2, face 2 by 3, 4, 5, ...)
-*
-*
-* CALLER IS RESPONSIBLE FOR FREEING MEMORY ALLOCATED IN THIS METHOD
-* FOR outVertices and outIndices
-*/
-void GeometryFactory::eliminateDuplicateVertices(float *vertices,
-                                                int *indices,
-                                                float *&outVertices,
-                                                int *&outIndices,
-                                                int &numVertices,
-                                                int &numIndices)
+* Given an array of vertices defining and object, calculates a bounding sphere
+* containing all of the vertices within it.  Note that this is not guaranteed
+* to find the absolute minimal bounding sphere, but it will be close in most
+* cases.
+* @param vertices       the vertices making up the object
+* @param numVertices    how many vertices there are
+* @param center         will be changed to reflect the center of the bounding
+*                       sphere
+* @param radius         will be changed to reflect the radius of the bounding
+*                       sphere
+**/
+void GeometryFactory::calculateBoundingSphere(float * vertices, int numVertices, 
+    Vector4 &center, float & radius)
 {
 
-    assert(vertices);
-    assert(indices);
-    // We only want to eliminate duplicate vertices in the case that
-    // the mesh was defined such that each vertex has one entry in index
-    // table
-    assert(numVertices == numIndices);
-
-    // Create space for the new indices table
-    outIndices = new int[numIndices];
-
-
-    // Create a vector of Vector3s; will hold all of the unique vertices
-    // in the order in which we add them
-    std::vector<Vector3> uniqueSortedVertices;
-
-    // Create a map of Vector3s; will hold all of the unique vertices but
-    // with no particular useful order.  Holds the index where we first
-    // found the unique vertex
-    std::map<Vector3, int> uniqueVerticesMap;
-
-    // Convert our float array into a Vector3 vector.
-    std::vector<Vector3> verticesVector;
-    for (int i = 0; i < numVertices; i++) {
-        int index = 3*i;
-        float x = vertices[index    ];
-        float y = vertices[index + 1];
-        float z = vertices[index + 2];
-        verticesVector.push_back(Vector3(x,y,z));
-
-        std::cout << Vector3(x,y,z) << std::endl;
-
-    }
-
-
-
-
-    // Go through and determine the unique vertices.  At the same time
-    // keep track of the indices into our unique vertices vector.
-    for (unsigned int i = 0; i < verticesVector.size(); i++) {
-        Vector3 vertex = verticesVector[i];
-        // Search our map for this vertex
-        std::map<Vector3, int>::iterator v = uniqueVerticesMap.find(vertex);
-
-        // The vertex has not yet been put in our map; add it to both
-        // the map and the uniqueSortedVertices vector
-        if (v == uniqueVerticesMap.end()) {
-
-
-            int indexInUniqueVertices = uniqueSortedVertices.size();
-            // Store the index in the map for later retrieval
-            uniqueVerticesMap[vertex] = indexInUniqueVertices;
-            uniqueSortedVertices.push_back(vertex);
-            // Keep track in our new indices array where in our unique
-            outIndices[i] = indexInUniqueVertices;
-        }
-        // The vertex has already been placed into both our map and
-        // our uniqueSortedVertices vector; therefore we just need to
-        // retrieve the correct index and place it in the outIndices
-        else {
-            std::cout << "vertex " << vertex << "is a duplicate." << std::endl;
-
-
-            // The map stores (vertex, index)
-            outIndices[i] = v->second;
-        }
-    }
-
-    std::cout << "Size of map: " << uniqueVerticesMap.size() << std::endl;
-    std::cout << "Size of vector: " << uniqueSortedVertices.size() << std::endl;
-
-
-    for( std::map<Vector3, int>::iterator ii=uniqueVerticesMap.begin(); ii!=uniqueVerticesMap.end(); ii++)
-    {
-           std::cout << (*ii).first << ": " << (*ii).second << std::endl;
-    }
-
-    assert(uniqueSortedVertices.size() <= static_cast<unsigned int>(numVertices));
-
-    // Change the parameter to reflect the new number of vertices;
-    // note that the number of indices does not change
-    numVertices = uniqueSortedVertices.size();
-
-    // At this point we have our unique vertices as well as our
-    // indices.  Now all we need to do is convert from our Vector3 vector
-    // into a float array.
-    outVertices = new float[3 * numVertices];
-    for (unsigned int i = 0; i < uniqueSortedVertices.size(); i++) {
-        unsigned int index = 3 * i;
-        outVertices[index    ] = uniqueSortedVertices[i].getX();
-        outVertices[index + 1] = uniqueSortedVertices[i].getY();
-        outVertices[index + 2] = uniqueSortedVertices[i].getZ();
-    }
-
-
+    Vector3 vMin;
+    Vector3 vMax;
+    
+    calculateBoundingBox(vertices, numVertices, vMin, vMax);
+    // The average of the corners of box gives center
+    Vector3 center3d = 0.5f * (vMin + vMax);
+    // Homogenize
+    center = Vector4(center3d.getX(), center3d.getY(), center3d.getZ(), 1);
+    // Both vMax and vMin will be equally close to the center of the bounding
+    // box, but they are also the farthest possible points from the center of
+    // the box.  Thus the bounding sphere can safely hold all of the points
+    // if we set its radius to be equal to the distance between the center
+    // and the farthest corner.
+    radius = (vMax - center3d).magnitude();
 }
+
+
 
 /*
 * Creates a cube of side length = 2 centered at (0,0,0)
@@ -598,7 +542,6 @@ void GeometryFactory::eliminateDuplicateVertices(float *vertices,
 void GeometryFactory::createCube(Object *o) {
 	// 3 per
 	const int NUM_VERTICES = 24;
-	const int SIZE_OF_VERTICES_ARRAY = NUM_VERTICES * NUM_COMPONENTS_PER_VERTEX;
 	float vertices[] = {-1,-1,1, 1,-1,1, 1,1,1, -1,1,1,		// front face
 						-1,-1,-1, -1,-1,1, -1,1,1, -1,1,-1, // left face
 						1,-1,-1,-1,-1,-1, -1,1,-1, 1,1,-1,  // back face
@@ -633,12 +576,10 @@ void GeometryFactory::createCube(Object *o) {
      calculateNormals(vertices, indices, normals, NUM_VERTICES, NUM_INDICES);
      assert(normals);
 
-	 GeometryFactory::fillInObject(o, vertices, normals, colors, indices,
-									SIZE_OF_VERTICES_ARRAY, NUM_INDICES);
-
-                                
-
-
+     // TODO: Create texture coordinates for cube
+     float * textureCoords = NULL;
+	 GeometryFactory::fillInObject(o, vertices, normals, textureCoords, colors, indices,
+									NUM_VERTICES, NUM_INDICES);
 }
 
 /**
@@ -725,12 +666,9 @@ void GeometryFactory::calculateNormals(float *vertices, int *indices, float *&no
     }
 
     delete[] vNormals;
+    vNormals = NULL;
 
 }
-
-
-
-
 
 
 /**
@@ -845,6 +783,13 @@ float vertices[] = {-4+6,-4, 4+6,   4+6,-4, 4+6,   4+6, 4, 4+6,  -4+6, 4, 4+6,  
                      };
 
 
+    // Calculate the bounding sphere and save it to the object
+     float radius;
+     Vector4 center;
+     calculateBoundingSphere(vertices, numVertices, center, radius);
+     object->setSphereCenter(center);
+     object->setSphereRadius(radius);
+
 	// Set up the vertex data
 	VertexData& vertexData = object->vertexData;
 
@@ -924,18 +869,20 @@ float vertices[] = {-4+6,-4, 4+6,   4+6,-4, 4+6,   4+6, 4, 4+6,  -4+6, 4, 4+6,  
 * @param numRows			how many rows of faces to make
 * @param numFacesPerRow		the number of faces per row
 **/
-void GeometryFactory::createSphere(RE167::Object *o, int numRows, int numFacesPerRow) {
+void GeometryFactory::createSphere(Object *o, int numRows, int numFacesPerRow) {
 	int *indices = NULL;
 	float *vertices= NULL;
 	float *colors = NULL;
     float *normals = NULL;
+    float *textureCoords = NULL;
 	int numVertices = 0;
 	int numIndices = 0;
 	// Do the heavy lifting with a helper method
-	GeometryFactory::createSphere(numRows, numFacesPerRow, vertices, normals, colors, indices,
+	// TODO: Calculate texture coords within helper method
+    GeometryFactory::createSphere(numRows, numFacesPerRow, vertices, normals, colors, indices,
         numVertices, numIndices);
     
-	GeometryFactory::fillInObject(o, vertices, normals, colors, indices, 
+	GeometryFactory::fillInObject(o, vertices, normals, textureCoords, colors, indices, 
         numVertices, numIndices);
     
 
@@ -944,6 +891,10 @@ void GeometryFactory::createSphere(RE167::Object *o, int numRows, int numFacesPe
     delete[] normals;
 	delete[] colors;
     //delete[] normals;
+    indices = NULL;
+    vertices = NULL;
+    normals = NULL;
+    colors = NULL;
 }
 
 /**
@@ -1098,7 +1049,8 @@ void GeometryFactory::createSphere(int numFaceRows,
 
     // Our vertices array is fully filled in; no need for the temporary one
     delete[] tempVertices;
-
+    tempVertices = NULL;
+    
     // Create the color array.  Each triangle section of each face will be
     // a separate color
     //colors = new float[numVertices * 3];
@@ -1118,14 +1070,10 @@ void GeometryFactory::createSphere(int numFaceRows,
 }
 
 
-void GeometryFactory::fillInVertex(float *&vertices, int startIndex, const Vector3 &vertex) {
-    vertices[startIndex  ] = vertex.getX();
-    vertices[startIndex+1] = vertex.getY();
-    vertices[startIndex+2] = vertex.getZ();
-}
 
 
-void GeometryFactory::createCylinder(RE167::Object *o, int numRows,
+
+void GeometryFactory::createCylinder(Object *o, int numRows,
 									 int numFacesPerRow, float radius) {
 	GeometryFactory::createTaperedCylinder(o, numRows, numFacesPerRow, radius, radius);
 }
@@ -1156,9 +1104,7 @@ void GeometryFactory::createCylinder(int numRows,
 											numIndices);
 }
 
-
-
-void GeometryFactory::createCone(RE167::Object *o, int numRows,
+void GeometryFactory::createCone(Object *o, int numRows,
 								 int numFacesPerRow, float bottomRadius) {
 
 	GeometryFactory::createTaperedCylinder(o, numRows, numFacesPerRow, 0, bottomRadius);
@@ -1197,9 +1143,10 @@ void GeometryFactory::createCone(int numRows,
 * @param topRadius		radius of top of cylinder
 * @param bottomRadius	radius of bottom of cylinder
 */
-void GeometryFactory::createTaperedCylinder(RE167::Object *o, int numRows,
+void GeometryFactory::createTaperedCylinder(Object *o, int numRows,
 									int numFacesPerRow, float topRadius,
-									float bottomRadius) {
+									float bottomRadius) 
+{							
 
 	int *indices = NULL;
 	float *vertices= NULL;
@@ -1224,13 +1171,19 @@ void GeometryFactory::createTaperedCylinder(RE167::Object *o, int numRows,
 //    calculateNormals(vertices, indices, normals, numVertices, numIndices);								
     assert(normals);
     
-	GeometryFactory::fillInObject(o, vertices, normals, colors, indices, numVertices,
+    float * textureCoords = NULL;
+    // TODO: Fix the method to calculate texture coords
+	GeometryFactory::fillInObject(o, vertices, normals, textureCoords, colors, indices, numVertices,
 								numIndices);
 
 	delete[] indices;
 	delete[] vertices;
     delete[] normals;
 	delete[] colors;
+    indices = NULL;
+    vertices = NULL;
+    normals = NULL;
+    colors = NULL;
 
 }
 
@@ -1276,7 +1229,7 @@ void GeometryFactory::createTaperedCylinder(int numRows,
 	assert(bottomRadius >= 0);
 	assert(topRadius >= 0);
 
-	const float HEIGHT = 1.0f;
+	const float HEIGHT = 2.0f;
 	// Since we are centering the object at (0,0,0)
 	const float HIGHEST_Y_VALUE = HEIGHT/2;
 	const float LOWEST_Y_VALUE = -HIGHEST_Y_VALUE;
@@ -1536,6 +1489,654 @@ void GeometryFactory::createTaperedCylinder(int numRows,
 	// We no longer need the temparray
 	delete[] tempVertices;
     delete[] tempNormals;
+    tempVertices = NULL;
+    tempNormals = NULL;
+}
+
+
+/**
+* Extrudes a given shape along a given path.
+*
+* For instance, if shape is a star shape and the path is a circle, we would 
+* have a circle whose cross sections would be stars.
+*
+* @param o      the object which will be filled in with the created geometry
+* @param shape  the curve specifying the shape that will define cross sections
+* @param path   the path that the swept surface will take
+* @param numPointsToEvaluateAlongShape  at how many places along the shape
+*                                       curve will the curve be sampled
+*                                       (higher number will lead to more
+*                                       vertices)
+* @param numPointsToEvaluateAlongPath   at how many places along the path 
+*                                       curve will the curve be sampled
+*                                       (higher number will lead to more
+*                                       vertices)
+* @param normalize          whether or not to make the resulting shape fit
+*                           within the unit cube centered at the origin
+* @param adaptiveSampling   if true, both curves will be sampled at enough
+**/
+void GeometryFactory::createLoft(
+    Object * o,
+    const Spline &shape,
+    const Spline &path,
+    const int numPointsToEvaluateAlongShape,
+    const int numPointsToEvaluateAlongPath,
+    const bool normalize,
+    const bool adaptiveSampling
+)
+{
+    assert (o != NULL);
+    int *indices = NULL;
+	float *vertices= NULL;
+	float *colors = NULL;
+    float *normals = NULL;
+    float *textureCoords = NULL;
+	int numVertices = 0;
+	int numIndices = 0;
+	// Do the heavy lifting with a helper method
+	createLoft(shape, 
+	    path,
+	    numPointsToEvaluateAlongShape, 
+	    numPointsToEvaluateAlongPath, 
+	    normalize,
+	    adaptiveSampling,
+	    vertices,  
+	    normals, 
+	    textureCoords,
+	    colors, 
+	    indices,
+	    numVertices,
+        numIndices);
+    
+    
+    
+        
+    assert (indices != NULL);
+    assert (vertices != NULL);
+        
+	fillInObject(o, vertices, normals, textureCoords, colors, indices, 
+        numVertices, numIndices);
+     
+    delete[] indices;
+    indices = NULL;
+    delete[] vertices;
+    vertices = NULL;
+    if (normals != NULL) {
+        delete[] normals;
+        normals = NULL;
+    }
+    if (colors != NULL) {
+	    delete[] colors;
+        colors = NULL;
+    }
+    if (normals != NULL) {
+        delete[] normals;
+        normals = NULL;
+    }
+    if (textureCoords != NULL) {
+        delete[] textureCoords;
+        textureCoords = NULL;
+    }
+}
+
+
+const Basis GeometryFactory::createPathTransform(Vector3 origin, Vector3 tangent, Vector3 acceleration) 
+{
+    
+    cout << "Origin: " << origin << endl;
+    cout << "Tangent: " << tangent << endl;
+    cout << "Acceleration: " << acceleration << endl;
+    
+    Vector3 unitTangent = tangent.normalize();
+
+    Vector3 principalNormal;
+    
+    // Straight line segment or acceleration in same direction as tangent
+    if (acceleration == Vector3::ZERO_VECTOR || 
+        acceleration.crossProduct(unitTangent) == Vector3::ZERO_VECTOR) {
+        
+        std::cout << "Straight line segment, attempting to find a new principal normal." << std::endl;
+        // Pick any unit length vector normal to the tangent vector
+        
+        // TODO: remove magic number and dehack
+        
+        Vector3 linearlyIndependentVector = Vector3(unitTangent.getX(), unitTangent.getY(), unitTangent.getZ() + 10).normalize();
+        principalNormal = linearlyIndependentVector.crossProduct(unitTangent).normalize();
+        
+    }
+    // The principal normal we can calculate by using the acceleration vector
+    else {
+        principalNormal = 
+            unitTangent.crossProduct(acceleration).crossProduct(unitTangent).normalize();
+    }
+    
+    Vector3 binormal = unitTangent.crossProduct(principalNormal).normalize();
+    
+    // We now have a reference frame defined by unitTangent, principalNormal, and biNormal
+    Vector3 u = principalNormal;
+    Vector3 v = unitTangent;
+    Vector3 w = binormal;
+
+    Basis basis(u,v,w,origin);
+
+    std::cout << "New coordinate frame: \tprincipalNormal: " << principalNormal << "\t unitTangent:" << unitTangent << "\tbinormal: " << binormal << std::endl;
+    return basis;
+}
+
+
+// TODO: add twists
+// TODO: add ability (to all geometry) to specify repetition of the textures
+
+
+/**
+* Extrudes a given shape along a given path.
+*
+* For instance, if shape is a star shape and the path is a circle, we would 
+* have a circle whose cross sections would be stars.
+*
+* @param shape  the curve specifying the shape that will define cross sections
+* @param path   the path that the swept surface will take
+* @param numPointsToEvaluateAlongShape  at how many places along the shape
+*                                       curve will the curve be sampled
+*                                       (higher number will lead to more
+*                                       vertices)
+* @param numPointsToEvaluateAlongPath   at how many places along the path 
+*                                       curve will the curve be sampled
+*                                       (higher number will lead to more
+*                                       vertices)
+* @param normalize          whether or not to make the resulting shape fit
+*                           within the unit cube centered at the origin
+* @param adaptiveSampling   if true, both curves will be sampled at enough
+* @param vertices   the array that will be filled in to hold all of the 
+*                   vertices in the object.  Must be freed later
+* @param normals    the array that will be filled in to hold all of the 
+*                   normals in the object.  Must be freed later.
+* @param textureCoords  the array that will be filled in to hold the texture
+*                       coordinates of the object. Must be freed later
+* @param colors         the array that will be filled in to hold the color 
+*                       information of object's surface (separate from texture)
+*                       Must be freed later.
+* @param indices    the array that will be filled in to hold the connectivity
+*                   of all the vertices, normals, colors, texture coords, etc.
+*                   For instance, if the first three elements of this array 
+*                   are 0,2,3 then the first face is made of the vertices at
+*                   position 0, 2, and 3 in the vertices array, and so on
+*                   and so forth.
+* @param numVertices    the number of vertices in the object; indicates
+*                       size of the vertices array (3 * numVertices, since
+*                       each vertex has 3 coordinates), normals array
+*                       (3 * numVertices), colors array (3 * numVertices) and
+*                       textureCoords array (2 * numVertices).
+* @param numIndices     the number of indices we have; indicates size of
+*                       indices array (1 * numIndices)
+**/
+void GeometryFactory::createLoft(
+    const Spline &shape,
+    const Spline &path,
+    const int numPointsToEvaluateAlongShape,
+    const int numPointsToEvaluateAlongPath,
+    bool normalize,
+    bool adaptiveSampling,
+    // Outputs
+    float *&vertices,
+    float *&normals,
+    float *&textureCoords,
+    float *&colors,
+    int *&indices,
+    int &numVertices,
+    int &numIndices
+)
+{
+    
+    
+    
+    
+    
+    
+    // TODO: wrong number of faces being sampled
+    
+    // Calculate all of the points and tangent vectors for the path curve and
+    // shape curve
+    vector<Vector3> shapePoints    = shape.uniformPointSample(numPointsToEvaluateAlongShape);
+    vector<Vector3> shapeTangents  = shape.uniformTangentSample(numPointsToEvaluateAlongShape);
+    
+    vector<Vector3> pathPoints     = path.uniformPointSample(numPointsToEvaluateAlongPath);
+    vector<Vector3> pathTangents   = path.uniformTangentSample(numPointsToEvaluateAlongPath);
+    
+    // Rotate all of the tangents 90 degrees about the Y axis to make them
+    // normal to the curve
+    Matrix4 normalRotationMatrix = Matrix4::rotateY(BasicMath::radians(90));
+    vector<Vector3> shapeNormals;
+    for (std::vector<Vector3>::iterator i = shapeTangents.begin(); i != shapeTangents.end(); i++) 
+    {
+        Vector4 normal = normalRotationMatrix * Vector4::homogeneousVector(*i);
+        shapeNormals.push_back(Vector3(normal));
+    }
+    
+    
+    // We will be computing all of the vertices, normals, and texcoords and
+    // then figuring out the connectivity later
+    vector <vector<Vector3> > vecVertices;
+    vector <vector<Vector3> > vecNormals;
+    vector <vector<Vector3> > vecTexCoords;
+    
+    // Calculate the initial reference frame, which we rotate and translate
+    // from point to point in order to keep the cross sections of the curve
+    // parallel with shape spline
+    Basis oldCoordSystem = createPathTransform(pathPoints[0], pathTangents[0], path.acceleration(0));
+
+    // This doesn't quite work when coordinate systems go 180
+    // x -> u, y ->v, z->w
+    //Basis oldCoordSystem(Vector3(1,0,0), Vector3(0,1,0), Vector3(0,0,1), pathPoints[0]);
+
+    // For all the points along the path curve
+    for (unsigned int i = 0; i < pathPoints.size(); i++) 
+    {
+        // Add a new vector to each of the vertices, normals, texCoords in 
+        // order to make the two dimensional vector complete
+        vecVertices.push_back(vector<Vector3>());
+        vecNormals.push_back(vector<Vector3>());
+        vecTexCoords.push_back(vector<Vector3>());
+        
+        Vector3 pointOnPath = pathPoints[i];
+        
+        // We have the last frame of reference (local coordinate system) 
+        // along the curve, and we need to rotate it such that it lines up 
+        // with the normal, binormal, and tangent vector of path.  This will
+        // create a new frame of reference, which we use to transform our
+        // shape points.
+        
+        
+        Vector3 newTangent = pathTangents[i].normalize();
+        // We created the coordinate system such that the V vector points
+        // in direction of tangent to curve
+        Vector3 oldNormal = oldCoordSystem.getU();
+        Vector3 oldTangent = oldCoordSystem.getV();
+        Vector3 oldBinormal = oldCoordSystem.getW();
+        
+        Matrix4 rotationMatrix;
+        // Both tangents are in the same direction; no rotation necessary
+        if (newTangent == oldTangent) {
+            rotationMatrix = Matrix4::IDENTITY;
+        }
+        // We need to do some rotation in order to line the old axes up with
+        // the new axes
+        else {
+            Vector3 axis = oldTangent.crossProduct(newTangent).normalize();
+            Vector4 axisOfRotationVec4(axis.getX(), axis.getY(), axis.getZ(), 0);
+        
+            float angle = Vector3::angleBetween(oldTangent, newTangent);
+            rotationMatrix = Matrix4::rotate(axisOfRotationVec4, angle);
+        }
+        
+        // Rotate the old reference frame such that the old tangent vector
+        // is aligned with the new tangent vector
+        // Multiply the old tangent vector and old bitangent vectors by rotation
+        // matrix to calculate the transformed ones.
+        
+        Vector4 newNormalVec4 = rotationMatrix * Vector4(oldNormal.getX(), oldNormal.getY(), oldNormal.getZ(), 0);
+        Vector4 newBinormalVec4 = rotationMatrix * Vector4(oldBinormal.getX(), oldBinormal.getY(), oldBinormal.getZ(), 0);
+        
+        Vector3 newNormal = Vector3(newNormalVec4);
+        Vector3 newBinormal = Vector3(newBinormalVec4);
+        Vector3 newOrigin = pathPoints[i];
+        
+        // Create a new coordinate system out of the new tangent, new normal, 
+        // and new binormal
+        const Basis newCoordSystem(newNormal, newTangent, newBinormal, newOrigin);
+        
+        const Matrix4 pathTransform = newCoordSystem.getTransformation();
+
+        oldCoordSystem = newCoordSystem;
+
+        // Determine the value of the curve parameter for the path curve
+        float pathTValue = 
+            static_cast<float>(i) / static_cast<float>(pathPoints.size() - 1);
+        
+        // For each point in the shape curve
+        for (unsigned int j = 0; j < shapePoints.size(); j++) {
+        
+            // Multiply it by M to determine the point on shape at this point
+            // on curve
+            // Need to translate Vector3 into Vector4 in order to multiply
+            // by matrices
+            Vector4 curVertex = pathTransform *
+                Vector4::homogeneousPoint(shapePoints[j]);
+            vecVertices[i].push_back(Vector3(curVertex));
+            
+            
+            // Translate the normal vector into the correct coordinate system
+            Vector4 curNormal = pathTransform * 
+                Vector4::homogeneousVector(shapeNormals[j]);
+            vecNormals[i].push_back(Vector3(curNormal));
+            
+            // Both the normal of our shape and the tangent of our shape curve
+            // should be orthogonal to the tangent of our path
+            // TODO: Not sure if this is true if shape curve does not lie
+            // in plane. . .
+/*          assert(shapeTangents[j].dotProduct(tangentOnPath) == 0);
+            assert(curNormal.dotProduct(Vector4(tangentOnPath)) == 0);*/
+            
+            
+            // Determine the value of the curve parameter for the shape curve
+            // Store this as the "v" texture coordinate
+            float shapeTValue = static_cast<float>(j) / 
+                static_cast<float>(shapePoints.size() - 1);
+                
+            // Our texture coordinates are guaranteed to between [0,1] due to
+            // the way curves are defined between t = [0,1]
+            float u = shapeTValue;
+            float v = pathTValue;    
+            vecTexCoords[i].push_back(Vector3(u, v, 0));
+            
+        }
+    }
+    
+    // We now have all of the vertices, normals, and texture coordinates we
+    // need.  Allocate enough space for all of the arrays, and fill them in
+    // with the same face strategy as we use for cylinders.
+    
+    // We have all of our points; now we need to connect them up correctly. 
+    const int NUM_ROWS = numPointsToEvaluateAlongPath - 1;
+    const int numFacesPerRow = numPointsToEvaluateAlongShape - 1;
+    const int NUM_COMPONENTS_PER_ROW =
+        NUM_COMPONENTS_PER_RECTANGULAR_FACE * numFacesPerRow;
+    	
+    numVertices = NUM_COMPONENTS_PER_ROW * NUM_ROWS;
+    numIndices = numVertices;
+    
+    // Need 3 times as much space because each vertex has an x,y,z component
+    vertices = new float[3 * numVertices];	
+    normals = new float[3 * numVertices];
+    textureCoords = new float[2 * numVertices];
+    indices = new int[numIndices];	
+    
+    createConnectivity(vecVertices,
+                    vecNormals,
+                    vecTexCoords,
+                    numPointsToEvaluateAlongPath,
+                    numPointsToEvaluateAlongShape,
+                    vertices,
+                    normals,
+                    textureCoords);
+	
+	// Fill in the indices array
+    for (int i = 0; i < numIndices; i++)
+    {
+        indices[i] = i;
+    }
+}
+
+
+/**
+* Given a two d vector of vertices, normals, and texture coordintes, 
+* picks out the faces and fills in the raw float arrays.
+**/
+void GeometryFactory::createConnectivity(const vector <vector<Vector3> > &vecVertices,
+                        const vector <vector<Vector3> > &vecNormals,
+                        const vector <vector<Vector3> > &vecTexCoords,
+                        int numPointsRows,
+                        int numPointsCols,
+                        float *&vertices,
+                        float *&normals,
+                        float *&textureCoords) 
+{
+    createConnectivity(vecVertices, numPointsRows, numPointsCols, vertices, 3);
+    createConnectivity(vecNormals, numPointsRows, numPointsCols, normals, 3);
+    createConnectivity(vecTexCoords, numPointsRows, numPointsCols, textureCoords, 2);
+}
+
+/**
+* Given a two dimensional vector of some sort of aspect of the geometry, go
+* through and pick out the points at each face and fill them in sequentially
+* in a raw float array.
+* Assumes that the two dimensional vector is laid out in such a way that 
+* values[i][j] is position of the ith vertex row and the jth vertex column.
+**/
+void GeometryFactory::createConnectivity(const vector <vector<Vector3> > &values,
+                        int numPointsRows,
+                        int numPointsCols,
+                        float *&floatValues,
+                        int numComponents)
+{
+    
+    // Two triangles per rectangular face, each of which has 3 points
+    const int NUM_POINTS_PER_FACE = 6;
+    const int NUM_COMPONENTS_PER_FACE = numComponents * NUM_POINTS_PER_FACE;
+
+    // There is always one fewer row of faces than there are points
+    const int NUM_ROWS = numPointsRows - 1;
+
+    // There is always one fewer face per row than there are points per row
+    const int NUM_FACES_PER_ROW = numPointsCols - 1;
+    const int NUM_COMPONENTS_PER_ROW = NUM_COMPONENTS_PER_FACE * NUM_FACES_PER_ROW;
+
+    for (int row = 0; row < NUM_ROWS; row++) {
+		for (int face = 0; face < NUM_FACES_PER_ROW; face++) {
+
+            //Face 1: Upper right triangle of rectangular face
+            // Vertex 1: Upper left corner
+            Vector3 f1_1 = values[row][face];
+            // Lower right corner
+            Vector3 f1_2 = values[row+1][face+1];
+            // Upper right corner
+            Vector3 f1_3 = values[row][face+1];
+
+            // Face 2: Lower left triangle of rectangular face
+            // Upper left corner (same as f1_1)
+            Vector3 f2_1 = f1_1;
+            // Lower left corner
+            Vector3 f2_2 = values[row+1][face];
+            // Lower right corner: (same as f1_2)
+            Vector3 f2_3 = f1_2;
+            
+            int startIndex = (row * NUM_COMPONENTS_PER_ROW) + (NUM_COMPONENTS_PER_FACE * face);
+                        
+                        
+            // TODO: really shouldn't need two separate methods for this.
+            if (numComponents == 2) {
+                fillIn2DCoords(floatValues, startIndex + (0 * numComponents), f1_1);
+                fillIn2DCoords(floatValues, startIndex + (1 * numComponents), f1_2);
+                fillIn2DCoords(floatValues, startIndex + (2 * numComponents), f1_3);
+                fillIn2DCoords(floatValues, startIndex + (3 * numComponents), f2_1);
+                fillIn2DCoords(floatValues, startIndex + (4 * numComponents), f2_2);
+                fillIn2DCoords(floatValues, startIndex + (5 * numComponents), f2_3);
+            }
+            else {
+                fillInVertex(floatValues, startIndex + (0 * numComponents), f1_1);
+                fillInVertex(floatValues, startIndex + (1 * numComponents), f1_2);
+                fillInVertex(floatValues, startIndex + (2 * numComponents), f1_3);
+                fillInVertex(floatValues, startIndex + (3 * numComponents), f2_1);
+                fillInVertex(floatValues, startIndex + (4 * numComponents), f2_2);
+                fillInVertex(floatValues, startIndex + (5 * numComponents), f2_3);
+            }
+        }
+    }
+}
+    
+
+/**
+* Given an object pointer and a 2D Spline in the XY plane, rotates
+* the curve about the Y axis and creates a triangle mesh along the way.
+**/
+void GeometryFactory::createSurfaceOfRevolution(Object *o, 
+    const Spline &generatrix,
+    int numPointsToEvaluateAlongCurve,
+    int numAnglesToRotate)
+{
+    assert (o != NULL);
+    int *indices = NULL;
+	float *vertices= NULL;
+	float *colors = NULL;
+    float *normals = NULL;
+    float *textureCoords = NULL;
+	int numVertices = 0;
+	int numIndices = 0;
+	// Do the heavy lifting with a helper method
+	createSurfaceOfRevolution(generatrix, 
+	    numPointsToEvaluateAlongCurve, 
+	    numAnglesToRotate, 
+	    vertices,  
+	    normals, 
+	    textureCoords,
+	    colors, 
+	    indices,
+	    numVertices,
+        numIndices);
+        
+    assert (indices != NULL);
+    assert (vertices != NULL);
+        
+	fillInObject(o, vertices, normals, textureCoords, colors, indices, 
+        numVertices, numIndices);
+     
+    delete[] indices;
+    indices = NULL;
+    delete[] vertices;
+    vertices = NULL;
+    if (normals != NULL) {
+        delete[] normals;
+        normals = NULL;
+    }
+    if (colors != NULL) {
+	    delete[] colors;
+        colors = NULL;
+    }
+    if (normals != NULL) {
+        delete[] normals;
+        normals = NULL;
+    }
+    if (textureCoords != NULL) {
+        delete[] textureCoords;
+        textureCoords = NULL;
+    }
+    
+    
+}
+
+/**
+* Given a 2D bezier curve in the xy plane, rotate about the y-axis to produce
+* a 3d surface.  
+**/
+void GeometryFactory::createSurfaceOfRevolution(
+    const Spline &generatrix,
+    int numPointsToEvaluateAlongCurve,
+    int numAnglesToRotate,
+    // outputs
+    float *&vertices,
+    float *&normals,
+    float *&textureCoords,
+    float *&colors,
+    int *&indices,
+    int &numVertices,
+    int &numIndices)
+{
+    assert(numPointsToEvaluateAlongCurve >= 1);
+    assert(numAnglesToRotate >= 1);
+    
+    // Uniformly sample both the points and the tangents
+    vector <Vector3> pointsOnCurve = 
+        generatrix.uniformPointSample(numPointsToEvaluateAlongCurve);
+    vector <Vector3> tangentVectorsOnCurve = 
+        generatrix.uniformTangentSample(numPointsToEvaluateAlongCurve);
+
+    assert (pointsOnCurve.size() == tangentVectorsOnCurve.size());
+    assert (pointsOnCurve.size() == numPointsToEvaluateAlongCurve);    
+        
+    vector <vector<Vector3> > rotatedPoints;
+    vector <vector<Vector3> > rotatedTangentVectors;
+
+    // Will only use the x and y to represent the u and v coordinates 
+    // respectively
+    vector <vector<Vector3> > textureCoords3;
+    
+    
+    // We need to rotate our tangent vectors by 90 degrees about the z-axis
+    // in order to get the normal vectors at each point.
+    Matrix4 rotateZ = Matrix4::rotateZ(BasicMath::radians(90));
+     
+    for(size_t i = 0; i < pointsOnCurve.size(); ++i)
+    {
+        // Create the vector we need to hold all the points at this
+        // position on curve
+        rotatedPoints.push_back(vector<Vector3>());
+        rotatedTangentVectors.push_back(vector<Vector3>());
+        textureCoords3.push_back(vector<Vector3>());
+
+        // Sample at numAnglesToRotate positions around the y axis.  One extra 
+        // point is sampled so that the point at the seam has both 0 and 2PI properties
+        // for when it comes time to texturemap
+        for(size_t j = 0; j < numAnglesToRotate + 1; ++j)
+        {
+            Vector3 point = pointsOnCurve[i];
+            Vector3 tangent = tangentVectorsOnCurve[i].normalize();
+            
+            
+            float proportionAround =   static_cast<float>(j) / 
+                                        static_cast<float>(numAnglesToRotate);
+            float theta = TWO_PI * proportionAround;
+            Matrix4 rotationMatrix = Matrix4::rotateY(theta);
+            
+            
+            // We need to transform the 3d points to 4d for purposes of 
+            // matrix multiplication
+            Vector4 point4 = Vector4::homogeneousPoint(point);
+            Vector4 tangent4 = Vector4::homogeneousVector(tangent);
+            
+            Vector4 transformedPoint4 = rotationMatrix * point4;
+            Vector4 transformedTangentVector4 = rotationMatrix * rotateZ * tangent4;
+            
+            // Keep track of rotated point and vector; the rotation does not
+            // change length of vector so we don't need to worry about 
+            // normalzing it
+            rotatedPoints[i].push_back(Vector3(transformedPoint4));
+            rotatedTangentVectors[i].push_back(Vector3(transformedTangentVector4));
+            
+            // What t value along the curve are we?  
+            float t = static_cast<float>(i) / static_cast<float>(pointsOnCurve.size() - 1);
+
+            // Our u coord is just the curve parameter t, and the v is just 
+            // what proportion rotated around the y axis
+            // (both are in range [0,1])
+            float u = proportionAround;
+            float v = 1.0 - t;
+
+            textureCoords3[i].push_back(Vector3(u,v,0));
+        }
+    }
+
+    assert(rotatedPoints[0].size() == numAnglesToRotate + 1);
+    assert(rotatedPoints.size() == numPointsToEvaluateAlongCurve);
+            
+    // We have all of our points; now we need to connect them up correctly. 
+    const int NUM_ROWS = numPointsToEvaluateAlongCurve - 1;
+    const int numFacesPerRow = numAnglesToRotate;
+    const int NUM_COMPONENTS_PER_ROW =
+        NUM_COMPONENTS_PER_RECTANGULAR_FACE * numFacesPerRow;
+    
+    	
+    numVertices = NUM_COMPONENTS_PER_ROW * NUM_ROWS;
+    numIndices = numVertices;
+    
+    // Need 3 times as much space because each vertex has an x,y,z component
+    vertices = new float[3 * numVertices];	
+    normals = new float[3 * numVertices];
+    textureCoords = new float[2 * numVertices];
+    indices = new int[numIndices];	
+        
+    createConnectivity(rotatedPoints,
+                    rotatedTangentVectors,
+                    textureCoords3,
+                    numPointsToEvaluateAlongCurve,
+                    numAnglesToRotate + 1,
+                    vertices,
+                    normals,
+                    textureCoords);	
+                    
+   	// Fill in the indices array
+    for (int i = 0; i < numIndices; i++) {
+        indices[i] = i;
+    }
 }
 
 
@@ -1548,17 +2149,28 @@ void GeometryFactory::createTaperedCylinder(int numRows,
  * @param o
  * @param vertices			the (x,y,z) locations of all the vertices.  MUST NOT BE NULL
  * @param normals           the vector for normals at each vertex
+ * @param textureCoords     the (u,v) value for each point on surface
  * @param colors			the (r,g,b) values at each vertex
  * @param indices			the indices into the vertices array that make up each triangular face
  * @param numVertices       how many vertices, size of vertices array is 3 * numVertices
  * @param numIndices    	the size of the indices array
 **/
-void GeometryFactory::fillInObject(RE167::Object *o, float *vertices, float *normals, float *colors, int *indices,
+void GeometryFactory::fillInObject(Object *o, float *vertices, float *normals, float * textureCoords,
+                                    float *colors, int *indices,
 								   int numVertices, int numIndices) 
 {
+    
+    // Calculate the bounding sphere and save it to the object
+    float radius;
+    Vector4 center;
+    calculateBoundingSphere(vertices, numVertices, center, radius);
+    o->setSphereCenter(center);
+    o->setSphereRadius(radius);
+    
     VertexData& vertexData = o->vertexData;
 
     assert (vertices != NULL);
+    assert (numVertices >= 1);
 
 	// one element for vertices
 	vertexData.vertexDeclaration.addElement(0, 0, 3, 3*sizeof(float), RE167::VES_POSITION);
@@ -1581,19 +2193,21 @@ void GeometryFactory::fillInObject(RE167::Object *o, float *vertices, float *nor
         vertexData.createVertexBuffer(2, 3 * numVertices * sizeof(float), (unsigned char*) normals);
     }
         
-        
-    // Add spherical texture coordinates to object    
-    float * texCoords = NULL;
-    //createSphericalCoordinates(vertices, normals, indices, texCoords, numVertices, numIndices);
-    createPositionalSphericalCoordinates(vertices, indices, texCoords, numVertices, numIndices);
-    assert(texCoords != NULL);
-
+    // We need texture coordinates somehow; treat object like a sphere and 
+    // calculate them
+    if (textureCoords == NULL) {    
+        // Add spherical texture coordinates to object    
+        //createSphericalCoordinates(vertices, normals, indices, textureCoords, numVertices, numIndices);
+        createPositionalSphericalCoordinates(vertices, indices, textureCoords, numVertices, numIndices);
+        assert(textureCoords != NULL);
+    }
+    
     vertexData.vertexDeclaration.addElement(3, 0, 2, 2*sizeof(float),
         RE167::VES_TEXTURE_COORDINATES);
-    vertexData.createVertexBuffer(3, numVertices * 2*sizeof(float), (unsigned char*) texCoords);
-    delete[] texCoords;
-        
-        
+    vertexData.createVertexBuffer(3, numVertices * 2*sizeof(float), (unsigned char*) textureCoords);
+    
+    // TODO: If we create the positional spherical coordinates within this method
+    // there is no way to reclaim the space.    
         
 	vertexData.createIndexBuffer(numIndices, indices);
 }
@@ -1640,9 +2254,7 @@ void GeometryFactory::runTestSuite() {
     Vector3 test3[] = {Vector3(1.2, 13.5, -23.5), Vector3(100.5, 23.5, -32.553), Vector3(13.05f, 23, 0),
         Vector3(99.3, 10, -9.053).crossProduct(Vector3(11.85, 9.5, 23.5))};
 
-
-
-    std::vector<Vector3*> tests;
+    vector<Vector3*> tests;
     tests.push_back(test1);
     tests.push_back(test2);
     tests.push_back(test3);
@@ -1651,5 +2263,38 @@ void GeometryFactory::runTestSuite() {
         Vector3 * test = tests[i];
         assert (calculateTriangleNormal(test[0], test[1], test[2]) == test[3]);
     }
+    
+    
+    // Test the path stuff
+    /*Vector3 origin(0,1,0);
+    Vector3 tangent(0,1,0);
+    
+    const Matrix4 transform = GeometryFactory::calculatePathTransform(origin, tangent);
+    
+    cout << "Transformed origin: " << (transform * Vector4(0,0,0,1)) << endl;
+    assert(transform * Vector4(0,0,0,1) == Vector4(0,1,0,1));
+    
+    cout << "Transformed point (1,0,0,1) == " << transform * Vector4(1,0,0,1) << endl;
+    
+    //assert(transform * Vector4(1,0,0,1) == Vector4(1,1,0,1));
+    */
+    
+    
+    
+    
 
+    
+}
+
+void GeometryFactory::fillInVertex(float *&vertices, int startIndex, const Vector3 &vertex)
+{
+    vertices[startIndex  ] = vertex.getX();
+    vertices[startIndex+1] = vertex.getY();
+    vertices[startIndex+2] = vertex.getZ();
+}
+
+void GeometryFactory::fillIn2DCoords(float *&textureCoords, int startIndex, const Vector3 &uv) 
+{
+    textureCoords[startIndex  ] = uv.getX();
+    textureCoords[startIndex+1] = uv.getY();
 }

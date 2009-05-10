@@ -3,7 +3,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include "BasicMath.h"
-
+#include <cmath>
 
 using namespace RE167;
 
@@ -20,11 +20,23 @@ Vector4::Vector4(float x_, float y_, float z_, float w_) :
 Vector4::~Vector4() {}
 
 const Vector4 Vector4::ZERO_VECTOR(0, 0, 0, 0);
+const Vector4 Vector4::ORIGIN(0, 0, 0, 1);
+
 
 /**
 * Constructor that makes a Vector4 from a Vector3
 */
 Vector4::Vector4(const Vector3 &val) : x(val.getX()), y(val.getY()), z(val.getZ()), w(1) {}
+
+const Vector4 Vector4::homogeneousPoint(const Vector3 &val) 
+{
+    return Vector4(val.getX(), val.getY(), val.getZ(), 1);
+    
+}
+const Vector4 Vector4::homogeneousVector(const Vector3 &val) 
+{
+    return Vector4(val.getX(), val.getY(), val.getZ(), 0);
+}
 
 
 
@@ -115,6 +127,25 @@ const bool Vector4::operator==(const Vector4& other) const {
 const bool Vector4::operator!=(const Vector4& other) const {
 	return !((*this) == other);
 }
+
+
+const bool Vector4::operator<(const Vector4& other) const {
+
+    // Order by x, then by y, then by z, then w
+    if (x != other.x) {
+      return (x < other.x);
+    }
+    else if (y != other.y) {
+      return (y < other.y);
+    }
+    else if (z != other.z) {
+      return (z < other.z);
+    }
+    else {
+      return w < other.w;
+    }
+}
+
 
 
 /**

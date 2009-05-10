@@ -1,5 +1,5 @@
 #include "Camera.h"
-
+#include <cmath>
 using namespace RE167;
 
 /**
@@ -62,6 +62,7 @@ void Camera::changeSettings(const Vector3 &center, const Vector3 &point, const V
 	lookAtPoint = point;
 	upVector = up;
 	updateViewMatrix();
+	calculatePlanes();
 }
 
 
@@ -83,4 +84,132 @@ void Camera::resetViewMatrix() {
 	updateViewMatrix();
 }
 
+
+
+/**
+* Given the definition of a sphere, determines if the sphere is completely
+* outside of the clipping planes
+* @param center the center of the sphere, in *MODEL SPACE* coordinates
+* @param radius the radius of the sphere
+**/
+Camera::ClipStatus Camera::getSphereClipStatus(const Vector4 &center, const float radius) 
+{
+    int count = 0;
+    float distances[] = {
+        top.distanceTo(center),
+        bottom.distanceTo(center),
+        left.distanceTo(center),
+        right.distanceTo(center),
+        near.distanceTo(center),
+        far.distanceTo(center)
+    };
+    
+    /*
+    std::string names[] = {
+        "top",
+        "bottom",
+        "left",
+        "right",
+        "near",
+        "far"
+    };
+    
+    for (int i = 0; i < 6; i++) {
+        std::cout << "Distance to " << names[i] << " : " << distances[i] << std::endl;
+    }*/
+    
+    
+    // Check for each plane whether the sphere is above or below
+    for (int i = 0; i < 6; i++) {
+        // Outside
+        if (distances[i] > radius) {
+            return COMPLETELY_OUTSIDE;
+        }
+        // Completely inside
+        else if (distances[i] < -radius) {
+            count++;
+        }
+        // Overlapping
+    }
+    
+    if (count == 6) {
+        return COMPLETELY_INSIDE;
+    }
+    else {
+        return OVERLAPPING;
+    }
+    
+}
+
+/**
+* Calculates the 6 planes defining our view volume.  
+* TODO: We have no way of knowing when the frustum changes... this method would obviously need to be called again
+**/
+void Camera::calculatePlanes() 
+{
+    float near = getNearPlane();
+    float far = getFarPlane();
+    float aspectRatio = getAspectRatio();
+    float vertFOV = getVerticalFOV();
+    
+    // tan (fov/2) = top/near
+    float top = near * tan(vertFOV/2);
+    
+    // aspect ratio = (right-left) / (top - bottom) = right / top 
+    // (since right = -left, top = -bottom)
+    float right = aspectRatio * top;
+    
+    float bottom = -top;
+    float left = -right;
+    
+    // Now we have the coordinates of our frustum.  
+    
+    // Note that the center of projection of our camera, in camera coordinates,
+    // is (0,0,0).  All the sides of the frustum other than the near plane
+    // and far plane converge to this point.
+    
+
+    // Near and far planes are easy; we know how far they are from origin 
+    // (near and far, respectively) and we know their normals - they point 
+    // straight along z axis, positive for the front plane, negative for
+    // the rear plane
+    this->near = Plane(near, Vector4(0,0,1,0));
+    this->far = Plane(far, Vector4(0,0,-1,0));
+    
+    static const Vector3 origin = Vector3::ZERO_VECTOR;
+    
+    // The four points defining the front plane of the view frustum;
+    // we will use these to calculate the side planes (which slope in towards
+    // origin)
+    Vector3 topRight    (right, top, near);
+    Vector3 bottomRight (right, bottom, near);
+    Vector3 bottomLeft  (left, bottom, near);
+    Vector3 topLeft     (left, top, near);
+    
+    // We want all the normals to point towards the outside of the frustum
+    // (meaning we need to give the points in counter clockwise order)
+    this->left = Plane(origin, topLeft, bottomLeft);
+    this->right = Plane(origin, bottomRight, topRight);
+    this->top = Plane(origin, topRight, topLeft);
+    this->bottom = Plane(origin, bottomLeft, bottomRight);
+    
+    /*
+    std::cout << "Top: " << top
+        << "Bottom: " << bottom
+        << "Left: " << left
+        << "Right: " << right
+        << "Near: " << near
+        << "Far: " << far
+        << std::endl;
+    
+    
+    std::cout << "Top: " << this->top
+        << "\tBottom: " << this->bottom << std::endl
+        << "Left: " << this->left
+        << "\tRight: " << this->right << std::endl
+        << "Near: " << this->near 
+        << "\tFar: " << this->far
+        << std::endl;
+        */
+}
 

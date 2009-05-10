@@ -92,6 +92,11 @@ void SWRenderContext::endFrame()
 
 }
 
+void SWRenderContext::setMaterial(RE167::Material * m) 
+{
+    // Do nothing, we have no support for materials.
+}
+
 void SWRenderContext::setModelViewMatrix(const Matrix4 &m)
 {
 	// Set modelview matrix.

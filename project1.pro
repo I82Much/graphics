@@ -38,7 +38,27 @@ SOURCES += src/re167/BasicMath.cpp \
  src/re167/Light.cpp \
  src/re167/Material.cpp \
  src/re167/Shader.cpp \
- src/re167/FirstPersonCamera.cpp
+ src/re167/FirstPersonCamera.cpp \
+ src/re167/scenegraph/Node.cpp \
+ src/re167/scenegraph/Group.cpp \
+ src/re167/scenegraph/TransformGroup.cpp \
+ src/re167/scenegraph/Leaf.cpp \
+ src/re167/scenegraph/Shape3D.cpp \
+ src/re167/Plane.cpp \
+ src/re167/scenegraph/LightNode.cpp \
+ src/re167/scenegraph/CameraNode.cpp \
+ src/re167/spline/BezierCurve.cpp \
+ src/re167/spline/Spline.cpp \
+ src/re167/spline/Circle.cpp \
+ src/re167/spline/Helix.cpp \
+ src/re167/spline/Morpher.cpp \
+ src/re167/Basis.cpp \
+ src/re167/spline/Square.cpp \
+ src/re167/spline/PiecewiseSpline.cpp \
+
+
+
+ 
 
 
  
@@ -52,7 +72,6 @@ HEADERS += src/re167/BasicMath.h \
  src/main/MainWidget.h \
  src/main/MainWindow.h \
  src/re167/Matrix4.h \
- src/re167/Node.h \
  src/re167/Object.h \
  src/re167/RenderContext.h \
  src/re167/RenderWidget.h \
@@ -81,6 +100,27 @@ HEADERS += src/re167/BasicMath.h \
  src/re167/Material.h \
  src/re167/Materials.h \
  src/re167/Shader.h \
- src/re167/FirstPersonCamera.h
+ src/re167/FirstPersonCamera.h \
+ src/re167/scenegraph/Node.h \
+ src/re167/scenegraph/Group.h \
+ src/re167/scenegraph/TransformGroup.h \
+ src/re167/scenegraph/Leaf.h \
+ src/re167/scenegraph/Shape3D.h \
+ src/re167/Plane.h \
+ src/re167/scenegraph/LightNode.h \
+ src/re167/scenegraph/CameraNode.h \
+ src/re167/Basis.h \
+ src/re167/spline/Spline.h	\
+ src/re167/spline/BezierCurve.h \
+ src/re167/spline/Helix.h \
+ src/re167/spline/Morpher.h \
+ src/re167/spline/Square.h \
+ src/re167/spline/PiecewiseSpline.h \
+
+
+
+
+
+
 	
 #FORMS += ui/basicapp.ui

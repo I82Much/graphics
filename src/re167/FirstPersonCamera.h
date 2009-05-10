@@ -3,6 +3,8 @@
 
 #include "Camera.h"
 
+
+// TODO: Fix this class!  Does not work right.
 namespace RE167 {
 
 	/** Camera specification.

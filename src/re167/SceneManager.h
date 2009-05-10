@@ -8,8 +8,14 @@
 #include <list>
 #include "Light.h"
 #include "FirstPersonCamera.h"
+#include "scenegraph/Node.h"
+
 
 namespace RE167 {
+
+    class TransformGroup;
+    class LightNode;
+    class CameraNode;
 
 	/** This class provides an abstraction of a scene. It manages a camera,
 		objects in the scene, etc. It is the main interface for applications
@@ -21,10 +27,12 @@ namespace RE167 {
 		SceneManager();
 		~SceneManager();
 
+        TransformGroup * getRoot() { return root; }
+        void setRoot(TransformGroup * root) { this->root = root; }
+        
 		/** This method creates a default camera.
 		*/
 		Camera *createCamera();
-
 
 		/** This method creates an object and adds it to the list of object
 			stored in the scene manager.
@@ -48,11 +56,25 @@ namespace RE167 {
 			trigger the renderScene event handler to be called. 
 		*/
 		void renderScene();
+		
+        inline void setObjectLevelCulling(bool b) { objectLevelCulling = b; }
+        inline bool getObjectLevelCulling() { return objectLevelCulling; }
+        
 
 	private:
 		Camera *mCamera;
 		std::list<Object*> mObjectList;
         std::list<Light*> mLightList;
+        
+        TransformGroup * root;
+        bool objectLevelCulling;
+        
+        CameraNode * findCamera(Node * root, const Matrix4 &transform);
+        
+        void addLightNodes(Node * node, 
+            std::list<LightNode *> &lightNodes, 
+            const Matrix4 &transform);
+        
                 
         static const unsigned int MAX_NUM_LIGHTS = 8;
 	};

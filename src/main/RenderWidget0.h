@@ -2,81 +2,122 @@
 #define RenderWidget0_H
 
 #include <QWidget>
-#include "SWRenderWidget.h"
+//#include "SWRenderWidget.h"
 #include "GLRenderWidget.h"
-#include "SceneManager.h"
-#include "Object.h"
+//#include "Object.h"
 #include "Vector3.h"
-#include "FirstPersonCamera.h"
-
-using namespace RE167;
 
 
-class RenderWidget0 : public GLRenderWidget
-{
+namespace RE167 {
 
-public:
-    RenderWidget0();
-    ~RenderWidget0();
+    class Object;
+    class SceneManager;
+    class TransformGroup;
+    class BezierCurve;
+    class Shape3D;
+    class RE167_EXPORT RenderWidget0 : public GLRenderWidget
+    {
+    
 
-	void startAnimation();
-	void stopAnimation();
-	void toggleWireframe();
+    public:
+        RenderWidget0();
+        ~RenderWidget0();
 
-protected:
-	// Event handlers. These are virtual methods of the base class.
-	// They are called automatically to handle specific events.
+    	void startAnimation();
+    	void stopAnimation();
+    	void toggleWireframe();
 
-	// Called when the render window is ready.
-	void initSceneEvent();
+    protected:
+    	// Event handlers. These are virtual methods of the base class.
+    	// They are called automatically to handle specific events.
 
-	// Called when the scene in the render window needs to be re-rendered.
-	void renderSceneEvent();
+    	// Called when the render window is ready.
+    	void initSceneEvent();
 
-	// Called when the render widget is resized.
-	void resizeRenderWidgetEvent(const QSize &s);
+    	// Called when the scene in the render window needs to be re-rendered.
+    	void renderSceneEvent();
 
-	// Virtual methods of QWidget class. This is a subset. Re-implement any
-	// that you would like to handle.
-	void timerEvent(QTimerEvent *t);
-	void mousePressEvent(QMouseEvent *e);
-	void mouseMoveEvent(QMouseEvent *e);
-	void mouseReleaseEvent(QMouseEvent *e);
+    	// Called when the render widget is resized.
+    	void resizeRenderWidgetEvent(const QSize &s);
 
-	void keyPressEvent ( QKeyEvent * e );
-	void keyReleaseEvent ( QKeyEvent * e);
+        // Virtual methods of QWidget class. This is a subset. Re-implement any
+        // that you would like to handle.
+        void timerEvent(QTimerEvent *t);
+        void mousePressEvent(QMouseEvent *e);
+        void mouseMoveEvent(QMouseEvent *e);
+        void mouseReleaseEvent(QMouseEvent *e);
+
+        void keyPressEvent ( QKeyEvent * e );
+        void keyReleaseEvent ( QKeyEvent * e);
 	
+        // TODO: this is the reason we have to include Vector3.  Ugh.  I could make it take in a Vector3 & instead.
+        Vector3 mapToUnitSphere(int x, int y, int width, int height); 
+    	
 
-	Vector3 mapToUnitSphere(int x, int y, int width, int height); 
+    private:
+    	SceneManager *sceneManager;
+        Camera *camera;
 
-private:
-	SceneManager *sceneManager;
-	//FirstPersonCamera *camera;
-    Camera *camera;
-
-
-	Object *object;
-	Object *houses;
-	Object *terrain;
-	Object *bunny;
-    Object *cube;
-	Object *dragon;
-    Object *sphere;
-    Object *teapot;
-    Object *buddha;
-    Object *earth;
+        // TODO: clean this stuff out
+        Object *object;
+        Object *houses;
+        Object *terrain;
+        Object *bunny;
+        Object *cube;
+        Object *dragon;
+        Object *sphere;
+        Object *teapot;
+        Object *buddha;
+        Object *earth;
+        
+        TransformGroup *minecart;
+        
+        TransformGroup * leftLeg;
+        TransformGroup * rightLeg;
+        
+        TransformGroup * leftShin;
+        TransformGroup * rightShin;
+        
+        TransformGroup * leftUpperArm;
+        TransformGroup * rightUpperArm;
+        
+        TransformGroup * leftLowerArm;
+        TransformGroup * rightLowerArm;
+        
+        TransformGroup * leftHand;
+        TransformGroup * rightHand;
+        
+        TransformGroup * pelvis;
+        TransformGroup * torsoTransform;
+        
+        TransformGroup * robotGroup;
+        TransformGroup * geometryGroup;
 	
-	// Hold the last mouse position
-	int lastX;
-	int lastY;
-
-	int timerId;
-	int counter;
+        BezierCurve * track;
 	
-    void initCamera();
-    void initLights();
-    void initMaterials();
-    void initGeometry();
-};
+	
+        // Hold the last mouse position
+        int lastX;
+        int lastY;
+
+        int timerId;
+        int counter;
+	
+        void initCamera();
+        void initLights();
+        void initMaterials();
+        void initGeometry();
+        void initRobot();
+        void initStillLife();
+    
+        void switchScene();
+        void toggleCulling();
+        void test();
+        
+        GLRenderContext * rs;
+        
+    };
+
+}
 
 #endif // BASICAPP_H

@@ -4,15 +4,27 @@
 #include "Vector4.h"
 #include "Matrix4.h"
 #include "GeometryFactory.h"
+#include "scenegraph/Group.h"
+#include "Plane.h"
+#include "spline/BezierCurve.h"
+#include "spline/PiecewiseSpline.h"
+
+
+using namespace RE167;
 
 int main(int argc, char *argv[])
 {
-	Vector3::runTestSuite();
-	
-	
-	
-//	Matrix4::runTestSuite();
-    RE167::GeometryFactory::runTestSuite();
+    
+    BezierCurve::test();
+    
+    Plane::test();
+    Group::test();
+    Vector3::runTestSuite();
+	Matrix4::runTestSuite();
+    GeometryFactory::runTestSuite();
+    
+    PiecewiseSpline::test();
+    
 	QApplication app(argc, argv);
     MainWindow window;
     window.show();

@@ -3,15 +3,18 @@
 
 #include "glew.h"
 #include <QtOpenGL>
-
 #include "RE167_global.h"
 #include "RenderContext.h"
-#include "VertexDeclaration.h"
-#include "Light.h"
-#include "Material.h"
 
+
+
+// TODO: Fix the wireframe thing.  Would be cool to add :)
 namespace RE167 {
-
+    // Forward declarations
+    class Light;
+    class Material;
+    class LightNode;
+    
 	/** This class implements the abstract base class RenderContext and
 		it is the main interface to the low-level graphics OpenGL API.
 	@remarks
@@ -22,6 +25,8 @@ namespace RE167 {
 	class RE167_EXPORT GLRenderContext : public RenderContext
 	{
 	public:
+	    
+	    virtual ~GLRenderContext() {}
 		void init();
 		void toggleWireframe();
 		void setViewport(int width, int height);
@@ -33,6 +38,9 @@ namespace RE167 {
     		RenderContext.h so that the SceneManager can call it.
     	*/
     	void setLights(const std::list<Light*> &lightList);
+    	
+    	void setLightNodes(const std::list<LightNode*> &lightList);
+        
     	
 		void beginFrame();
 		void endFrame();
@@ -52,6 +60,8 @@ namespace RE167 {
     	*/
     	void setMaterial(const Material *material);
 		bool wireframe;
+		QTime *clock;
+        QTime *globalClock;
 	};
 
 }

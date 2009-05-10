@@ -1,4 +1,6 @@
 #include "Material.h"
+#include "Texture.h"
+#include "Shader.h"
 
 using namespace RE167;
 

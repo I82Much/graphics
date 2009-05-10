@@ -6,6 +6,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <cmath>
 
 /**
 * This class represents a 4x4 matrix, which are used to implement
@@ -288,13 +289,13 @@ int Matrix4::testRotateZ() {
 	assert(rotateZ(BasicMath::TWO_PI) == Matrix4::IDENTITY);
 
 	// Rotating by 90 degrees should take the point (1,0,0,1) to (0,1,0,1)
-	Matrix4 rotateNinety = rotateZ(BasicMath::radian(90));
+	Matrix4 rotateNinety = rotateZ(BasicMath::radians(90));
 	Vector4 xPoint(1,0,0,1);
 	Vector4 expectedResult(0,1,0,1);
 	assert(rotateNinety * xPoint == expectedResult);
 
 	// Rotating by 45 should equal rotating by -315
-	assert(rotateZ(BasicMath::radian(45.0f)) == rotateZ(BasicMath::radian(-315.0f)));
+	assert(rotateZ(BasicMath::radians(45.0f)) == rotateZ(BasicMath::radians(-315.0f)));
 
 
 	return EXIT_SUCCESS;

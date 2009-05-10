@@ -3,10 +3,11 @@
 
 #include "RE167_global.h"
 #include "Vector3.h"
-#include "Texture.h"
-#include "Shader.h"
 
 namespace RE167 {
+    // Forward declarations
+    class Texture;
+    class Shader;
 
 	class RE167_EXPORT Material
 	{

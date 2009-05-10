@@ -6,7 +6,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <map>
-
+#include "Vector4.h"
 
 using namespace RE167;
 
@@ -17,6 +17,13 @@ Vector3::Vector3(void) : x(0), y(0), z(0) {}
 */
 Vector3::Vector3(float x_, float y_, float z_) :
 	x(x_), y(y_), z(z_) {}
+
+/**
+* Convenience method to convert a Vec4 into Vec3 by dropping w coordinate
+**/
+Vector3::Vector3(const Vector4 &vec4) :
+    x(vec4.getX()), y(vec4.getY()), z(vec4.getZ()) {}
+
 
 // We have no allocated memory for the object, so nothing to free or
 // delete
@@ -31,6 +38,9 @@ Vector3 & Vector3::operator+=(const Vector3 &rhs) {
 	z += rhs.z;
 	return *this;
 }
+
+
+
 
 /**
 * @see http://www.cs.caltech.edu/courses/cs11/material/cpp/donnie/cpp-ops.html
