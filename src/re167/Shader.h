@@ -11,6 +11,7 @@ namespace RE167 {
 		/** Load a vertex and fragment shader from file.
 		*/
 		Shader(char *vertexFileName, char *fragmentFileName);
+		Shader(char** vertexFileNames, char** fragmentFileNames, int length);
 
 		/** Activate the shader.
 		*/
@@ -22,7 +23,7 @@ namespace RE167 {
 		
         static void restoreDefaultShader();
 
-	private:
+	protected:
 		char* readSource(char *fn);
 		unsigned int v,f,p;
 	};

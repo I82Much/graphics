@@ -5,8 +5,7 @@
 
 using namespace RE167;
 
-Shader::Shader(char *vertexFileName, char *fragmentFileName)
-{	
+Shader::Shader(char *vertexFileName, char *fragmentFileName) {	
 	char *vs = NULL,*fs = NULL;
 
 	v = glCreateShader(GL_VERTEX_SHADER);
@@ -39,6 +38,49 @@ Shader::Shader(char *vertexFileName, char *fragmentFileName)
 	// If this assertion fails your shader programs couldn't be compiled
 	// or linked by OpenGL.
 	assert(glGetError()==GL_NO_ERROR);
+}
+
+Shader::Shader (char** vertexFileNames, char** fragmentFileNames, int length) {
+	
+	
+	p = glCreateProgram();
+	
+	for (int i = 0; i < length; i++) {
+		
+		char *vs = NULL,*fs = NULL;
+		
+		v = glCreateShader(GL_VERTEX_SHADER);
+		f = glCreateShader(GL_FRAGMENT_SHADER);
+		
+		vs = readSource(vertexFileNames[i]);
+		fs = readSource(fragmentFileNames[i]);
+		
+		// If these assertions fail your shader couldn't be read from file.
+		assert(fs!=NULL);
+		assert(vs!=NULL);
+		
+		const char * ff = fs;
+		const char * vv = vs;
+		
+		glShaderSource(v, 1, &vv,NULL);
+		glShaderSource(f, 1, &ff,NULL);
+		
+		free(vs);free(fs);
+		
+		glCompileShader(v);
+		glCompileShader(f);
+		
+		glAttachShader(p,f);
+		glAttachShader(p,v);
+	}
+	
+	glLinkProgram(p);
+	
+	
+	// If this assertion fails your shader programs couldn't be compiled
+	// or linked by OpenGL.
+	assert(glGetError()==GL_NO_ERROR);
+	
 }
 
 void Shader::use()
