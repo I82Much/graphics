@@ -3,6 +3,8 @@
 #include <QtOpenGL>
 #include <assert.h>
 
+#include <iostream>
+
 using namespace RE167;
 
 Shader::Shader(char *vertexFileName, char *fragmentFileName) {	
@@ -34,14 +36,13 @@ Shader::Shader(char *vertexFileName, char *fragmentFileName) {
 	glAttachShader(p,v);
 
 	glLinkProgram(p);
-
+	
 	// If this assertion fails your shader programs couldn't be compiled
 	// or linked by OpenGL.
 	assert(glGetError()==GL_NO_ERROR);
 }
 
 Shader::Shader (char** vertexFileNames, char** fragmentFileNames, int length) {
-	
 	
 	p = glCreateProgram();
 	
@@ -83,8 +84,8 @@ Shader::Shader (char** vertexFileNames, char** fragmentFileNames, int length) {
 	
 }
 
-void Shader::use()
-{
+void Shader::use() {
+	
 	glUseProgram(p);
 
 	// If this assertion fails your shader program couldn't be activated

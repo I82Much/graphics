@@ -181,9 +181,9 @@ void SceneManager::renderScene()
     // just pick the first one
     CameraNode * cameraNode = findCamera(root, Matrix4::IDENTITY);
     
-    //assert (cameraNode != NULL);
+    assert (cameraNode != NULL);
     
-    //Camera * camera = cameraNode->getCamera();
+    mCamera = cameraNode->getCamera();
 
     if (mCamera !=0)
 //    if(camera!=0) 
