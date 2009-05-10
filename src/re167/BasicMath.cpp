@@ -49,3 +49,12 @@ Vector3 BasicMath::lerp(const Vector3 &first, const Vector3 &second, float propo
     return ((1.0 - proportion) * first) + (proportion * second);
 }
 
+/**
+* Given a floating point number, splits it into its integer part
+* and real part, such that integerPart + realPart = real.
+**/
+void BasicMath::split(float real, int &integerPart, float &realPart) {
+    float integer;
+    realPart = modff(real, &integer);
+    integerPart = static_cast<int>(integer);
+}

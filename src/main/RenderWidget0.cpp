@@ -33,6 +33,8 @@
 #include "spline/Helix.h"
 #include "spline/Morpher.h"
 #include "spline/Square.h"
+#include "spline/PiecewiseSpline.h"
+
 
 
 
@@ -576,25 +578,24 @@ void RenderWidget0::test()
 
     
 
-    //Vector3 pathArray[] = {t1,t2,t3,t4,t5,t6,t7};
+    //Vector3 trackArray[] = {t1,t2,t3,t4,t5,t6,t7};
     Vector3 pathArray[] = {p1,p2,p3,p4};
-    //Vector3 pathArray[] = {track1, track2, track3, track4, track5, track6, 
-//        track7, track8, track9, track10, track11, track12, track13, track14, track15, track16};
+    Vector3 trackArray[] = {track1, track2, track3, track4, track5, track6, 
+        track7, track8, track9, track10, track11, track12, track13, track14, track15, track16};
 
     BezierCurve path(pathArray, sizeof(pathArray)/ sizeof(Vector3));
 
+    BezierCurve track(trackArray, sizeof(trackArray) / sizeof(Vector3));
+    track.setTransformation(Matrix4::scale(.001, .001, .001));
 
-    Circle circle;
-    circle.setTransformation(Matrix4::rotateX(BasicMath::radians(90)));
 
-    //Circle path;
+    
     //Helix path(10);
 
     Helix helix(2);
 //    helix.setTransformation(Matrix4::scale(1,1,20));
 
-    //path.setTransformation(Matrix4::scale(.001, .001, .001));
-
+    
     Vector3 goblet1(1,4.3,0);
     Vector3 goblet2(1,0.3,0);
     Vector3 goblet3(-.1,3.3f,0);
@@ -624,69 +625,66 @@ void RenderWidget0::test()
     Vector3 s7(-2,0,0);
     
     
-    // Top
-    Vector3 box1(0,0,3);
-    Vector3 box2(1,1,3);
-    Vector3 box3(2,1,3);
-    Vector3 box4(3,0,3);
     
-    // Right
-    Vector3 box5(3,0,2);
-    Vector3 box6(3,0,1);
-    Vector3 box7(3,0,0);
-
-    // Bottom
-    Vector3 box8(2,0,0);
-    Vector3 box9(1,0,0);
-    Vector3 box10(0,0,0);
-
-    // Left
-    Vector3 box11(0,0,1);
-    Vector3 box12(0,0,2);
-    Vector3 box13(0,0,3);
     
-    Vector3 boxArray[] = {box1,box2,box3,box4,box5,box6,box7, box8, box9, box10, box11, box12, box13};
+    
+      
     Vector3 shapeArray[] = {c1,c2,c3,c4,c5,c6,c7};
     //Vector3 shapeArray[] = {s1,s2,s3,s4,s5,s6,s7};
-    
     int numElements = sizeof(shapeArray) / sizeof(Vector3);
-    
     
     BezierCurve curvedLine(shapeArray, numElements);
     curvedLine.setTransformation(Matrix4::scale(.2,.2,.2));
     
-    BezierCurve box(boxArray, 13);
-    
-
-    
-    box.setTransformation(Matrix4::scale(.1,.1,.1));
-    
     BezierCurve nearCircle(shapeArray, numElements);
     
-    Morpher morpher(&circle, &circle);
+    
+    PiecewiseSpline piecewise(&gobletCurve);
+
+
+    piecewise.addSpline(&curvedLine);
+    piecewise.addSpline(&nearCircle);
+    
+    
+    
+    
     
     Square square;
-    
-    square.setTransformation(Matrix4::rotateX(BasicMath::radians(90)) * Matrix4::scale(.2,.2,1));
+    square.setTransformation(Matrix4::rotateX(BasicMath::radians(90)));
     
     Object * loft = sceneManager->createObject();
     
     
-    GeometryFactory::createLoft(loft, square, helix , 9 ,40);
+    GeometryFactory::createLoft(loft, square, track , 5 ,50);
     
-    Material * extrudedShapeMaterial = new Material();
+    Material * extrudedShapeMaterial = new Material(Brass);
+    
+    
     
     // Set up the textures
-    // http://friday.westnet.com/~crywalt/dymaxion_2003/earthmap10k.reduced.jpg
-    QImage *texImg = new QImage("earthmap.jpg", "jpg");
-    assert(texImg != NULL);
-    Texture *earthMap = new Texture(texImg);
-    extrudedShapeMaterial->setTexture(earthMap);
-    
-    
+
+    //http://ryane.com/wp-content/uploads/2007/04/rock_02.jpg
+    QImage *rockImg = new QImage("rock_02.jpg", "jpg");
+    assert(rockImg != NULL);
+    Texture *rockTexture = new Texture(rockImg);
+    extrudedShapeMaterial->setTexture(rockTexture);
+
     loft->setMaterial(extrudedShapeMaterial);
     
-    sceneManager->getRoot()->addChild(new Shape3D(loft));
+    Circle circle;
+    circle.setTransformation(Matrix4::scale(.5,.5,.5) * Matrix4::rotateX(BasicMath::radians(90)));
+    
+    Object * trackLoft = sceneManager->createObject();
+    
+    track.setTransformation(Matrix4::translate(0,0,-.5) * track.getTransformation());
+    
+    GeometryFactory::createLoft(trackLoft, circle,  piecewise, 10 ,50);
+    //trackLoft->setMaterial(new Material(Bronze));
+    
+   
+    
+    //sceneManager->getRoot()->addChild(new Shape3D(loft));
+    sceneManager->getRoot()->addChild(new Shape3D(trackLoft));
     
 }
 

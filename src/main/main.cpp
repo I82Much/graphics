@@ -7,6 +7,8 @@
 #include "scenegraph/Group.h"
 #include "Plane.h"
 #include "spline/BezierCurve.h"
+#include "spline/PiecewiseSpline.h"
+
 
 using namespace RE167;
 
@@ -21,6 +23,7 @@ int main(int argc, char *argv[])
 	Matrix4::runTestSuite();
     GeometryFactory::runTestSuite();
     
+    PiecewiseSpline::test();
     
 	QApplication app(argc, argv);
     MainWindow window;

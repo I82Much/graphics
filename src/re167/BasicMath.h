@@ -33,7 +33,7 @@ namespace RE167
         static Vector4 lerp(const Vector4 &first, const Vector4 &second, float proportion);
         static Vector3 lerp(const Vector3 &first, const Vector3 &second, float proportion);
 
-        
+        static void split(float real, int &intPart, float &realPart);
 
 	private:
 		static const int MAX_NUM_DIGITS_DIFFERENCE = 1;

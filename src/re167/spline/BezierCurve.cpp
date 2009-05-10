@@ -2,6 +2,7 @@
 #include "Vector3.h"
 #include "Matrix4.h"
 #include <cmath>
+#include "BasicMath.h"
 using namespace RE167;
 
 using std::cout;
@@ -58,7 +59,7 @@ Vector3 BezierCurve::position(float t) const
 
     int integer;
     float real;
-    split(t, &integer, &real);
+    BasicMath::split(t, integer, real);
     
     int subcurveIndex = integer;
 
@@ -80,7 +81,7 @@ Vector3 BezierCurve::tangent(float t) const
     
     int integer;
     float real;
-    split(t, &integer, &real);
+    BasicMath::split(t, integer, real);
     
     int subcurveIndex = integer;
     
@@ -102,7 +103,7 @@ Vector3 BezierCurve::acceleration(float t) const
     
     int integer;
     float real;
-    split(t, &integer, &real);
+    BasicMath::split(t, integer, real);
     
     int subcurveIndex = integer;
     
@@ -117,17 +118,6 @@ Vector3 BezierCurve::acceleration(float t) const
     return Vector3(acceleration);
     
 }
-
-/**
-* Given a floating point number, splits it into its integer part
-* and real part, such that integerPart + realPart = real.
-**/
-void BezierCurve::split(float real, int *integerPart, float *realPart) {
-    float integer;
-    (*realPart) = modff(real, &integer);
-    (*integerPart) = static_cast<int>(integer);
-}
-
 
 
 void BezierCurve::createMatrices() {
