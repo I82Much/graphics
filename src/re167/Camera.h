@@ -28,7 +28,7 @@ namespace RE167 {
 		Camera(const Vector3 &center, 
 		        const Vector3 &lookAt, 
 		        const Vector3 &up) : 
-			centerOfProjection(center), lookAtPoint(lookAt), upVector(up) {
+			centerOfProjection(center), lookAtPoint(lookAt), upVector(up), transformation(Matrix4::IDENTITY) {
 			updateViewMatrix();
 			calculatePlanes();
 		};
@@ -51,6 +51,10 @@ namespace RE167 {
 
 		void updateVectors();
 
+        
+        inline void setTransformation(const Matrix4 &t) { transformation = t; }
+        Matrix4 getTransformation() { return transformation; }
+
         ClipStatus getSphereClipStatus(const Vector4 &center, const float radius); 
 
 	private:
@@ -64,7 +68,7 @@ namespace RE167 {
         
         Plane left, right, top, bottom, near, far;
 
-        
+        Matrix4 transformation;
 	};
 
 }

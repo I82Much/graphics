@@ -78,7 +78,7 @@ void RenderWidget0::initSceneEvent()
 
     
 	initCamera();
-	//initLights();
+	initLights();
     //initStillLife();
 
     test();
@@ -316,6 +316,31 @@ void RenderWidget0::resizeRenderWidgetEvent(const QSize &s)
 
 void RenderWidget0::timerEvent(QTimerEvent *t)
 {
+    static int segment = 0;
+    static const int numSegments = 1000;
+    
+    static const std::vector<Vector3> positions = track->uniformPointSample(numSegments);
+    
+
+    Vector3 loc = positions[segment % numSegments];
+    segment++;
+    
+    
+    minecart->setTransformation(Matrix4::translate(loc.getX(), loc.getY(), loc.getZ()));
+/*    
+    camera->setTransformation(Matrix4::translate(loc.getX(), loc.getY(), loc.getZ()));
+    
+    const Vector3 &getCenterOfProjection() const { return centerOfProjection; }
+	const Vector3 &getLookAtPoint() const { return lookAtPoint; }
+	const Vector3 &getUpVector() const { return upVector; }
+	
+	void changeSettings(const Vector3 &center, const Vector3 &point, const Vector3 &up);
+    
+    */
+    // Already increment segment
+    Vector3 lookAtPoint = positions[ segment % numSegments];
+    //camera->changeSettings(loc, lookAtPoint, camera->getUpVector());
+    
     updateScene();
 	counter++;
 }
@@ -478,6 +503,8 @@ void RenderWidget0::toggleCulling()
     sceneManager->setObjectLevelCulling(objectLevelCulling);
 }
 
+
+// TODO: Clean all this code up
 void RenderWidget0::keyPressEvent ( QKeyEvent * k )
 {
     
@@ -585,8 +612,8 @@ void RenderWidget0::test()
 
     BezierCurve path(pathArray, sizeof(pathArray)/ sizeof(Vector3));
 
-    BezierCurve track(trackArray, sizeof(trackArray) / sizeof(Vector3));
-    track.setTransformation(Matrix4::scale(.001, .001, .001));
+    track = new BezierCurve(trackArray, sizeof(trackArray) / sizeof(Vector3));
+    track->setTransformation(Matrix4::scale(.001, .001, .001));
 
 
     
@@ -647,19 +674,30 @@ void RenderWidget0::test()
     
     
     
+    Vector3 str1(0,1,0);
+    Vector3 str2(0,.5,0);
+    Vector3 str3(0,-.5,0);
+    Vector3 str4(0,-1,0);
+    
+    
+    BezierCurve straightLine(str1, str2, str3, str4);
+    
+    Circle circle2;
+    circle2.setTransformation(Matrix4::rotateX(BasicMath::radians(90)));
+    
+    
     
     
     Square square;
-    square.setTransformation(Matrix4::rotateX(BasicMath::radians(90)));
+    
+    square.setTransformation(Matrix4::scale(2,2,2) * Matrix4::rotateX(BasicMath::radians(90)));
     
     Object * loft = sceneManager->createObject();
     
     
-    GeometryFactory::createLoft(loft, square, track , 5 ,50);
+    GeometryFactory::createLoft(loft, square, *track , 5 ,50);
     
     Material * extrudedShapeMaterial = new Material(Brass);
-    
-    
     
     // Set up the textures
 
@@ -676,15 +714,43 @@ void RenderWidget0::test()
     
     Object * trackLoft = sceneManager->createObject();
     
-    track.setTransformation(Matrix4::translate(0,0,-.5) * track.getTransformation());
+    track->setTransformation(Matrix4::translate(0,0,-.5) * track->getTransformation());
     
-    GeometryFactory::createLoft(trackLoft, circle,  piecewise, 10 ,50);
+    GeometryFactory::createLoft(trackLoft, circle,  *track, 10 ,50);
     //trackLoft->setMaterial(new Material(Bronze));
     
    
     
-    //sceneManager->getRoot()->addChild(new Shape3D(loft));
-    sceneManager->getRoot()->addChild(new Shape3D(trackLoft));
+    sceneManager->getRoot()->addChild(new Shape3D(loft));
+    //sceneManager->getRoot()->addChild(new Shape3D(trackLoft));
+    
+    Object * cylinder1 = sceneManager->createObject();
+    GeometryFactory::createLoft(cylinder1, circle2, straightLine, 10, 10);
+    
+    cylinder1->setTransformation(Matrix4::translate(1,0,0));
+    
+    Object * cylinder2 = sceneManager->createObject();
+    GeometryFactory::createCylinder(cylinder2, 10,
+        10);
+    cylinder2->setTransformation(Matrix4::translate(-1,0,0));
+
+    
+    
+    Object * mineCartObj = sceneManager->createObject();
+    GeometryFactory::createSphere(mineCartObj);
+    
+    Shape3D * minecartShape = new Shape3D(mineCartObj);
+    minecart = new TransformGroup();
+    minecart->addChild(minecartShape);
+
+
+    sceneManager->getRoot()->addChild(minecart);
+    
+    /*
+    sceneManager->getRoot()->addChild(new Shape3D(cylinder1));
+    sceneManager->getRoot()->addChild(new Shape3D(cylinder2));
+*/
+    
     
 }
 

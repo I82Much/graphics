@@ -13,7 +13,8 @@ namespace RE167 {
     class Object;
     class SceneManager;
     class TransformGroup;
-    
+    class BezierCurve;
+    class Shape3D;
     class RE167_EXPORT RenderWidget0 : public GLRenderWidget
     {
     
@@ -69,6 +70,8 @@ namespace RE167 {
         Object *buddha;
         Object *earth;
         
+        TransformGroup *minecart;
+        
         TransformGroup * leftLeg;
         TransformGroup * rightLeg;
         
@@ -89,6 +92,9 @@ namespace RE167 {
         
         TransformGroup * robotGroup;
         TransformGroup * geometryGroup;
+	
+        BezierCurve * track;
+	
 	
         // Hold the last mouse position
         int lastX;

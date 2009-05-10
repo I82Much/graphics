@@ -1688,6 +1688,11 @@ void GeometryFactory::createLoft(
 )
 {
     
+    
+    
+    
+    
+    
     // TODO: wrong number of faces being sampled
     
     // Calculate all of the points and tangent vectors for the path curve and
@@ -1795,12 +1800,14 @@ void GeometryFactory::createLoft(
             // on curve
             // Need to translate Vector3 into Vector4 in order to multiply
             // by matrices
-            Vector4 curVertex = pathTransform * Vector4(shapePoints[j]);
+            Vector4 curVertex = pathTransform *
+                Vector4::homogeneousPoint(shapePoints[j]);
             vecVertices[i].push_back(Vector3(curVertex));
             
             
             // Translate the normal vector into the correct coordinate system
-            Vector4 curNormal = pathTransform * Vector4::homogeneousVector(shapeNormals[j]);
+            Vector4 curNormal = pathTransform * 
+                Vector4::homogeneousVector(shapeNormals[j]);
             vecNormals[i].push_back(Vector3(curNormal));
             
             // Both the normal of our shape and the tangent of our shape curve
