@@ -104,9 +104,9 @@ void RenderWidget0::initCamera() {
 	camera->changeSettings(cameraCenter, lookAtPoint, upVector);
 	
 	
-    cameraNode = new CameraNode(camera);
+    stillCamera = new CameraNode(camera);
     
-    sceneManager->getRoot()->addChild(cameraNode);
+    sceneManager->getRoot()->addChild(stillCamera);
 	
     
 }
@@ -129,7 +129,7 @@ void RenderWidget0::initLights()
     
     LightNode * blueLight = new LightNode(blue);
 
-    
+/*    
     // Create a white light
     Light * white = sceneManager->createLight();
 	white->setType(Light::SPOT);
@@ -141,10 +141,10 @@ void RenderWidget0::initLights()
 	white->setSpotExponent(1.0);
     
     LightNode * whiteLight = new LightNode(white);
-    
+*/    
     
     sceneManager->getRoot()->addChild(blueLight);
-	sceneManager->getRoot()->addChild(whiteLight);
+//	sceneManager->getRoot()->addChild(whiteLight);
 }
 
 
@@ -171,6 +171,23 @@ void RenderWidget0::timerEvent(QTimerEvent *t)
     
     minecart->setTransformation(Matrix4::translate(loc.getX(), loc.getY(), loc.getZ()));
     
+	// we now add code to make the camera follow the mine cart
+	// We do not need to worry about changing the center of projection because in the scene graph, the camera is a child
+	// of the minecart so that center should follow the minecart.
+	// We do have to change the lookAtPoint and the lookUpVector and for that we need the referenceFrames for the track
+	
+	static const std::vector<Basis> referenceFrames = track->getReferenceFrames(numSegments);
+	
+	// now that we have the referenceFrames, we need the Basis for this location:
+	// (the -1 is because segment has been incremented)
+	
+	// now the tangent is v and the normal is u
+	Vector3 newLookAt = movingCamera->getCenterOfProjection() + referenceFrames[(segment-1) % numSegments].getV();
+	Vector3 newLookUp = referenceFrames[(segment-1) % numSegments].getU();
+	
+	// now we update the camera
+	movingCamera->updateProjection(movingCamera->getCenterOfProjection(), newLookAt, newLookUp);
+	whiteLight->getLight()->setSpotDirection(referenceFrames[(segment-1) % numSegments].getV());
     
     updateScene();
 	counter++;
@@ -344,15 +361,15 @@ void RenderWidget0::keyPressEvent ( QKeyEvent * k )
 	switch ( k->key() )  {
     // reload
     case Qt::Key_R:                               
-        cameraNode->resetTransformation();
+        stillCamera->resetTransformation();
         break;
     // move forward
     case Qt::Key_Up: // Qt::Key_W
-        cameraNode->setTransformation(Matrix4::translate(0,0,1) * cameraNode->getTransformation());
+        stillCamera->setTransformation(Matrix4::translate(0,0,1) * stillCamera->getTransformation());
         break;
     // Move camera backwards
     case Qt::Key_Down: //Qt::Key_S:
-        cameraNode->setTransformation(Matrix4::translate(0,0,-1) * cameraNode->getTransformation());
+        stillCamera->setTransformation(Matrix4::translate(0,0,-1) * stillCamera->getTransformation());
         break;
     // Move camera left
     case Qt::Key_Left: //Key_A:
@@ -375,12 +392,24 @@ void RenderWidget0::keyPressEvent ( QKeyEvent * k )
     
     // Move camera up
     case Qt::Key_Q:
-        cameraNode->setTransformation(Matrix4::translate(0,-1,0) * cameraNode->getTransformation());
+        stillCamera->setTransformation(Matrix4::translate(0,-1,0) * stillCamera->getTransformation());
         break;
     // Move camera down
     case Qt::Key_Z:
-        cameraNode->setTransformation(Matrix4::translate(0,1,0) * cameraNode->getTransformation());
+        stillCamera->setTransformation(Matrix4::translate(0,1,0) * stillCamera->getTransformation());
         break;
+			
+	// switch between moving camera and still camera
+		case Qt::Key_M:
+			if (stillCamera->inUse()) {
+				stillCamera->disable();
+				movingCamera->use();
+			}
+			else {
+				movingCamera->disable();
+				stillCamera->use();
+			}
+			break;
 	}
 }
 void RenderWidget0::keyReleaseEvent ( QKeyEvent * e)
@@ -398,17 +427,10 @@ void RenderWidget0::test()
 {
     
 
-    
-	// the attempt to have multiple shaders in one program - didn't work but still here as I'm not ready to 
-	// give up hope yet
-//	char** vertexFileNames = new char*[2];
-//	vertexFileNames[0] = "src/Shaders/finalLight.vert";
-//	vertexFileNames[1] = "src/Shaders/finalSpots.vert";
-//	char** fragmentFileNames = new char*[2];
-//	fragmentFileNames[0] = "src/Shaders/finalLight.frag";
-//	fragmentFileNames[1] = "src/Shaders/finalSpots.vert";
-//	Shader* twoSpotTexture = new Shader(vertexFileNames, fragmentFileNames, 2);
+    // this shader supports two spot lights
 	Shader* twoSpotTexture = new Shader("src/Shaders/finalSpotLights.vert", "src/Shaders/finalSpotLights.frag");
+	// this shader should support 8 lights - 2 spot lights and 6 point lights
+//	Shader* lightingTexture = new Shader("src/Shaders/finalLight.vert", "src/Shaders/finalLight.frag");
 	
     Vector3 t1(0,4,1);
     Vector3 t2(1,3,5);
@@ -557,8 +579,36 @@ void RenderWidget0::test()
     Shape3D * minecartShape = new Shape3D(mineCartObj);
     minecart = new TransformGroup();
     minecart->addChild(minecartShape);
-	minecart->addChild(cameraNode);
-
+	
+	// first we have to create the camera and cameraNode:
+	Camera* moveCamera = new Camera();
+	movingCamera = new CameraNode(moveCamera);
+	// now we modify the camera so that it sits where we want it to relative to the minecart
+	movingCamera->updateProjection(Vector3(0,1,0),Vector3(0,1,-1),Vector3(0,1,0));
+	// then we add it as a child of the minecart so that it follows the cart around
+	minecart->addChild(movingCamera);
+	
+	// last thing to do is make sure that when the scene starts, we are using the moving camera, not the still one
+	movingCamera->use();
+	stillCamera->disable();
+	
+	
+	// now we have to set up the lighting....
+    // Create a white light
+    Light * white = sceneManager->createLight();
+	white->setType(Light::SPOT);
+    white->setSpotDirection(Vector3(0,0,-1));
+    white->setDiffuseColor(Vector3(1,1,1));
+    white->setAmbientColor(Vector3(.2,.2,.2));
+    white->setSpecularColor(Vector3(1,1,1));
+	white->setSpotCutoff(90.0);
+	white->setSpotExponent(1.0);
+	white->setPosition(Vector3(0,0,-0.5));
+    
+    whiteLight = new LightNode(white);
+	minecart->addChild(whiteLight);
+	
+	
 
     sceneManager->getRoot()->addChild(minecart);
     

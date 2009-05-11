@@ -1,5 +1,5 @@
-#ifndef Basis_CPP_G5MC9S8S
-#define Basis_CPP_G5MC9S8S
+#ifndef __Basis_h__
+#define __Basis_h__
 
 #include "RE167_global.h"
 #include "Vector3.h"
