@@ -166,8 +166,6 @@ namespace RE167 {
         static void calculateNormals(float *vertices, int *indices, float *&normals,
             int numVertices, int numIndices);
         
-        static const Basis createPathTransform(Vector3 origin, Vector3 tangent, Vector3 acceleration);
-        
 
     
         /**

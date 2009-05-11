@@ -29,11 +29,13 @@ namespace RE167 {
  
         std::vector <Basis> getReferenceFrames(int numSamples) const;
         
+        
+        
     protected:
         Matrix4 transformation;
+    private:
+       const Basis createInitialReferenceFrame(const Vector3 &origin, const Vector3 &tangent, const Vector3 &acceleration) const; 
+       
     };
 }
-
-
-
 #endif /* end of include guard: SPLINE_H_4K2S3LB4 */
