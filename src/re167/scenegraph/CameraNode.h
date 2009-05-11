@@ -42,6 +42,10 @@ namespace RE167
 		void updateProjection();
 		void updateProjection(Vector3 center, Vector3 lookAt, Vector3 lookUp);
 		
+		void use() {isInUse = true;}
+		void disable() {isInUse = false;}
+		bool inUse() { return isInUse;}
+		
     protected:
         Camera * camera;
         Matrix4 transform;
@@ -56,6 +60,9 @@ namespace RE167
 		
 		// if true, then the projection matrix for the camera must be recalculated
 		bool valueWasChanged;
+		
+		// a way to have multiple cameras in the scene and pick which to activate
+		bool isInUse; // if true, use this camera <- if there is more than one inUse() then the first found is used
 		
 		
     };

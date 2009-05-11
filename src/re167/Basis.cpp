@@ -24,5 +24,3 @@ Basis::~Basis()
 {
     
 }
-
-using namespace RE167;

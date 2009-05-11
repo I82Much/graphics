@@ -57,7 +57,8 @@ namespace RE167 {
 
     private:
     	SceneManager *sceneManager;
-        CameraNode *cameraNode;
+        CameraNode *stillCamera; // this is the camera that does not move on its own and allows the trackball
+		CameraNode* movingCamera; // this is the camera that follows the minecart
 
         // TODO: clean this stuff out
         Object *object;
@@ -95,6 +96,9 @@ namespace RE167 {
         TransformGroup * geometryGroup;
 	
         BezierCurve * track;
+		
+		// added a LightNode to start experimenting with putting a light in front of the minecart
+		LightNode* whiteLight;
 	
 	
         // Hold the last mouse position

@@ -10,6 +10,7 @@ CameraNode::CameraNode (Camera* aCamera) : camera(aCamera) {
 	lookUpVector = camera->getUpVector();
 	rotation = 0;
 	valueWasChanged = false;
+	isInUse = true;
 	transform = Matrix4::IDENTITY;
 }
 

@@ -110,8 +110,8 @@ void SceneManager::addLightNodes(Node * node,
     // method on each child
     TransformGroup * g = dynamic_cast<TransformGroup *>(node);
     if ( g != NULL ) {
-        // TODO: is it left or right multiply?
-        const Matrix4 &updatedTransform = g->getTransformation() * transform;
+        // TODO: is it left or right multiply? <-- g->getTransformation should be on the right
+        const Matrix4 &updatedTransform = transform * g->getTransformation();
         std::list<Node *>::iterator iter;
         for (iter=g->children.begin(); iter!=g->children.end(); iter++)
         	addLightNodes((*iter), lightNodes, updatedTransform);
@@ -134,7 +134,7 @@ CameraNode * SceneManager::findCamera(Node * root, const Matrix4 &transform) {
     }
     
     CameraNode * camera = dynamic_cast<CameraNode*>(root);
-    if (camera != NULL) {
+    if (camera != NULL && camera->inUse()) {
         camera->setTransformation(transform);
         return camera;
     }
@@ -149,7 +149,7 @@ CameraNode * SceneManager::findCamera(Node * root, const Matrix4 &transform) {
     // We have a transform group; recursively call this method on each of
     // its children
     if (group != NULL) {
-        const Matrix4 updatedTransform = group->getTransformation() * transform;
+        const Matrix4 updatedTransform = transform * group->getTransformation(); // <-- g->getTransformation should be on the right
 
         std::list<Node *>::iterator iter;
         for (iter=group->children.begin(); iter!=group->children.end(); iter++){
@@ -193,8 +193,8 @@ void SceneManager::renderScene()
         addLightNodes(root, lightNodes, Matrix4::IDENTITY);
                 
         // TODO: go back to light nodes
-        renderContext->setLights(mLightList);
-        //renderContext->setLightNodes(lightNodes);
+        //renderContext->setLights(mLightList);
+        renderContext->setLightNodes(lightNodes);
 
 
         renderContext->beginFrame();

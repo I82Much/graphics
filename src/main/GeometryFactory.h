@@ -4,6 +4,7 @@
 #include "RE167_global.h"
 #include <vector>
 #include "Vector3.h"
+#include "Basis.h"
 
 namespace RE167 {
 
