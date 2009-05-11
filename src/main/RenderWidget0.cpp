@@ -160,8 +160,9 @@ void RenderWidget0::resizeRenderWidgetEvent(const QSize &s)
 void RenderWidget0::timerEvent(QTimerEvent *t)
 {
     static int segment = 0;
-    static const int numSegments = 1000;
+    static const int numSegments = 3000;
     
+        
     static const std::vector<Vector3> positions = track->uniformPointSample(numSegments);
     
 
@@ -477,9 +478,12 @@ void RenderWidget0::test()
 
     BezierCurve path(pathArray, sizeof(pathArray)/ sizeof(Vector3));
 
+    /*track = new Helix(10);
+    track->setTransformation(Matrix4::scale(3,3,10));
+*/
+
     track = new BezierCurve(trackArray, sizeof(trackArray) / sizeof(Vector3));
     track->setTransformation(Matrix4::scale(.001, .001, .001));
-
 
     
     //Helix path(10);
@@ -544,7 +548,7 @@ void RenderWidget0::test()
     circle2.setTransformation(Matrix4::rotateX(BasicMath::radians(90)));
     
     Square square;
-    square.setTransformation(Matrix4::scale(2,2,2) * Matrix4::rotateX(BasicMath::radians(90)));
+    square.setTransformation(Matrix4::scale(4,4,4) * Matrix4::rotateX(BasicMath::radians(90)));
     
     Object * loft = GeometryFactory::createLoft(square, *track , 5 ,50);
     
@@ -565,7 +569,9 @@ void RenderWidget0::test()
     circle.setTransformation(Matrix4::scale(.5,.5,.5) * Matrix4::rotateX(BasicMath::radians(90)));
     
      
-    track->setTransformation(Matrix4::translate(0,0,-.5) * track->getTransformation());
+    track->setTransformation(Matrix4::translate(0,0,-3) * track->getTransformation());
+    
+
     Object * trackLoft = GeometryFactory::createLoft(circle,  *track, 10 ,50);
     //trackLoft->setMaterial(new Material(Bronze));
     
@@ -575,6 +581,7 @@ void RenderWidget0::test()
     
     Object * mineCartObj = sceneManager->createObject();
     GeometryFactory::createSphere(mineCartObj);
+    mineCartObj->setTransformation(Matrix4::scale(.001,.001,.001));
     
     Shape3D * minecartShape = new Shape3D(mineCartObj);
     minecart = new TransformGroup();

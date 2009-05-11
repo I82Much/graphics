@@ -17,7 +17,7 @@ namespace RE167 {
     class Shape3D;
     class Vector3;
     class CameraNode;
-    
+    class Spline;
     class RE167_EXPORT RenderWidget0 : public GLRenderWidget
     {
     
@@ -66,7 +66,7 @@ namespace RE167 {
         TransformGroup *minecart;
         
     
-        BezierCurve * track;
+        Spline * track;
 		
 		// added a LightNode to start experimenting with putting a light in front of the minecart
 		LightNode* whiteLight;
