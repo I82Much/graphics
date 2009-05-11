@@ -75,8 +75,7 @@ namespace RE167 {
             const Spline &path,
             const int numPointsToEvaluateAlongShape = 10,
             const int numPointsToEvaluateAlongPath = 10,
-            const bool normalize = true,
-            const bool adaptiveSampling = false
+            const bool normalize = true
         );
         
         static void createLoft(
@@ -85,7 +84,6 @@ namespace RE167 {
             const int numPointsToEvaluateAlongShape,
             const int numPointsToEvaluateAlongPath,
             bool normalize,
-            bool adaptiveSampling,
             // Outputs
             float *&vertices,
             float *&normals,

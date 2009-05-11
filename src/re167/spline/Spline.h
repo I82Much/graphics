@@ -5,8 +5,10 @@
 #include <vector>
 #include "Matrix4.h"
 
+
 namespace RE167 {
     class Vector3;
+    class Basis;
     
     class RE167_EXPORT Spline
     {
@@ -24,7 +26,8 @@ namespace RE167 {
 
         virtual inline Matrix4 getTransformation() { return transformation; }
         virtual void setTransformation(const Matrix4 &t) { transformation = t; }
-        
+ 
+        std::vector <Basis> getReferenceFrames(int numSamples) const;
         
     protected:
         Matrix4 transformation;

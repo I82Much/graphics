@@ -178,25 +178,25 @@ void RenderWidget0::initStillLife()
     
     // Set up the textures
     // http://friday.westnet.com/~crywalt/dymaxion_2003/earthmap10k.reduced.jpg
-    QImage *texImg = new QImage("earthmap.jpg", "jpg");
+    QImage *texImg = new QImage("images/earthmap.jpg", "jpg");
     assert(texImg != NULL);
     Texture *earthMap = new Texture(texImg);
     pitcherMaterial->setTexture(earthMap);
 
     // http://hi-and-low.typepad.com/my_weblog/images/2007/09/30/stripes_02.jpg
-    QImage *stripeImg = new QImage("stripes_02.jpg", "jpg");
+    QImage *stripeImg = new QImage("images/stripes_02.jpg", "jpg");
     assert(stripeImg != NULL);
     Texture *stripeTex = new Texture(stripeImg);
     tableMaterial->setTexture(stripeTex);
     
     // http://colorvisiontesting.com/plate%20with%205.jpg
-    QImage *patternImg = new QImage("plate with 5.jpg", "jpg");
+    QImage *patternImg = new QImage("images/plate with 5.jpg", "jpg");
     assert(patternImg != NULL);
     Texture *patternTex = new Texture(patternImg);
     plateMaterial->setTexture(patternTex);
     
     // http://images.google.com/hosted/life/f?q=sculpture+source:life&prev=/images%3Fq%3Dsculpture%2Bsource:life%26ndsp%3D18%26hl%3Den%26sa%3DN%26start%3D54&imgurl=f4c508a0f589ee70
-    QImage *davidImg = new QImage("david.jpg", "jpg");
+    QImage *davidImg = new QImage("images/david.jpg", "jpg");
     assert(davidImg != NULL);
     Texture *davidTex = new Texture(davidImg);
     gobletMaterial->setTexture(davidTex);
@@ -672,8 +672,7 @@ void RenderWidget0::test()
     piecewise.addSpline(&curvedLine);
     piecewise.addSpline(&nearCircle);
     
-    
-    
+        
     Vector3 str1(0,1,0);
     Vector3 str2(0,.5,0);
     Vector3 str3(0,-.5,0);
@@ -702,7 +701,7 @@ void RenderWidget0::test()
     // Set up the textures
 
     //http://ryane.com/wp-content/uploads/2007/04/rock_02.jpg
-    QImage *rockImg = new QImage("rock_02.jpg", "jpg");
+    QImage *rockImg = new QImage("images/rock_02.jpg", "jpg");
     assert(rockImg != NULL);
     Texture *rockTexture = new Texture(rockImg);
     extrudedShapeMaterial->setTexture(rockTexture);

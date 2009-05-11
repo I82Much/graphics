@@ -1513,7 +1513,6 @@ void GeometryFactory::createTaperedCylinder(int numRows,
 *                                       vertices)
 * @param normalize          whether or not to make the resulting shape fit
 *                           within the unit cube centered at the origin
-* @param adaptiveSampling   if true, both curves will be sampled at enough
 **/
 void GeometryFactory::createLoft(
     Object * o,
@@ -1521,8 +1520,7 @@ void GeometryFactory::createLoft(
     const Spline &path,
     const int numPointsToEvaluateAlongShape,
     const int numPointsToEvaluateAlongPath,
-    const bool normalize,
-    const bool adaptiveSampling
+    const bool normalize
 )
 {
     assert (o != NULL);
@@ -1539,7 +1537,6 @@ void GeometryFactory::createLoft(
 	    numPointsToEvaluateAlongShape, 
 	    numPointsToEvaluateAlongPath, 
 	    normalize,
-	    adaptiveSampling,
 	    vertices,  
 	    normals, 
 	    textureCoords,
@@ -1634,6 +1631,9 @@ const Basis GeometryFactory::createPathTransform(Vector3 origin, Vector3 tangent
 * For instance, if shape is a star shape and the path is a circle, we would 
 * have a circle whose cross sections would be stars.
 *
+* Makes liberal use of the paper "Calculation of Reference Frames along a Space
+* Curve" by Jules Blomenthal; published in Graphics Gems, vol.1
+*
 * @param shape  the curve specifying the shape that will define cross sections
 * @param path   the path that the swept surface will take
 * @param numPointsToEvaluateAlongShape  at how many places along the shape
@@ -1646,7 +1646,6 @@ const Basis GeometryFactory::createPathTransform(Vector3 origin, Vector3 tangent
 *                                       vertices)
 * @param normalize          whether or not to make the resulting shape fit
 *                           within the unit cube centered at the origin
-* @param adaptiveSampling   if true, both curves will be sampled at enough
 * @param vertices   the array that will be filled in to hold all of the 
 *                   vertices in the object.  Must be freed later
 * @param normals    the array that will be filled in to hold all of the 
@@ -1676,7 +1675,6 @@ void GeometryFactory::createLoft(
     const int numPointsToEvaluateAlongShape,
     const int numPointsToEvaluateAlongPath,
     bool normalize,
-    bool adaptiveSampling,
     // Outputs
     float *&vertices,
     float *&normals,
@@ -1687,12 +1685,6 @@ void GeometryFactory::createLoft(
     int &numIndices
 )
 {
-    
-    
-    
-    
-    
-    
     // TODO: wrong number of faces being sampled
     
     // Calculate all of the points and tangent vectors for the path curve and
@@ -1810,14 +1802,6 @@ void GeometryFactory::createLoft(
                 Vector4::homogeneousVector(shapeNormals[j]);
             vecNormals[i].push_back(Vector3(curNormal));
             
-            // Both the normal of our shape and the tangent of our shape curve
-            // should be orthogonal to the tangent of our path
-            // TODO: Not sure if this is true if shape curve does not lie
-            // in plane. . .
-/*          assert(shapeTangents[j].dotProduct(tangentOnPath) == 0);
-            assert(curNormal.dotProduct(Vector4(tangentOnPath)) == 0);*/
-            
-            
             // Determine the value of the curve parameter for the shape curve
             // Store this as the "v" texture coordinate
             float shapeTValue = static_cast<float>(j) / 
@@ -1851,6 +1835,7 @@ void GeometryFactory::createLoft(
     textureCoords = new float[2 * numVertices];
     indices = new int[numIndices];	
     
+    // TODO: make a better name than this
     createConnectivity(vecVertices,
                     vecNormals,
                     vecTexCoords,
@@ -2263,27 +2248,6 @@ void GeometryFactory::runTestSuite() {
         Vector3 * test = tests[i];
         assert (calculateTriangleNormal(test[0], test[1], test[2]) == test[3]);
     }
-    
-    
-    // Test the path stuff
-    /*Vector3 origin(0,1,0);
-    Vector3 tangent(0,1,0);
-    
-    const Matrix4 transform = GeometryFactory::calculatePathTransform(origin, tangent);
-    
-    cout << "Transformed origin: " << (transform * Vector4(0,0,0,1)) << endl;
-    assert(transform * Vector4(0,0,0,1) == Vector4(0,1,0,1));
-    
-    cout << "Transformed point (1,0,0,1) == " << transform * Vector4(1,0,0,1) << endl;
-    
-    //assert(transform * Vector4(1,0,0,1) == Vector4(1,1,0,1));
-    */
-    
-    
-    
-    
-
-    
 }
 
 void GeometryFactory::fillInVertex(float *&vertices, int startIndex, const Vector3 &vertex)
