@@ -3,6 +3,7 @@
 
 #include "RE167_global.h"
 #include <vector>
+#include "Vector3.h"
 
 namespace RE167 {
 
@@ -16,6 +17,27 @@ namespace RE167 {
     class RE167_EXPORT GeometryFactory 
     {
     public:
+
+        // Represents the attributes at each vertex in our geometry
+        struct VertexAttributes {
+            Vector3 position;
+            Vector3 normal;
+            Vector3 textureCoords;
+            Vector3 color;
+        };
+        
+        // Represents a quadrilateral face (coplanar) on a piece of
+        // geometry.
+        struct Face {
+            VertexAttributes upperLeft;
+            VertexAttributes upperRight;
+            VertexAttributes lowerRight;
+            VertexAttributes lowerLeft;
+        };
+        
+        
+        
+        
 
     	static const int NUM_TRIANGLES_PER_RECTANGULAR_FACE;
     	static const int NUM_VERTICES_PER_TRIANGLE;
@@ -94,6 +116,15 @@ namespace RE167 {
             int &numIndices
         );
         
+        
+        static std::vector<Face> createLoft(
+            const Spline &shape,
+            const Spline &path,
+            const int numPointsToEvaluateAlongShape,
+            const int numPointsToEvaluateAlongPath
+        );
+        
+         
         
         
         static void createSurfaceOfRevolution(Object *o, 
@@ -201,6 +232,14 @@ namespace RE167 {
             float *&normals,
             float *&textureCoords
         );                       
+
+        static std::vector<Face> calculateFaces(
+            const std::vector <std::vector<Vector3> > &vecVertices,
+            const std::vector <std::vector<Vector3> > &vecNormals,
+            const std::vector <std::vector<Vector3> > &vecTexCoords,
+            int numVerticesRows,
+            int numVerticesCols
+        );
 
     };
 

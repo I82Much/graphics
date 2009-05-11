@@ -1500,6 +1500,8 @@ void GeometryFactory::createTaperedCylinder(int numRows,
 * For instance, if shape is a star shape and the path is a circle, we would 
 * have a circle whose cross sections would be stars.
 *
+* NOTE: The Shape must be in the xz plane for this method to work properly!
+*
 * @param o      the object which will be filled in with the created geometry
 * @param shape  the curve specifying the shape that will define cross sections
 * @param path   the path that the swept surface will take
@@ -1757,6 +1759,13 @@ void GeometryFactory::createLoft(
     }
 }
 
+/*
+static std::vector<Face> createLoft(
+    const Spline &shape,
+    const Spline &path,
+    const int numPointsToEvaluateAlongShape,
+    const int numPointsToEvaluateAlongPath
+){}*/
 
 /**
 * Given a two d vector of vertices, normals, and texture coordintes, 
@@ -1775,6 +1784,18 @@ void GeometryFactory::createConnectivity(const vector <vector<Vector3> > &vecVer
     createConnectivity(vecNormals, numPointsRows, numPointsCols, normals, 3);
     createConnectivity(vecTexCoords, numPointsRows, numPointsCols, textureCoords, 2);
 }
+
+/*
+static std::vector<Face> calculateFaces(
+    const std::vector <std::vector<Vector3> > &vecVertices,
+    const std::vector <std::vector<Vector3> > &vecNormals,
+    const std::vector <std::vector<Vector3> > &vecTexCoords,
+    int numVerticesRows,
+    int numVerticesCols,
+)
+{
+    
+}*/
 
 /**
 * Given a two dimensional vector of some sort of aspect of the geometry, go

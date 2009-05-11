@@ -705,16 +705,10 @@ void RenderWidget0::test()
     Circle circle2;
     circle2.setTransformation(Matrix4::rotateX(BasicMath::radians(90)));
     
-    
-    
-    
     Square square;
-    
     square.setTransformation(Matrix4::scale(2,2,2) * Matrix4::rotateX(BasicMath::radians(90)));
     
     Object * loft = sceneManager->createObject();
-    
-    
     GeometryFactory::createLoft(loft, square, *track , 5 ,50);
     
     Material * extrudedShapeMaterial = new Material(Brass);
