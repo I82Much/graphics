@@ -40,10 +40,9 @@ namespace RE167 {
         inline Vector4 getSphereCenter() { return sphereCenter; }
         inline float getSphereRadius() { return sphereRadius; }
         
-        
-	protected:
+    	
 		Object() : mTransformation(Matrix4::IDENTITY), material(NULL) {} 
-
+    protected:
 		Matrix4 mTransformation;
         
 		friend class SceneManager;

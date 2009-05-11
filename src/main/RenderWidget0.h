@@ -2,10 +2,9 @@
 #define RenderWidget0_H
 
 #include <QWidget>
-//#include "SWRenderWidget.h"
 #include "GLRenderWidget.h"
-//#include "Object.h"
-#include "Vector3.h"
+
+
 #include "scenegraph/CameraNode.h"
 
 
@@ -16,6 +15,9 @@ namespace RE167 {
     class TransformGroup;
     class BezierCurve;
     class Shape3D;
+    class Vector3;
+    class CameraNode;
+    
     class RE167_EXPORT RenderWidget0 : public GLRenderWidget
     {
     
@@ -51,7 +53,7 @@ namespace RE167 {
         void keyPressEvent ( QKeyEvent * e );
         void keyReleaseEvent ( QKeyEvent * e);
 	
-        // TODO: this is the reason we have to include Vector3.  Ugh.  I could make it take in a Vector3 & instead.
+        // TODO: this is the reason we have to include Vector3.  
         Vector3 mapToUnitSphere(int x, int y, int width, int height); 
     	
 
@@ -59,41 +61,10 @@ namespace RE167 {
     	SceneManager *sceneManager;
         CameraNode *cameraNode;
 
-        // TODO: clean this stuff out
-        Object *object;
-        Object *houses;
-        Object *terrain;
-        Object *bunny;
-        Object *cube;
-        Object *dragon;
-        Object *sphere;
-        Object *teapot;
-        Object *buddha;
-        Object *earth;
-        
+          
         TransformGroup *minecart;
         
-        TransformGroup * leftLeg;
-        TransformGroup * rightLeg;
-        
-        TransformGroup * leftShin;
-        TransformGroup * rightShin;
-        
-        TransformGroup * leftUpperArm;
-        TransformGroup * rightUpperArm;
-        
-        TransformGroup * leftLowerArm;
-        TransformGroup * rightLowerArm;
-        
-        TransformGroup * leftHand;
-        TransformGroup * rightHand;
-        
-        TransformGroup * pelvis;
-        TransformGroup * torsoTransform;
-        
-        TransformGroup * robotGroup;
-        TransformGroup * geometryGroup;
-	
+    
         BezierCurve * track;
 	
 	
@@ -107,9 +78,6 @@ namespace RE167 {
         void initCamera();
         void initLights();
         void initMaterials();
-        void initGeometry();
-        void initRobot();
-        void initStillLife();
     
         void switchScene();
         void toggleCulling();

@@ -57,6 +57,11 @@ const int GeometryFactory::NUM_COMPONENTS_PER_RECTANGULAR_FACE =
 	GeometryFactory::NUM_VERTICES_PER_TRIANGLE *
 	GeometryFactory::NUM_COMPONENTS_PER_VERTEX;
 
+const int GeometryFactory::NUM_POSITION_COMPONENTS_PER_VERTEX = 3;
+const int GeometryFactory::NUM_COLOR_COMPONENTS_PER_VERTEX = 3;
+const int GeometryFactory::NUM_NORMAL_COMPONENTS_PER_VERTEX = 3;
+    
+
 /**
 * Creates a terrain from a PGM file and stores it in this
 * object
@@ -1502,7 +1507,6 @@ void GeometryFactory::createTaperedCylinder(int numRows,
 *
 * NOTE: The Shape must be in the xz plane for this method to work properly!
 *
-* @param o      the object which will be filled in with the created geometry
 * @param shape  the curve specifying the shape that will define cross sections
 * @param path   the path that the swept surface will take
 * @param numPointsToEvaluateAlongShape  at how many places along the shape
@@ -1516,8 +1520,7 @@ void GeometryFactory::createTaperedCylinder(int numRows,
 * @param normalize          whether or not to make the resulting shape fit
 *                           within the unit cube centered at the origin
 **/
-void GeometryFactory::createLoft(
-    Object * o,
+Object * GeometryFactory::createLoft(
     const Spline &shape,
     const Spline &path,
     const int numPointsToEvaluateAlongShape,
@@ -1525,7 +1528,6 @@ void GeometryFactory::createLoft(
     const bool normalize
 )
 {
-    assert (o != NULL);
     int *indices = NULL;
 	float *vertices= NULL;
 	float *colors = NULL;
@@ -1552,6 +1554,8 @@ void GeometryFactory::createLoft(
         
     assert (indices != NULL);
     assert (vertices != NULL);
+    
+    Object * o = new Object();
         
 	fillInObject(o, vertices, normals, textureCoords, colors, indices, 
         numVertices, numIndices);
@@ -1576,6 +1580,7 @@ void GeometryFactory::createLoft(
         delete[] textureCoords;
         textureCoords = NULL;
     }
+    return o;
 }
 
 
@@ -1760,12 +1765,58 @@ void GeometryFactory::createLoft(
 }
 
 /*
-static std::vector<Face> createLoft(
+std::vector<Face> createLoft(
     const Spline &shape,
     const Spline &path,
     const int numPointsToEvaluateAlongShape,
     const int numPointsToEvaluateAlongPath
 ){}*/
+
+Object * GeometryFactory::createObjectFromFaces( std::vector<Face> faces, 
+                                bool hasNormals, 
+                                bool hasColors,
+                                bool hasTextureCoords)
+{
+    const int numVertices = NUM_TRIANGLES_PER_RECTANGULAR_FACE * 
+                            NUM_VERTICES_PER_TRIANGLE *
+                            faces.size();
+
+    
+    
+    float * vertices = new float[numVertices * NUM_POSITION_COMPONENTS_PER_VERTEX];
+    float * normals = new float[numVertices * NUM_NORMAL_COMPONENTS_PER_VERTEX];
+    float * colors = new float[numVertices * NUM_COLOR_COMPONENTS_PER_VERTEX];
+    int * indices = new int[numVertices];
+    
+    for(size_t i = 0; i < faces.size(); ++i)
+    {
+        Face f = faces[i];
+        
+        VertexAttributes upper_left = f.upperLeft;
+        VertexAttributes upper_Right = f.upperRight;
+        VertexAttributes lower_Right = f.lowerRight;
+        VertexAttributes upper_Left = f.upperLeft;
+        
+                // 
+                // Vertexstruct VertexAttributes {
+                //     Vector3 position;
+                //     Vector3 normal;
+                //     Vector3 textureCoords;
+                //     Vector3 color;
+                // };
+                // 
+
+    }
+    
+    // Put in all the indices
+    for(size_t i = 0; i < numVertices; ++i)
+    {
+        indices[i] = i;
+    }
+    
+    // TODO: fix thi
+    return NULL;
+}
 
 /**
 * Given a two d vector of vertices, normals, and texture coordintes, 
@@ -1842,6 +1893,12 @@ void GeometryFactory::createConnectivity(const vector <vector<Vector3> > &values
             Vector3 f2_3 = f1_2;
             
             int startIndex = (row * NUM_COMPONENTS_PER_ROW) + (NUM_COMPONENTS_PER_FACE * face);
+                    
+                    /*    
+            if (numComponents == 3) {
+                // Upper left, upper right, lower right, lower left
+                std::cout << f1_1 << "," << f1_3 << "," << f2_3 << "," << f2_2 << std::endl;
+            }         */   
                         
                         
             // TODO: really shouldn't need two separate methods for this.
@@ -1867,15 +1924,15 @@ void GeometryFactory::createConnectivity(const vector <vector<Vector3> > &values
     
 
 /**
-* Given an object pointer and a 2D Spline in the XY plane, rotates
+* Given a 2D Spline in the XY plane, rotates
 * the curve about the Y axis and creates a triangle mesh along the way.
 **/
-void GeometryFactory::createSurfaceOfRevolution(Object *o, 
+Object * GeometryFactory::createSurfaceOfRevolution( 
     const Spline &generatrix,
     int numPointsToEvaluateAlongCurve,
     int numAnglesToRotate)
 {
-    assert (o != NULL);
+    Object * o = new Object();
     int *indices = NULL;
 	float *vertices= NULL;
 	float *colors = NULL;
@@ -1921,6 +1978,8 @@ void GeometryFactory::createSurfaceOfRevolution(Object *o,
         delete[] textureCoords;
         textureCoords = NULL;
     }
+    
+    return o;
     
     
 }

@@ -78,7 +78,7 @@ void RenderWidget0::initSceneEvent()
 
     
 	initCamera();
-	initLights();
+	//initLights();
     //initStillLife();
 
     test();
@@ -89,167 +89,6 @@ void RenderWidget0::initSceneEvent()
 
 void RenderWidget0::initMaterials()
 {}
-
-void RenderWidget0::initStillLife()
-{
-    
-    
-    // try making table
-    Vector3 t1(0,4,0);
-    Vector3 t2(1,4,0);
-    Vector3 t3(2,4,0);
-    Vector3 t4(5,4,0);
-    // Right side
-    Vector3 t5(5,3.5,0);
-    Vector3 t6(5,3,0);
-    Vector3 t7(5,2.5,0);
-
-    // bottom side
-    Vector3 t8(2,2.5,0);
-    Vector3 t9(1.5,2.5,0);
-    Vector3 t10(.5,2.5,0);
-    
-    // curve 1
-    Vector3 t11(.5,2.5,0);
-    Vector3 t12(.7,2,0);
-    Vector3 t13(.5,-2,0);
-    
-    // Bottom base
-    Vector3 t14(1,-2.5,0);
-    Vector3 t15(2,-3,0);
-    Vector3 t16(3,-3.5,0);
-    
-    Vector3 table[] = {t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,t11,t12,t13,t14,t15,t16};
-    BezierCurve tableCurve(table, 16);
-        
-    // Make the goblet
-    Vector3 goblet1(1,4.3,0);
-    Vector3 goblet2(1,0.3,0);
-    Vector3 goblet3(-.1,3.3f,0);
-    Vector3 goblet4(.1f,0.3f,0);
-    Vector3 goblet5(.4f,.2f,0);
-    Vector3 goblet6(.7f,.1f,0);
-    Vector3 goblet7(1.0f,0.0f,0);
-    
-    Vector3 gobletArray[] = {goblet1, goblet2, goblet3, goblet4, goblet5,goblet6,goblet7};
-    BezierCurve gobletCurve(gobletArray, 7);
-        
-    // Make the pitcher
-    Vector3 pitcher0(44,109+176,0);
-    Vector3 pitcher1(29,61+176,0);
-    Vector3 pitcher2(26,28+176,0);
-    Vector3 pitcher3(34,15+176,0);
-    Vector3 pitcher4(70, -21+176,0);
-    Vector3 pitcher5(104,-55+176,0);
-    Vector3 pitcher6(110,-105+176,0);
-    Vector3 pitcher7(114,-152+176,0);
-    Vector3 pitcher8(86,-172+176,0);
-    Vector3 pitcher9(0,-176+176,0);
-    
-    Vector3 pitcherArray[] = {pitcher0, pitcher1, pitcher2, pitcher3, 
-        pitcher4, pitcher5, pitcher6, pitcher7, pitcher8, pitcher9 };
-    BezierCurve pitcherCurve(pitcherArray, 10);
-    
-    
-    // Make a plate
-    Vector3 plate0(0,1,0);
-    Vector3 plate1(2,1,0);
-    Vector3 plate2(3,1,0);
-    Vector3 plate3(4,1.6,0);
-    
-    // Little curved lip
-    Vector3 plate4(4.5,1.7,0);
-    Vector3 plate5(4.5,.7,0);
-    Vector3 plate6(4,.6,0);
-
-    // Bottom part
-    Vector3 plate7(3,0,0);
-    Vector3 plate8(2,0,0);
-    Vector3 plate9(0,0,0);
-    
-    Vector3 plateArray[] = {plate0, plate1, plate2, plate3, 
-        plate4, plate5, plate6, plate7, plate8, plate9 };
-    BezierCurve plateCurve(plateArray, 10);
-    
-    Material * gobletMaterial = new Material();
-    Material * tableMaterial = new Material(Polished_Gold);
-    Material * plateMaterial = new Material(Pearl);
-    Material * pitcherMaterial = new Material(Jade);
-    
-    // Set up the textures
-    // http://friday.westnet.com/~crywalt/dymaxion_2003/earthmap10k.reduced.jpg
-    QImage *texImg = new QImage("images/earthmap.jpg", "jpg");
-    assert(texImg != NULL);
-    Texture *earthMap = new Texture(texImg);
-    pitcherMaterial->setTexture(earthMap);
-
-    // http://hi-and-low.typepad.com/my_weblog/images/2007/09/30/stripes_02.jpg
-    QImage *stripeImg = new QImage("images/stripes_02.jpg", "jpg");
-    assert(stripeImg != NULL);
-    Texture *stripeTex = new Texture(stripeImg);
-    tableMaterial->setTexture(stripeTex);
-    
-    // http://colorvisiontesting.com/plate%20with%205.jpg
-    QImage *patternImg = new QImage("images/plate with 5.jpg", "jpg");
-    assert(patternImg != NULL);
-    Texture *patternTex = new Texture(patternImg);
-    plateMaterial->setTexture(patternTex);
-    
-    // http://images.google.com/hosted/life/f?q=sculpture+source:life&prev=/images%3Fq%3Dsculpture%2Bsource:life%26ndsp%3D18%26hl%3Den%26sa%3DN%26start%3D54&imgurl=f4c508a0f589ee70
-    QImage *davidImg = new QImage("images/david.jpg", "jpg");
-    assert(davidImg != NULL);
-    Texture *davidTex = new Texture(davidImg);
-    gobletMaterial->setTexture(davidTex);
-    
-    
-    Object * tableObject = sceneManager->createObject();
-    Object * plateObject = sceneManager->createObject();
-    Object * gobletObject = sceneManager->createObject();
-    Object * pitcherObject = sceneManager->createObject();
-    
-    tableObject->setMaterial(tableMaterial);
-    gobletObject->setMaterial(gobletMaterial);
-    plateObject->setMaterial(plateMaterial);
-    pitcherObject->setMaterial(pitcherMaterial);
-    
-    
-    GeometryFactory::createSurfaceOfRevolution(pitcherObject,pitcherCurve);
-    GeometryFactory::createSurfaceOfRevolution(tableObject,tableCurve);
-    GeometryFactory::createSurfaceOfRevolution(gobletObject, gobletCurve);        
-    GeometryFactory::createSurfaceOfRevolution(plateObject, plateCurve);    
-    
-    
-    TransformGroup * tableGroup = new TransformGroup(Matrix4::scale(0.6,0.6,0.6));
-    tableGroup->addChild(new Shape3D(tableObject));
-    TransformGroup * tableTop = new TransformGroup(Matrix4::translate(0,4,0));
-    tableGroup->addChild(tableTop);
-
-
-    TransformGroup * plateGroup = new TransformGroup(Matrix4::translate(0,0,1.5));
-    plateObject->setTransformation(Matrix4::scale(0.5,0.5,0.5));
-    plateGroup->addChild(new Shape3D(plateObject));
-    tableTop->addChild(plateGroup);
-    
-
-    // We constructed the goblet to have origin at the bottom of it
-    gobletObject->setTransformation(Matrix4::scale(0.6,0.6,0.6));
-    TransformGroup * gobletTransform = new TransformGroup(Matrix4::translate(1.5,0,-2));
-    gobletTransform->addChild(new Shape3D(gobletObject));
-    plateGroup->addChild(gobletTransform);
-
-    
-    pitcherObject->setTransformation(Matrix4::scale(0.01, 0.01, 0.01)); 
-    // Make the pitcher be a little to the right of the goblet   
-    TransformGroup * pitcherTransform = new TransformGroup(Matrix4::translate(-2.5,0,-3));
-    pitcherTransform->addChild(new Shape3D(pitcherObject));
-    plateGroup->addChild(pitcherTransform);
-    
-
-    
-    sceneManager->setRoot(tableGroup);
-
-
-}
 
 void RenderWidget0::initCamera() {
     Vector3 cameraCenter = Vector3(0,0,10);
@@ -332,23 +171,6 @@ void RenderWidget0::timerEvent(QTimerEvent *t)
     
     minecart->setTransformation(Matrix4::translate(loc.getX(), loc.getY(), loc.getZ()));
     
-	Vector3 oldCameraCenter = cameraNode->getCenterOfProjection();
-	Vector3 newCameraCenter = Vector3(Matrix4::translate(loc.getX(), loc.getY(), loc.getZ())*Vector4(oldCameraCenter));
-	
-//	Vector3 newLookAt = 
-	
-    cameraNode->updateProjection();
-/*    
-    const Vector3 &getCenterOfProjection() const { return centerOfProjection; }
-	const Vector3 &getLookAtPoint() const { return lookAtPoint; }
-	const Vector3 &getUpVector() const { return upVector; }
-	
-	void changeSettings(const Vector3 &center, const Vector3 &point, const Vector3 &up);
-    
-    */
-    // Already increment segment
-    Vector3 lookAtPoint = positions[ segment % numSegments];
-    //camera->changeSettings(loc, lookAtPoint, camera->getUpVector());
     
     updateScene();
 	counter++;
@@ -643,18 +465,6 @@ void RenderWidget0::test()
     Helix helix(2);
 //    helix.setTransformation(Matrix4::scale(1,1,20));
 
-    
-    Vector3 goblet1(1,4.3,0);
-    Vector3 goblet2(1,0.3,0);
-    Vector3 goblet3(-.1,3.3f,0);
-    Vector3 goblet4(.1f,0.3f,0);
-    Vector3 goblet5(.4f,.2f,0);
-    Vector3 goblet6(.7f,.1f,0);
-    Vector3 goblet7(1.0f,0.0f,0);
-    
-    Vector3 gobletArray[] = {goblet1, goblet2, goblet3, goblet4, goblet5,goblet6,goblet7};
-    BezierCurve gobletCurve(gobletArray, 7);
-    
     Vector3 c1(0,0,.5);
     Vector3 c2(.5,0,.5);
     Vector3 c3(.5,0,-.5);
@@ -673,10 +483,16 @@ void RenderWidget0::test()
     Vector3 s7(-2,0,0);
     
     
+    Vector3 torch1(.5,2,0);
+    Vector3 torch2(.3,1.5,0);
+    Vector3 torch3(.1,.1,0);
+    Vector3 torch4(0,0,0);
+    
+    BezierCurve torchCurve(torch1, torch2, torch3, torch4);
+    Object * torch = GeometryFactory::createSurfaceOfRevolution(torchCurve);
+    sceneManager->getRoot()->addChild(new Shape3D(torch));
     
     
-    
-      
     Vector3 shapeArray[] = {c1,c2,c3,c4,c5,c6,c7};
     //Vector3 shapeArray[] = {s1,s2,s3,s4,s5,s6,s7};
     int numElements = sizeof(shapeArray) / sizeof(Vector3);
@@ -686,13 +502,13 @@ void RenderWidget0::test()
     
     BezierCurve nearCircle(shapeArray, numElements);
     
-    
+    /*
     PiecewiseSpline piecewise(&gobletCurve);
 
 
     piecewise.addSpline(&curvedLine);
     piecewise.addSpline(&nearCircle);
-    
+    */
         
     Vector3 str1(0,1,0);
     Vector3 str2(0,.5,0);
@@ -708,11 +524,10 @@ void RenderWidget0::test()
     Square square;
     square.setTransformation(Matrix4::scale(2,2,2) * Matrix4::rotateX(BasicMath::radians(90)));
     
-    Object * loft = sceneManager->createObject();
-    GeometryFactory::createLoft(loft, square, *track , 5 ,50);
+    Object * loft = GeometryFactory::createLoft(square, *track , 5 ,50);
     
     Material * extrudedShapeMaterial = new Material(Brass);
-	extrudedShapeMaterial->setShader(twoSpotTexture);
+	//extrudedShapeMaterial->setShader(twoSpotTexture);
     
     // Set up the textures
 
@@ -727,29 +542,14 @@ void RenderWidget0::test()
     Circle circle;
     circle.setTransformation(Matrix4::scale(.5,.5,.5) * Matrix4::rotateX(BasicMath::radians(90)));
     
-    Object * trackLoft = sceneManager->createObject();
-    
+     
     track->setTransformation(Matrix4::translate(0,0,-.5) * track->getTransformation());
-    
-    GeometryFactory::createLoft(trackLoft, circle,  *track, 10 ,50);
+    Object * trackLoft = GeometryFactory::createLoft(circle,  *track, 10 ,50);
     //trackLoft->setMaterial(new Material(Bronze));
     
-   
     
     sceneManager->getRoot()->addChild(new Shape3D(loft));
     sceneManager->getRoot()->addChild(new Shape3D(trackLoft));
-    
-    Object * cylinder1 = sceneManager->createObject();
-    GeometryFactory::createLoft(cylinder1, circle2, straightLine, 10, 10);
-    
-    cylinder1->setTransformation(Matrix4::translate(1,0,0));
-    
-    Object * cylinder2 = sceneManager->createObject();
-    GeometryFactory::createCylinder(cylinder2, 10,
-        10);
-    cylinder2->setTransformation(Matrix4::translate(-1,0,0));
-
-    
     
     Object * mineCartObj = sceneManager->createObject();
     GeometryFactory::createSphere(mineCartObj);
@@ -761,11 +561,6 @@ void RenderWidget0::test()
 
 
     sceneManager->getRoot()->addChild(minecart);
-    
-    /*
-    sceneManager->getRoot()->addChild(new Shape3D(cylinder1));
-    sceneManager->getRoot()->addChild(new Shape3D(cylinder2));
-*/
     
     
 }

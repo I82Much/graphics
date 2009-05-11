@@ -26,7 +26,7 @@ namespace RE167 {
             Vector3 color;
         };
         
-        // Represents a quadrilateral face (coplanar) on a piece of
+        // Represents a quadrilateral face (not necessarily coplanar) on a piece of
         // geometry.
         struct Face {
             VertexAttributes upperLeft;
@@ -43,6 +43,15 @@ namespace RE167 {
     	static const int NUM_VERTICES_PER_TRIANGLE;
     	static const int NUM_COMPONENTS_PER_VERTEX;
     	static const int NUM_COMPONENTS_PER_RECTANGULAR_FACE;
+        static const int NUM_POSITION_COMPONENTS_PER_VERTEX;
+        static const int NUM_COLOR_COMPONENTS_PER_VERTEX;
+        static const int NUM_NORMAL_COMPONENTS_PER_VERTEX;
+        
+        static Object * createObjectFromFaces( std::vector<Face> faces, 
+                                            bool hasNormals, 
+                                            bool hasColors,
+                                            bool hasTextureCoords);
+        
 
     	static void createCube(Object *o);
     	static void createHouses(Object *object);
@@ -91,8 +100,7 @@ namespace RE167 {
             int &numVertices,
             int &numIndices);
 
-        static void createLoft(
-            Object * o,
+        static Object * createLoft(
             const Spline &shape,
             const Spline &path,
             const int numPointsToEvaluateAlongShape = 10,
@@ -117,17 +125,17 @@ namespace RE167 {
         );
         
         
-        static std::vector<Face> createLoft(
-            const Spline &shape,
-            const Spline &path,
-            const int numPointsToEvaluateAlongShape,
-            const int numPointsToEvaluateAlongPath
-        );
-        
+        // static std::vector<Face> createLoft(
+        //             const Spline &shape,
+        //             const Spline &path,
+        //             const int numPointsToEvaluateAlongShape,
+        //             const int numPointsToEvaluateAlongPath
+        //         );
+        //         
          
         
         
-        static void createSurfaceOfRevolution(Object *o, 
+        static Object * createSurfaceOfRevolution( 
             const Spline &generatrix,
             int numPointsToEvaluateAlongCurve = 10,
             int numberOfAnglesToRotate = 18);
