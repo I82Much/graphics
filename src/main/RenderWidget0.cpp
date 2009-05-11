@@ -251,25 +251,23 @@ void RenderWidget0::initStillLife()
 
 }
 
-void RenderWidget0::initCamera()
-{
+void RenderWidget0::initCamera() {
     Vector3 cameraCenter = Vector3(0,0,10);
 	Vector3 lookAtPoint = Vector3(0,0,-1);
 	Vector3 upVector = Vector3(0,1,0);
 
-	camera = sceneManager->createCamera();
+//	camera = sceneManager->createCamera();
 	
 	// TODO: the camera stuff will only work if setFrustum is called first!!
 	
+	Camera* camera = new Camera();
 	camera->setFrustum(1, 100, 1, BasicMath::radians(60));
 	camera->changeSettings(cameraCenter, lookAtPoint, upVector);
 	
 	
-    CameraNode * cn = new CameraNode(camera);
-//    torsoTransform->addChild(cn);
-  //  geometryGroup->addChild(cn);
+    cameraNode = new CameraNode(camera);
     
-    //sceneManager->getRoot()->addChild(cn);
+    sceneManager->getRoot()->addChild(cameraNode);
 	
     
 }
@@ -286,6 +284,8 @@ void RenderWidget0::initLights()
     blue->setSpecularColor(Vector3(1,1,1));
     blue->setSpotDirection(Vector3(0,0,1));
     blue->setPosition(Vector3(0,1,0));
+	blue->setSpotCutoff(90.0);
+	blue->setSpotExponent(1.0);
     
     
     LightNode * blueLight = new LightNode(blue);
@@ -293,15 +293,19 @@ void RenderWidget0::initLights()
     
     // Create a white light
     Light * white = sceneManager->createLight();
-    white->setDirection(Vector3(1,1,1));
+	white->setType(Light::SPOT);
+    white->setSpotDirection(Vector3(1,1,1));
     white->setDiffuseColor(Vector3(1,1,1));
     white->setAmbientColor(Vector3(.2,.2,.2));
     white->setSpecularColor(Vector3(1,1,1));
+	white->setSpotCutoff(90.0);
+	white->setSpotExponent(1.0);
     
     LightNode * whiteLight = new LightNode(white);
     
     
     sceneManager->getRoot()->addChild(blueLight);
+	sceneManager->getRoot()->addChild(whiteLight);
 }
 
 
@@ -327,9 +331,14 @@ void RenderWidget0::timerEvent(QTimerEvent *t)
     
     
     minecart->setTransformation(Matrix4::translate(loc.getX(), loc.getY(), loc.getZ()));
-/*    
-    camera->setTransformation(Matrix4::translate(loc.getX(), loc.getY(), loc.getZ()));
     
+	Vector3 oldCameraCenter = cameraNode->getCenterOfProjection();
+	Vector3 newCameraCenter = Vector3(Matrix4::translate(loc.getX(), loc.getY(), loc.getZ())*Vector4(oldCameraCenter));
+	
+//	Vector3 newLookAt = 
+	
+    cameraNode->updateProjection();
+/*    
     const Vector3 &getCenterOfProjection() const { return centerOfProjection; }
 	const Vector3 &getLookAtPoint() const { return lookAtPoint; }
 	const Vector3 &getUpVector() const { return upVector; }
@@ -513,15 +522,15 @@ void RenderWidget0::keyPressEvent ( QKeyEvent * k )
 	switch ( k->key() )  {
     // reload
     case Qt::Key_R:                               
-        camera->resetViewMatrix();
+        cameraNode->resetTransformation();
         break;
     // move forward
     case Qt::Key_Up: // Qt::Key_W
-        camera->setViewMatrix(Matrix4::translate(0,0,1) * camera->getViewMatrix());
+        cameraNode->setTransformation(Matrix4::translate(0,0,1) * cameraNode->getTransformation());
         break;
     // Move camera backwards
     case Qt::Key_Down: //Qt::Key_S:
-        camera->setViewMatrix(Matrix4::translate(0,0,-1) * camera->getViewMatrix());
+        cameraNode->setTransformation(Matrix4::translate(0,0,-1) * cameraNode->getTransformation());
         break;
     // Move camera left
     case Qt::Key_Left: //Key_A:
@@ -544,11 +553,11 @@ void RenderWidget0::keyPressEvent ( QKeyEvent * k )
     
     // Move camera up
     case Qt::Key_Q:
-        camera->setViewMatrix(Matrix4::translate(0,-1,0) * camera->getViewMatrix());
+        cameraNode->setTransformation(Matrix4::translate(0,-1,0) * cameraNode->getTransformation());
         break;
     // Move camera down
     case Qt::Key_Z:
-        camera->setViewMatrix(Matrix4::translate(0,1,0) * camera->getViewMatrix());
+        cameraNode->setTransformation(Matrix4::translate(0,1,0) * cameraNode->getTransformation());
         break;
 	}
 }
@@ -566,7 +575,19 @@ void RenderWidget0::toggleWireframe()
 void RenderWidget0::test() 
 {
     
+
     
+	// the attempt to have multiple shaders in one program - didn't work but still here as I'm not ready to 
+	// give up hope yet
+//	char** vertexFileNames = new char*[2];
+//	vertexFileNames[0] = "src/Shaders/finalLight.vert";
+//	vertexFileNames[1] = "src/Shaders/finalSpots.vert";
+//	char** fragmentFileNames = new char*[2];
+//	fragmentFileNames[0] = "src/Shaders/finalLight.frag";
+//	fragmentFileNames[1] = "src/Shaders/finalSpots.vert";
+//	Shader* twoSpotTexture = new Shader(vertexFileNames, fragmentFileNames, 2);
+	Shader* twoSpotTexture = new Shader("src/Shaders/finalSpotLights.vert", "src/Shaders/finalSpotLights.frag");
+	
     Vector3 t1(0,4,1);
     Vector3 t2(1,3,5);
     Vector3 t3(2,2,6);
@@ -697,6 +718,7 @@ void RenderWidget0::test()
     GeometryFactory::createLoft(loft, square, *track , 5 ,50);
     
     Material * extrudedShapeMaterial = new Material(Brass);
+	extrudedShapeMaterial->setShader(twoSpotTexture);
     
     // Set up the textures
 
@@ -721,7 +743,7 @@ void RenderWidget0::test()
    
     
     sceneManager->getRoot()->addChild(new Shape3D(loft));
-    //sceneManager->getRoot()->addChild(new Shape3D(trackLoft));
+    sceneManager->getRoot()->addChild(new Shape3D(trackLoft));
     
     Object * cylinder1 = sceneManager->createObject();
     GeometryFactory::createLoft(cylinder1, circle2, straightLine, 10, 10);
@@ -741,6 +763,7 @@ void RenderWidget0::test()
     Shape3D * minecartShape = new Shape3D(mineCartObj);
     minecart = new TransformGroup();
     minecart->addChild(minecartShape);
+	minecart->addChild(cameraNode);
 
 
     sceneManager->getRoot()->addChild(minecart);

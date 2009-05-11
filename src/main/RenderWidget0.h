@@ -6,6 +6,7 @@
 #include "GLRenderWidget.h"
 //#include "Object.h"
 #include "Vector3.h"
+#include "scenegraph/CameraNode.h"
 
 
 namespace RE167 {
@@ -56,7 +57,7 @@ namespace RE167 {
 
     private:
     	SceneManager *sceneManager;
-        Camera *camera;
+        CameraNode *cameraNode;
 
         // TODO: clean this stuff out
         Object *object;
