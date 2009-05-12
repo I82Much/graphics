@@ -9,6 +9,8 @@
 
 #include <qdatetime.h>
 
+#include <iostream>
+
 using namespace RE167;
 
 GLRenderContext* GLRenderContext::getSingletonPtr(void)
@@ -210,7 +212,7 @@ void GLRenderContext::setLightNodes(const std::list<LightNode*> &lightList)
 		for (iter=lightList.begin(); iter!=lightList.end() && i<8; iter++)
 		{
 			Light *l = (*iter)->getLight();
-            Matrix4 transform = (*iter)->getTransformation();
+//            Matrix4 transform = (*iter)->getTransformation();
 
 
 			glEnable(lightIndex[i]);
@@ -219,7 +221,7 @@ void GLRenderContext::setLightNodes(const std::list<LightNode*> &lightList)
 			{
                 Vector3 dir = l->getDirection();
                 Vector4 dir4(dir.getX(), dir.getY(), dir.getZ(), 0);
-                dir4 = transform * dir4;
+//                dir4 = transform * dir4;
                 
 				float direction[4];
 				direction[0] = dir4.getX();
@@ -232,7 +234,7 @@ void GLRenderContext::setLightNodes(const std::list<LightNode*> &lightList)
 			{
 			    Vector3 pos = l->getPosition();
                 Vector4 pos4(pos.getX(), pos.getY(), pos.getZ(), 0);
-                pos4 = transform * pos4;
+//                pos4 = transform * pos4;
                 
 				float position[4];
 				position[0] = pos4.getX();
@@ -245,7 +247,7 @@ void GLRenderContext::setLightNodes(const std::list<LightNode*> &lightList)
 			{
                 Vector3 spotDir = l->getSpotDirection();
                 Vector4 spotDir4(spotDir.getX(), spotDir.getY(), spotDir.getZ(), 0);
-                spotDir4 = transform * spotDir4;
+//                spotDir4 = transform * spotDir4;
                 
 			    
 				float spotDirection[3];

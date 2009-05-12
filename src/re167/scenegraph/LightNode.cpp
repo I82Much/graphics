@@ -9,4 +9,33 @@ using namespace RE167;
 void LightNode::draw(const Matrix4 &t, RenderContext * context, Camera * camera, bool cull)
 {}
 
+void LightNode::setSpotDirection(const Vector3& s) {
+	spotDirection = s;
+	updateLight();
+}
 
+void LightNode::setPosition(const Vector3& p) {
+	position = p;
+	updateLight();
+}
+
+void LightNode::setDirection(const Vector3& d) {
+	direction = d;
+	updateLight();
+}
+
+void LightNode::setTransformation(const Matrix4& t) {
+	transform = t;
+//	spotDirection = Vector3(transform*Vector4(spotDirection));
+//	position = Vector3(transform*Vector4(position));
+//	direction = Vector3(transform*Vector4(direction));
+	updateLight();
+	
+}
+
+void LightNode::updateLight() {
+//	light->setSpotDirection(Vector3(transform*Vector4(spotDirection)));
+	light->setSpotDirection(spotDirection);
+	light->setPosition(Vector3(transform*Vector4(position)));
+	light->setDirection(Vector3(transform*Vector4(direction)));
+}

@@ -4,6 +4,8 @@
 #include "Leaf.h"
 #include "Matrix4.h"
 
+#include <iostream>
+
 namespace RE167
 {
     class Light;
@@ -14,7 +16,13 @@ namespace RE167
 	{
     public:
         
-        LightNode(Light * aLight) : light(aLight) {}
+        LightNode(Light * aLight) : light(aLight) {
+			spotDirection = light->getSpotDirection();
+			position = light->getPosition();
+			direction = light->getDirection();
+			isInUse = true;
+			transform = Matrix4::IDENTITY;
+		}
         // Nothing allocated.
         ~LightNode() {}
         
@@ -24,14 +32,32 @@ namespace RE167
         virtual void draw(const Matrix4 &t, RenderContext * context, Camera * camera, bool cull);
         
         inline void resetTransformation() { transform = Matrix4::IDENTITY; }
-        inline void setTransformation(const Matrix4 &t) { transform = t; }
+		void setTransformation(const Matrix4 &t);
         inline Matrix4 getTransformation() const { return transform; }
         
         static void test();
+		
+		void setSpotDirection(const Vector3& s);
+		void setPosition(const Vector3& p);
+		void setDirection(const Vector3& d);
+		
+		void updateLight();
         
+		// to allow some lights to be in use and others not to be in use
+		void enable() {isInUse = true;}
+		void disable() {isInUse = false;}
+		bool inUse() {return isInUse;}
+		
     protected:
         Light * light;
         Matrix4 transform;
+		
+		bool isInUse; // defaults to true
+		
+		// functionality of changing these values will be in the LightNode class, not GLRenderContext
+		Vector3 spotDirection;
+		Vector3 position;
+		Vector3 direction;
     };
 }
 

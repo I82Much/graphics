@@ -23,7 +23,7 @@ namespace RE167
         virtual void draw(const Matrix4 &t, RenderContext * context, Camera * Camera, bool cull);
         
         inline void resetTransformation() { transform = Matrix4::IDENTITY; }
-        inline void setTransformation(const Matrix4 &t) { transform = t; valueWasChanged = true; updateProjection();}
+        void setTransformation(const Matrix4 &t);
         inline Matrix4 getTransformation() const { return transform; }
         
         static void test();
@@ -42,9 +42,19 @@ namespace RE167
 		void updateProjection();
 		void updateProjection(Vector3 center, Vector3 lookAt, Vector3 lookUp);
 		
+		// given dx, dy, and dz, this adjusts centerOfProj, lookAtPoint, and lookUpVector to reflect
+		// the camera being translated - this means the lookUpVector does not change
+		void translateCamera(float dx, float dy, float dz);
+		
+		// determines if the camera is in use or not
 		void use() {isInUse = true;}
 		void disable() {isInUse = false;}
 		bool inUse() { return isInUse;}
+		
+		// determines the camera is affected by the scenegraph or not
+		void makeAffected() {isUnaffected = false;}
+		void makeUnaffected() {isUnaffected = true;}
+		bool unaffected() {return isUnaffected;}
 		
     protected:
         Camera * camera;
@@ -63,6 +73,9 @@ namespace RE167
 		
 		// a way to have multiple cameras in the scene and pick which to activate
 		bool isInUse; // if true, use this camera <- if there is more than one inUse() then the first found is used
+		
+		// can create cameras that are unaffected by the scenegraph i.e. transform is never used
+		bool isUnaffected; // defualt is false
 		
 		
     };

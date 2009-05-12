@@ -99,7 +99,7 @@ void SceneManager::addLightNodes(Node * node,
 {
     LightNode * ln = dynamic_cast<LightNode*>(node);
     // Current node is a light node
-    if ( ln != NULL ) {
+    if ( ln != NULL && ln->inUse()) {
         // Update the transformation
         ln->setTransformation(transform);
         lightNodes.push_back( ln );
@@ -139,7 +139,7 @@ CameraNode * SceneManager::findCamera(Node * root, const Matrix4 &transform) {
         return camera;
     }
     
-    // The current node is not a camera.  If it's a leaf of any other type,
+    // The current node is not a camera or is not in use.  If it's a leaf of any other type,
     // return NULL; we didn't find it.
     if (dynamic_cast<Leaf*>(root) != NULL) {
         return NULL;

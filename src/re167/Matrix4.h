@@ -59,7 +59,8 @@ namespace RE167
             m[3][1] = m31;
             m[3][2] = m32;
             m[3][3] = m33;
-        }
+
+		}
 		
 		/**
 		* Given four column vectors, create
@@ -89,6 +90,7 @@ namespace RE167
 			m[1][3] = col4.getY();
 			m[2][3] = col4.getZ();
 			m[3][3] = col4.getW();
+			
 		}
 
 		inline Matrix4 operator*(const Matrix4 &m2) const
@@ -125,6 +127,7 @@ namespace RE167
 		static int testRotateY();
 		static int testRotateZ();
 		static int testRotateArbitrary();
+		static int testInverse();
 
 
 
@@ -156,13 +159,28 @@ namespace RE167
 			return r;
 		}
 
+		
+		// Added functionality for a matrix inverse computation
+		Matrix4 inverse();
+		bool isOrthonormal();
+		float calculateDeterminant(); // computes the determinant of the given Matrix4
+		float calculateDeterminant(float* matrix3); // computes the determinant of the 3x3 matrix
+		Matrix4 computeAdjugate ();
+		float getCofactor(int i, int j);
+		
+		// returns the given row or column as a Vector4
+		Vector4 getRow (const int r);
+		Vector4 getColumn (const int c);
+		
+		
+		
 		inline float* getElementPointer()
 		{
 			return static_cast<float *>(_m);
 		}
 
 		friend std::ostream &operator<<(std::ostream &os, const Matrix4 &obj);
-
+		
 	};
 
 	inline std::ostream &operator<<(std::ostream &os, const Matrix4 &obj) { 

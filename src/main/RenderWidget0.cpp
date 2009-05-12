@@ -105,6 +105,7 @@ void RenderWidget0::initCamera() {
 	
 	
     stillCamera = new CameraNode(camera);
+	stillCamera->makeUnaffected(); // now the still camera will not be affected by the scenegraph
     
     sceneManager->getRoot()->addChild(stillCamera);
 	
@@ -160,7 +161,7 @@ void RenderWidget0::resizeRenderWidgetEvent(const QSize &s)
 void RenderWidget0::timerEvent(QTimerEvent *t)
 {
     static int segment = 0;
-    static const int numSegments = 3000;
+    static const int numSegments = 5000;
     
         
     static const std::vector<Vector3> positions = track->uniformPointSample(numSegments);
@@ -181,14 +182,14 @@ void RenderWidget0::timerEvent(QTimerEvent *t)
 	
 	// now that we have the referenceFrames, we need the Basis for this location:
 	// (the -1 is because segment has been incremented)
-	
-	// now the tangent is v and the normal is u
+		
+	// the tangent is v and the normal is u
 	Vector3 newLookAt = movingCamera->getCenterOfProjection() + referenceFrames[(segment-1) % numSegments].getV();
 	Vector3 newLookUp = referenceFrames[(segment-1) % numSegments].getU();
 	
 	// now we update the camera
 	movingCamera->updateProjection(movingCamera->getCenterOfProjection(), newLookAt, newLookUp);
-	whiteLight->getLight()->setSpotDirection(referenceFrames[(segment-1) % numSegments].getV());
+	whiteLight->setSpotDirection(referenceFrames[(segment-1) % numSegments].getV());
     
     updateScene();
 	counter++;
@@ -246,6 +247,9 @@ void RenderWidget0::mouseMoveEvent(QMouseEvent *e)
 	// Apply transformation to the objects in the scene
     TransformGroup * root = sceneManager->getRoot();
     root->setTransformation(rotation * root->getTransformation());
+	
+//	Matrix4 inverseRotation = rotation.inverse();
+//	stillCamera->updateSettings(inverseRotation);
 	
 //	camera->setViewMatrix(camera->getViewMatrix() * rotation);
     
@@ -360,47 +364,45 @@ void RenderWidget0::keyPressEvent ( QKeyEvent * k )
     TransformGroup * root = sceneManager->getRoot();
          
 	switch ( k->key() )  {
-    // reload
-    case Qt::Key_R:                               
-        stillCamera->resetTransformation();
-        break;
-    // move forward
-    case Qt::Key_Up: // Qt::Key_W
-        stillCamera->setTransformation(Matrix4::translate(0,0,1) * stillCamera->getTransformation());
-        break;
-    // Move camera backwards
-    case Qt::Key_Down: //Qt::Key_S:
-        stillCamera->setTransformation(Matrix4::translate(0,0,-1) * stillCamera->getTransformation());
-        break;
-    // Move camera left
-    case Qt::Key_Left: //Key_A:
-        root->setTransformation(Matrix4::translate(1,0,0) * root->getTransformation());
-    
-        //camera->setViewMatrix(Matrix4::translate(1,0,0) * camera->getViewMatrix());
-        break;
-    // Move camera right
-    case Qt::Key_Right: //D:
-        root->setTransformation(Matrix4::translate(-1,0,0) * root->getTransformation());
-    
-        //camera->setViewMatrix(Matrix4::translate(-1,0,0) * camera->getViewMatrix());
-        break;
+			// reload
+		case Qt::Key_R:                               
+			stillCamera->resetTransformation();
+			break;
+		// move forward
+		case Qt::Key_Up: // Qt::Key_W
+			stillCamera->translateCamera(0,0,-1);
+			break;
+		// Move camera backwards
+		case Qt::Key_Down: //Qt::Key_S:
+			stillCamera->translateCamera(0,0,1);
+			break;
+		// Move camera left
+		case Qt::Key_Left: //Key_A:
+			stillCamera->translateCamera(-1,0,0);
+			break;
+		// Move camera right
+		case Qt::Key_Right: //D:
+			stillCamera->translateCamera(1,0,0);
+			break;
     
     
-    // Toggle object level culling
-    case Qt::Key_C:
-        toggleCulling();
-        break;
+		// Toggle object level culling
+		case Qt::Key_C:
+			toggleCulling();
+			break;
     
-    // Move camera up
-    case Qt::Key_Q:
-        stillCamera->setTransformation(Matrix4::translate(0,-1,0) * stillCamera->getTransformation());
-        break;
-    // Move camera down
-    case Qt::Key_Z:
-        stillCamera->setTransformation(Matrix4::translate(0,1,0) * stillCamera->getTransformation());
-        break;
+		// Move camera up
+		case Qt::Key_Q:
+			stillCamera->translateCamera(0,1,0);
+			break;
+		// Move camera down
+		case Qt::Key_Z:
+			stillCamera->translateCamera(0,-1,0);
+			break;
 			
-	// switch between moving camera and still camera
+			
+			
+		// switch between moving camera and still camera
 		case Qt::Key_M:
 			if (stillCamera->inUse()) {
 				stillCamera->disable();
@@ -576,7 +578,7 @@ void RenderWidget0::test()
     //trackLoft->setMaterial(new Material(Bronze));
     
     
-    sceneManager->getRoot()->addChild(new Shape3D(loft));
+//    sceneManager->getRoot()->addChild(new Shape3D(loft));
     sceneManager->getRoot()->addChild(new Shape3D(trackLoft));
     
     Object * mineCartObj = sceneManager->createObject();
@@ -591,7 +593,7 @@ void RenderWidget0::test()
 	Camera* moveCamera = new Camera();
 	movingCamera = new CameraNode(moveCamera);
 	// now we modify the camera so that it sits where we want it to relative to the minecart
-	movingCamera->updateProjection(Vector3(0,1,0),Vector3(0,1,-1),Vector3(0,1,0));
+	movingCamera->updateProjection(Vector3(0,0,0),Vector3(0,0,-1),Vector3(0,1,0));
 	// then we add it as a child of the minecart so that it follows the cart around
 	minecart->addChild(movingCamera);
 	
@@ -608,11 +610,12 @@ void RenderWidget0::test()
     white->setDiffuseColor(Vector3(1,1,1));
     white->setAmbientColor(Vector3(.2,.2,.2));
     white->setSpecularColor(Vector3(1,1,1));
-	white->setSpotCutoff(90.0);
+	white->setSpotCutoff(30.0);
 	white->setSpotExponent(1.0);
-	white->setPosition(Vector3(0,0,-0.5));
+	white->setPosition(Vector3(0,0,0));
     
     whiteLight = new LightNode(white);
+	whiteLight->setPosition(Vector3(0,0,0));
 	minecart->addChild(whiteLight);
 	
 	

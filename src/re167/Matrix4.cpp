@@ -249,6 +249,7 @@ int Matrix4::runTestSuite() {
 	testRotateZ();
 	testRotateArbitrary();
 	testScale();
+	testInverse();
 
 	return EXIT_SUCCESS;
 }
@@ -338,5 +339,154 @@ int Matrix4::testScale() {
 	return EXIT_SUCCESS;
 }
 
+int Matrix4::testInverse() {
+	
+	Matrix4 test1 = Matrix4(cos(90), -sin(90),0,0,
+							sin(90), cos(90), 0,0,
+							0,0,1,0,
+							0,0,0,1);
+	Matrix4 test1Inverse = test1.inverse();
+	assert(test1*test1Inverse == Matrix4::IDENTITY);
+	assert(test1Inverse*test1 == Matrix4::IDENTITY);
+	
+	Matrix4 test2 = Matrix4(3,3,4,5,
+							7,6,8,9,
+							1,2,3,4,
+							9,8,7,6);
+	Matrix4 test2Inverse = test2.inverse();
+	assert(test2*test2Inverse == Matrix4::IDENTITY);
+	assert(test2Inverse*test2 == Matrix4::IDENTITY);
+	
+	return EXIT_SUCCESS;
+	
+}
+
+// row and column getters
+Vector4 Matrix4::getRow (const int r) {
+	assert(r >= 0 && r < 4);
+	
+	Vector4 toReturn(m[r][0], m[r][1], m[r][2], m[r][3]);
+	return toReturn;
+}
+
+Vector4 Matrix4::getColumn (const int c) {
+	assert(c >= 0 && c < 4);
+	
+	Vector4 toReturn(m[0][c], m[1][c], m[2][c], m[3][c]);
+	return toReturn;
+}
 
 
+// calulate the inverse of the Matrix4 object
+Matrix4 Matrix4::inverse() {
+	if (isOrthonormal()) {
+		return transpose();
+	}
+	
+	float determinant =	calculateDeterminant();
+	Matrix4 adjugate = computeAdjugate();
+	
+	// matrix should be non-singular - else the inverse does not exist
+	assert(determinant != 0);
+	
+	float inverseDeterminant = 1.f/determinant;
+	
+	Matrix4 theInverse;
+	theInverse.m[0][0] = inverseDeterminant*adjugate.m[0][0];
+	theInverse.m[0][1] = inverseDeterminant*adjugate.m[0][1];
+	theInverse.m[0][2] = inverseDeterminant*adjugate.m[0][2];
+	theInverse.m[0][3] = inverseDeterminant*adjugate.m[0][3];
+
+	theInverse.m[1][0] = inverseDeterminant*adjugate.m[1][0];
+	theInverse.m[1][1] = inverseDeterminant*adjugate.m[1][1];
+	theInverse.m[1][2] = inverseDeterminant*adjugate.m[1][2];
+	theInverse.m[1][3] = inverseDeterminant*adjugate.m[1][3];
+
+	theInverse.m[2][0] = inverseDeterminant*adjugate.m[2][0];
+	theInverse.m[2][1] = inverseDeterminant*adjugate.m[2][1];
+	theInverse.m[2][2] = inverseDeterminant*adjugate.m[2][2];
+	theInverse.m[2][3] = inverseDeterminant*adjugate.m[2][3];
+
+	theInverse.m[3][0] = inverseDeterminant*adjugate.m[3][0];
+	theInverse.m[3][1] = inverseDeterminant*adjugate.m[3][1];
+	theInverse.m[3][2] = inverseDeterminant*adjugate.m[3][2];
+	theInverse.m[3][3] = inverseDeterminant*adjugate.m[3][3];
+	
+	return theInverse;
+
+}
+
+// determine if the Matrix4 is orthonormal
+bool Matrix4::isOrthonormal () {
+	
+	if (getColumn(3) != Vector4(0,0,0,1)) {
+		return false;
+	} // cannot be an orthogonal matrix of the form we have if the last column is not (0,0,0,1)
+	
+	Vector3 u = Vector3(getColumn(0));
+	Vector3 v = Vector3(getColumn(1));
+	Vector3 w = Vector3(getColumn(2));
+	
+	return (u.isUnitVector()) && (v.isUnitVector()) && (w.isUnitVector()) &&
+			BasicMath::approxEqual(u.dotProduct(v),0) && 
+			BasicMath::approxEqual(v.dotProduct(w), 0) && 
+			BasicMath::approxEqual(w.dotProduct(u), 0);
+	
+}
+
+// calculates the determinant of this Matrix4
+// we expand accross the bottom row of the Matrix4 since, usually, that row will be (0,0,0,1)
+float Matrix4::calculateDeterminant() {
+	
+	float cofactor0 = getCofactor(3,0);
+	float cofactor1 = getCofactor(3,1);
+	float cofactor2 = getCofactor(3,2);
+	float cofactor3 = getCofactor(3,3);
+	
+	return m[3][0]*cofactor0 + m[3][1]*cofactor1 + m[3][2]*cofactor2 + m[3][3]*cofactor3;
+	
+}
+
+// calculates the determinant of the given 3x3 matrix - entries are given across rows so the matrix is:
+// matrix3[0] matrix3[1] matrix3[2]
+// matrix3[3] matrix3[4] matrix3[5]
+// matrix3[6] matrix3[7] matrix3[8]
+float Matrix4::calculateDeterminant(float* matrix3) {
+	
+	float cofactor0 = matrix3[4]*matrix3[8] - matrix3[5]*matrix3[7];
+	float cofactor1 = matrix3[3]*matrix3[8] - matrix3[5]*matrix3[6];
+	float cofactor2 = matrix3[3]*matrix3[7] - matrix3[4]*matrix3[6];
+	
+	return matrix3[0]*cofactor0 - matrix3[1]*cofactor1 + matrix3[2]*cofactor2;
+	
+}
+
+Matrix4 Matrix4::computeAdjugate() {
+	Matrix4 cofactorMatrix = Matrix4(getCofactor(0,0), getCofactor(0,1), getCofactor(0,2), getCofactor(0,3), 
+									 getCofactor(1,0), getCofactor(1,1), getCofactor(1,2), getCofactor(1,3),
+									 getCofactor(2,0), getCofactor(2,1), getCofactor(2,2), getCofactor(2,3),
+									 getCofactor(3,0), getCofactor(3,1), getCofactor(3,2), getCofactor(3,3));
+	
+	Matrix4 adjugate = cofactorMatrix.transpose();
+	
+	return adjugate;
+
+}
+
+float Matrix4::getCofactor (int i, int j) {
+	int sign = pow(-1, i+j);
+	
+	float cofactor[9];
+	int k = 0;
+	for (int row = 0; row < 4; row++) {
+		for (int col = 0; col < 4; col++) {
+			if (row != i && col != j) {
+				cofactor[k] = m[row][col];
+				k++;
+			}
+		}
+	}
+	assert(k==9);
+	
+	return sign*calculateDeterminant(cofactor);
+} // end getCofactor

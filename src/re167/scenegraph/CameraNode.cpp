@@ -12,10 +12,26 @@ CameraNode::CameraNode (Camera* aCamera) : camera(aCamera) {
 	valueWasChanged = false;
 	isInUse = true;
 	transform = Matrix4::IDENTITY;
+	isUnaffected = false;
 }
 
 // Do nothing.
 void CameraNode::draw(const Matrix4 &t, RenderContext * context, Camera * Camera, bool cull) {}
+
+
+// set the transformation matrix of the camera node
+void CameraNode::setTransformation(const Matrix4 &t) {
+	transform = t;
+	valueWasChanged = true;
+	updateProjection();
+}
+
+void CameraNode::translateCamera(float dx, float dy, float dz) {
+	Matrix4 t = Matrix4::translate(dx, dy, dz);
+	Vector3 newCenter = Vector3(t*Vector4(centerOfProj));
+	Vector3 newLookAt = Vector3(t*Vector4(lookAtPoint));
+	updateProjection(newCenter, newLookAt, lookUpVector);
+}
 
 // set the values needed for the projection matrix and indicate that they have been changed
 void CameraNode::setCenter (Vector3 center) {
@@ -43,7 +59,7 @@ void CameraNode::setRotation (float rotate) {
 }
 
 void CameraNode::updateProjection () {
-	if (valueWasChanged) {
+	if (valueWasChanged && !isUnaffected) {
 		
 		Vector3 newCenter = Vector3(transform*Vector4(centerOfProj));
 		
@@ -51,6 +67,20 @@ void CameraNode::updateProjection () {
 		Vector3 newLookAt = Vector3(transform*rotationMatrix*Vector4(lookAtPoint));
 		
 		Vector3 newLookUp = Vector3(transform*Vector4(lookUpVector));
+		
+		camera->changeSettings(newCenter, newLookAt, newLookUp);
+		
+		valueWasChanged = false;
+		
+	}
+	else if (valueWasChanged && isUnaffected) {
+		
+		Vector3 newCenter = Vector4(centerOfProj);
+		
+		Matrix4 rotationMatrix = Matrix4::rotate(Vector4(lookUpVector), rotation);
+		Vector3 newLookAt = Vector3(rotationMatrix*Vector4(lookAtPoint));
+		
+		Vector3 newLookUp = lookUpVector;
 		
 		camera->changeSettings(newCenter, newLookAt, newLookUp);
 		

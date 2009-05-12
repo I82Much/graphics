@@ -3,6 +3,7 @@
 
 #include "RE167_global.h"
 #include <iostream>
+#include "BasicMath.h"
 
 
 namespace RE167 {
@@ -63,6 +64,8 @@ namespace RE167 {
 			const Vector3 normalize() const;
 
 			const float magnitude() const;
+		
+		const bool isUnitVector() const { return BasicMath::approxEqual(magnitude(), 1);}
 
 			const float getX() const { return x; }
 			const float getY() const { return y; }
