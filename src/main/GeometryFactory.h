@@ -47,6 +47,8 @@ namespace RE167 {
         static const int NUM_POSITION_COMPONENTS_PER_VERTEX;
         static const int NUM_COLOR_COMPONENTS_PER_VERTEX;
         static const int NUM_NORMAL_COMPONENTS_PER_VERTEX;
+        static const int NUM_TEXTURE_COMPONENTS_PER_VERTEX;
+        
         
         static Object * createObjectFromFaces( std::vector<Face> faces, 
                                             bool hasNormals, 

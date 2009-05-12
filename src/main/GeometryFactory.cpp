@@ -60,6 +60,8 @@ const int GeometryFactory::NUM_COMPONENTS_PER_RECTANGULAR_FACE =
 const int GeometryFactory::NUM_POSITION_COMPONENTS_PER_VERTEX = 3;
 const int GeometryFactory::NUM_COLOR_COMPONENTS_PER_VERTEX = 3;
 const int GeometryFactory::NUM_NORMAL_COMPONENTS_PER_VERTEX = 3;
+const int GeometryFactory::NUM_TEXTURE_COMPONENTS_PER_VERTEX = 2;
+
     
 
 /**
@@ -1780,32 +1782,73 @@ Object * GeometryFactory::createObjectFromFaces( std::vector<Face> faces,
     const int numVertices = NUM_TRIANGLES_PER_RECTANGULAR_FACE * 
                             NUM_VERTICES_PER_TRIANGLE *
                             faces.size();
+    const int numIndices = numVertices;
+                        
 
-    
-    
+    // Allocate space for the raw arrays
     float * vertices = new float[numVertices * NUM_POSITION_COMPONENTS_PER_VERTEX];
     float * normals = new float[numVertices * NUM_NORMAL_COMPONENTS_PER_VERTEX];
     float * colors = new float[numVertices * NUM_COLOR_COMPONENTS_PER_VERTEX];
-    int * indices = new int[numVertices];
+    float * textureCoords = new float[numVertices * NUM_TEXTURE_COMPONENTS_PER_VERTEX];
+    int * indices = new int[numIndices];
     
     for(size_t i = 0; i < faces.size(); ++i)
     {
         Face f = faces[i];
         
         VertexAttributes upper_left = f.upperLeft;
-        VertexAttributes upper_Right = f.upperRight;
-        VertexAttributes lower_Right = f.lowerRight;
-        VertexAttributes upper_Left = f.upperLeft;
-        
-                // 
-                // Vertexstruct VertexAttributes {
-                //     Vector3 position;
-                //     Vector3 normal;
-                //     Vector3 textureCoords;
-                //     Vector3 color;
-                // };
-                // 
+        VertexAttributes upper_right = f.upperRight;
+        VertexAttributes lower_right = f.lowerRight;
+        VertexAttributes lower_left = f.lowerLeft;
 
+        // There are two triangular faces that must be made from these four
+        // vertices: 
+        // Face1: upper left, lower right, upper right
+        VertexAttributes f1_1 = upper_left;
+        VertexAttributes f1_2 = lower_right;
+        VertexAttributes f1_3 = upper_right;
+
+        // Face2: upper left, lower left, lower right
+        VertexAttributes f2_1 = upper_left;
+        VertexAttributes f2_2 = lower_left;
+        VertexAttributes f2_3 = lower_right;
+        
+        // Need to figure out where they go in the raw arrays
+
+        int start3Index =   NUM_TRIANGLES_PER_RECTANGULAR_FACE * 
+                            NUM_VERTICES_PER_TRIANGLE * 3;
+        int start2Index =   NUM_TRIANGLES_PER_RECTANGULAR_FACE * 
+                            NUM_VERTICES_PER_TRIANGLE * 2;
+
+        // Fill in all the raw arrays
+        fillInVertex(vertices, start3Index,    f1_1.position);
+        fillInVertex(vertices, start3Index+3,  f1_2.position);
+        fillInVertex(vertices, start3Index+6,  f1_3.position);
+        fillInVertex(vertices, start3Index+9,  f2_1.position);
+        fillInVertex(vertices, start3Index+12, f2_2.position);
+        fillInVertex(vertices, start3Index+15, f2_3.position);
+
+        fillInVertex(normals, start3Index,    f1_1.normal);
+        fillInVertex(normals, start3Index+3,  f1_2.normal);
+        fillInVertex(normals, start3Index+6,  f1_3.normal);
+        fillInVertex(normals, start3Index+9,  f2_1.normal);
+        fillInVertex(normals, start3Index+12, f2_2.normal);
+        fillInVertex(normals, start3Index+15, f2_3.normal);
+        
+        fillInVertex(colors, start3Index,    f1_1.color);
+        fillInVertex(colors, start3Index+3,  f1_2.color);
+        fillInVertex(colors, start3Index+6,  f1_3.color);
+        fillInVertex(colors, start3Index+9,  f2_1.color);
+        fillInVertex(colors, start3Index+12, f2_2.color);
+        fillInVertex(colors, start3Index+15, f2_3.color);
+        
+        fillIn2DCoords(textureCoords, start2Index,      f1_1.textureCoords);
+        fillIn2DCoords(textureCoords, start2Index+2,    f1_2.textureCoords);
+        fillIn2DCoords(textureCoords, start2Index+4,    f1_3.textureCoords);
+        fillIn2DCoords(textureCoords, start2Index+6,    f2_1.textureCoords);
+        fillIn2DCoords(textureCoords, start2Index+8,    f2_2.textureCoords);
+        fillIn2DCoords(textureCoords, start2Index+10,   f2_3.textureCoords);
+        
     }
     
     // Put in all the indices
@@ -1814,8 +1857,13 @@ Object * GeometryFactory::createObjectFromFaces( std::vector<Face> faces,
         indices[i] = i;
     }
     
-    // TODO: fix thi
-    return NULL;
+    Object * o = new Object();
+
+    // Copy all these raw arrays into the object
+    fillInObject(o, vertices, normals, textureCoords, colors, indices,
+            numVertices, numIndices);
+
+    return o;
 }
 
 /**
