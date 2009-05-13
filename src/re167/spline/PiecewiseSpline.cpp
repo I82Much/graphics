@@ -36,13 +36,30 @@ Vector3 PiecewiseSpline::position(float t) const
     
     return Vector3(transformation * Vector4::homogeneousVector(result));
 }
-Vector3 PiecewiseSpline::tangent(float t) const
-{
+Vector3 PiecewiseSpline::tangent(float t) const {
+	// Since we don't enforce C1 continuity of the PiecewiseSpline, we need to average tangents approaching the breakpoints
+	
     int curveIndex;
     float tPrime;
     calculateCurve(t, curveIndex, tPrime);
 
     Vector3 result = pieces[curveIndex]->tangent(tPrime);
+	
+	// now, we have to determine if we are approaching a breakpoint
+	// first, we must determine how many pieces there are and make sure we're not on the last piece
+	int numCurves = static_cast<int>(pieces.size());
+	bool onLast = (numCurves == curveIndex + 1);
+	// tPrime is between 0 and 1 so we will see if it is "close enough" to 1 (if we are on the last piece, we do nothing)
+	if (1 - tPrime < 0.01 && !onLast) {
+		// we will take the average of this tangent, the tangent half as close to tPrime = 1 and the mirrored vectors in
+		// in the next piece
+		Vector3 nextOnThisPiece = pieces[curveIndex]->tangent(tPrime + ((1-tPrime)/2.0));
+		Vector3 firstOnNextPiece = pieces[curveIndex + 1]->tangent((1-tPrime)/2.0);
+		Vector3 secondOnNextPiece = pieces[curveIndex + 1]->tangent(1-tPrime);
+		
+		// now we average them all
+		result = 0.25 * (result + nextOnThisPiece + firstOnNextPiece + secondOnNextPiece);
+	}
 
     return Vector3(transformation * Vector4::homogeneousVector(result));
 }

@@ -10,7 +10,7 @@ void LightNode::draw(const Matrix4 &t, RenderContext * context, Camera * camera,
 {}
 
 void LightNode::setSpotDirection(const Vector3& s) {
-	spotDirection = s;
+	spotDirection = s.normalize();
 	updateLight();
 }
 

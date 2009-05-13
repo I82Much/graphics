@@ -100,7 +100,7 @@ void RenderWidget0::initCamera() {
 	// TODO: the camera stuff will only work if setFrustum is called first!!
 	
 	Camera* camera = new Camera();
-	camera->setFrustum(1, 100, 1, BasicMath::radians(60));
+	camera->setFrustum(0.5, 100, 1, BasicMath::radians(60));
 	camera->changeSettings(cameraCenter, lookAtPoint, upVector);
 	
 	
@@ -161,13 +161,13 @@ void RenderWidget0::resizeRenderWidgetEvent(const QSize &s)
 void RenderWidget0::timerEvent(QTimerEvent *t)
 {
     static int segment = 0;
-    static const int numSegments = 5000;
-    
-        
-    static const std::vector<Vector3> positions = track->uniformPointSample(numSegments);
-    
-
-    Vector3 loc = positions[segment % numSegments];
+	
+	// true indicates that adaptive sampling will be used
+	static const std::vector<Basis> referenceFrames = track->getReferenceFrames(10000, true);
+	
+    static const int numSegments = referenceFrames.size();
+	
+    Vector3 loc = referenceFrames[segment % numSegments].getOrigin();
     segment++;
     
     
@@ -177,20 +177,15 @@ void RenderWidget0::timerEvent(QTimerEvent *t)
 	// We do not need to worry about changing the center of projection because in the scene graph, the camera is a child
 	// of the minecart so that center should follow the minecart.
 	// We do have to change the lookAtPoint and the lookUpVector and for that we need the referenceFrames for the track
-	
-	static const std::vector<Basis> referenceFrames = track->getReferenceFrames(numSegments);
-	
-	// now that we have the referenceFrames, we need the Basis for this location:
-	// (the -1 is because segment has been incremented)
-		
 	// the tangent is v and the normal is u
+	// (the -1 is because segment has been incremented)
 	Vector3 newLookAt = movingCamera->getCenterOfProjection() + referenceFrames[(segment-1) % numSegments].getV();
 	Vector3 newLookUp = referenceFrames[(segment-1) % numSegments].getU();
 	
 	// now we update the camera
 	movingCamera->updateProjection(movingCamera->getCenterOfProjection(), newLookAt, newLookUp);
 	whiteLight->setSpotDirection(referenceFrames[(segment-1) % numSegments].getV());
-    
+		    
     updateScene();
 	counter++;
 }
@@ -247,12 +242,7 @@ void RenderWidget0::mouseMoveEvent(QMouseEvent *e)
 	// Apply transformation to the objects in the scene
     TransformGroup * root = sceneManager->getRoot();
     root->setTransformation(rotation * root->getTransformation());
-	
-//	Matrix4 inverseRotation = rotation.inverse();
-//	stillCamera->updateSettings(inverseRotation);
-	
-//	camera->setViewMatrix(camera->getViewMatrix() * rotation);
-    
+	    
     
     /*
     int dx = lastX - x;
@@ -432,6 +422,7 @@ void RenderWidget0::test()
 
     // this shader supports two spot lights
 	Shader* twoSpotTexture = new Shader("src/Shaders/finalSpotLights.vert", "src/Shaders/finalSpotLights.frag");
+	twoSpotTexture = NULL;
 	// this shader should support 8 lights - 2 spot lights and 6 point lights
 //	Shader* lightingTexture = new Shader("src/Shaders/finalLight.vert", "src/Shaders/finalLight.frag");
 	

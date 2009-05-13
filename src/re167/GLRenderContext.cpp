@@ -192,7 +192,18 @@ void GLRenderContext::render(Object *object)
 void GLRenderContext::setLightNodes(const std::list<LightNode*> &lightList) 
 {
     
-    GLint lightIndex[] = {GL_LIGHT0, GL_LIGHT1, GL_LIGHT2, GL_LIGHT3, GL_LIGHT4, GL_LIGHT5, GL_LIGHT6, GL_LIGHT7};
+	std::list<LightNode*>::const_iterator iter;
+	if (lightList.begin() != lightList.end()) {
+		std::list<Light*> theLights;
+		for (iter=lightList.begin(); iter!=lightList.end(); iter++)
+		{
+			Light *l = (*iter)->getLight();
+			theLights.push_back(l);
+		}
+		setLights(theLights);
+	}
+			
+/*    GLint lightIndex[] = {GL_LIGHT0, GL_LIGHT1, GL_LIGHT2, GL_LIGHT3, GL_LIGHT4, GL_LIGHT5, GL_LIGHT6, GL_LIGHT7};
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -284,7 +295,7 @@ void GLRenderContext::setLightNodes(const std::list<LightNode*> &lightList)
             
 		}
 	}
-    
+    */
     
     
 }

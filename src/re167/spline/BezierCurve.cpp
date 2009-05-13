@@ -78,7 +78,7 @@ Vector3 BezierCurve::tangent(float t) const
 {
     // Curve is only defined for values of t between 0 and 1
     assert(0.0f <= t && t <= numCubicSegments);
-    
+	
     int integer;
     float real;
     BasicMath::split(t, integer, real);
@@ -92,7 +92,25 @@ Vector3 BezierCurve::tangent(float t) const
     }
 
     Vector4 tVec(3*real*real, 2*real, 1, 0);
-    Vector4 tangent = matrices[subcurveIndex] * tVec;
+    Vector3 tangent = matrices[subcurveIndex] * tVec;
+	
+	// similarly to the code in PiecewiseSpline, since we do not enforce C1 continuity, we add the following
+	if (1 - real < 0.1 && (subcurveIndex != numCubicSegments - 1)) {
+		// we will take the average of this tangent, the tangent half as close to tPrime = 1 and the mirrored vectors in
+		// in the next piece
+		float nextT = real + ((1-real)/2.0);
+		float firstTOnNext = (1-real)/2.0;
+		float secondTOnNext = 1-real;
+		
+		Vector3 nextOnThisPiece = matrices[subcurveIndex] * Vector4(3*nextT*nextT, 2*nextT, 1, 0);
+		Vector3 firstOnNextPiece = matrices[subcurveIndex + 1] * Vector4(3*firstTOnNext*firstTOnNext, 2*firstTOnNext, 1, 0);
+		Vector3 secondOnNextPiece = matrices[subcurveIndex + 1] * Vector4(3*secondTOnNext*secondTOnNext, 2*secondTOnNext, 1, 0);
+		
+		// now we average them all
+		tangent = 0.25 * (tangent + nextOnThisPiece + firstOnNextPiece + secondOnNextPiece);
+		
+	}
+	
     return Vector3(tangent);
 }
 
@@ -194,6 +212,121 @@ std::vector<Vector3> BezierCurve::uniformAccelerationSample(int numPoints) const
     }
     return accelerationVectors;
 }
+
+
+/**
+ Adaptive sampling for a spline:
+ The first step is to compute the t-values to test - this is done by getTValues
+ Next, calculate the position, tangent, and acceleration at each of those t-values - this is done by adaptiveSample
+ **/
+void BezierCurve::adaptiveSample(int numSamples, std::vector<Vector3>& positionVectors,
+								 std::vector<Vector3>& tangentVectors, std::vector<Vector3>& accelerationVectors) const {
+	
+	std::vector<float> tValues = getTValues(numSamples);
+	
+	for (int i = 0; i < tValues.size(); i++) {
+		float t = tValues[i];
+		Vector3 point = position(t);
+		Vector3 tangentVector = tangent(t);
+		Vector3 accelerationVector = acceleration(t);
+		
+		positionVectors.push_back(point);
+		tangentVectors.push_back(tangentVector);
+		accelerationVectors.push_back(accelerationVector);
+	}
+	
+} // end adaptiveSample
+
+// to get the t-values, we first recursively divide the curve until we find a piece that is "flat enough"
+// then we add the last control point of that piece to the tValues vector
+// the numSamples parameter is used to dictate what the maximum step between tValues can be
+std::vector<float> BezierCurve::getTValues(int numSamples) const {
+	
+	// first we need to figure out the maximum step size:
+	float maxStepSize = static_cast<float>(numCubicSegments) / static_cast<float> (numSamples);
+	
+	// there is a tValue at 0
+	std::vector<float> tValues;
+	tValues.push_back(0.f);
+	
+//	std::cout << numCubicSegments << std::endl;
+	
+    for (int segment = 0; segment < numCubicSegments; segment++) {
+        // The curves are made of control points 0,1,2,3; 3,4,5,6...
+        // Thus the starting segment is 3*i.
+        int index = 3 * segment;
+        Vector3 p0 = transformation * Vector4::homogeneousPoint(controlPoints[index]);
+        Vector3 p1 = transformation * Vector4::homogeneousPoint(controlPoints[index+1]);
+        Vector3 p2 = transformation * Vector4::homogeneousPoint(controlPoints[index+2]);
+        Vector3 p3 = transformation * Vector4::homogeneousPoint(controlPoints[index+3]);
+        		
+//		float scaleTValuesBy = 1.f / static_cast<float> (numCubicSegments);
+		float startingTValue = static_cast<float> (segment);// / static_cast<float> (numCubicSegments);
+		recursivelyDivide(maxStepSize, p0, p1, p2, p3, 1, startingTValue, 1, tValues);
+		
+    }
+	
+	while (numCubicSegments - tValues.back() > maxStepSize) {
+		tValues.push_back(tValues.back() + maxStepSize);
+	}
+	tValues.push_back(numCubicSegments);
+	return tValues;
+	
+} // end getTValues
+
+
+// recursivelyDivide splits the given segment in two and adds tValues if the given piece is "flat enough"
+void BezierCurve::recursivelyDivide (float maxStepSize, Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3,
+									 float scaleTValuesBy, float startingTValue, int level,
+									 std::vector<float>& tValues) const {
+	
+	if (flatEnough(p0,p1,p2,p3,0.001)) {
+		float nextT = startingTValue + scaleTValuesBy*(pow(0.5, level));
+		assert(nextT <= numCubicSegments);
+		while (nextT - tValues.back() > maxStepSize) {
+			tValues.push_back(tValues.back() + maxStepSize);
+		}
+		tValues.push_back(nextT);
+		return;
+	}
+	
+	// not flat enough so we divide the segment in two using de Casteljau algorithm
+	Vector3 q0 = BasicMath::lerp(p0,p1,0.5);
+	Vector3 q1 = BasicMath::lerp(p1,p2,0.5);
+	Vector3 q2 = BasicMath::lerp(p2,p3,0.5);
+	Vector3 r0 = BasicMath::lerp(q0,q1,0.5);
+	Vector3 r1 = BasicMath::lerp(q1,q2,0.5);
+	Vector3 point = BasicMath::lerp(r0,r1,0.5);
+	
+	recursivelyDivide(maxStepSize, p0, q0, r0, point, scaleTValuesBy, startingTValue, level + 1, tValues);
+	recursivelyDivide(maxStepSize, point, r1, q2, p3, scaleTValuesBy,
+					  startingTValue + pow(0.5,level)*scaleTValuesBy, level + 1, tValues);
+	
+} // end recursivelyDivide
+
+// takes as input 4 points and a flatness parameter
+// returns true if the distance from p1 and p2 to the line p0p3 is less than flatness
+// idea from: http://mathforum.org/library/drmath/view/54731.html
+bool BezierCurve::flatEnough(Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3, float flatness)  const {
+	Vector3 p0p3 = p3 - p0;
+	Vector3 p0p1 = p1 - p0;
+	Vector3 p0p2 = p2 - p0;
+	
+	Vector3 cross0301 = p0p3.crossProduct(p0p1);
+	Vector3 cross0302 = p0p3.crossProduct(p0p2);
+	
+	// now the length of these vectors is the area of the parallelogram with sides p0p3,p0p1 and p0p3,p0p2 respectively
+	float area0301 = cross0301.magnitude();
+	float area0302 = cross0302.magnitude();
+	
+	// now the distance from p1 to p0p3 is area0301 / p0p3.magnitude(); similarly for p2 to p0p3
+	float distP1 = area0301 / p0p3.magnitude();
+	float distP2 = area0302 / p0p3.magnitude();
+	
+	return (distP1 < flatness && distP2 < flatness);
+	
+}
+
 
 // TODO: remove all this redundant stuff
 

@@ -57,6 +57,8 @@ vector <Vector3> Spline::uniformAccelerationSample(int numPoints) const
     return points;
 }
 
+
+
 /**
 * Calculates <code>numSamples</code> reference frames along the curve. In 
 * other words, a local coordinate system at uniformly sampled points along
@@ -87,17 +89,29 @@ vector <Vector3> Spline::uniformAccelerationSample(int numPoints) const
 *
 * @param numSamples how many different places along the spline to sample (and hence 
 * how many reference frames to calculate) 
+*
+* @param useAdaptive is true if adaptive sampling should be used, false otherwise
 **/
-vector <Basis> Spline::getReferenceFrames(int numSamples) const
+vector <Basis> Spline::getReferenceFrames(int numSamples, bool useAdaptive) const
 {
     assert(numSamples >= 1);
     
     vector <Basis> referenceFrames;
     
-    vector<Vector3> points =        uniformPointSample(numSamples);
-    vector<Vector3> tangents =      uniformTangentSample(numSamples);
-    vector<Vector3> accelerations = uniformAccelerationSample(numSamples);
-    
+	
+    vector<Vector3> points;
+    vector<Vector3> tangents;
+    vector<Vector3> accelerations;
+	
+	if (useAdaptive) {
+		adaptiveSample(numSamples, points, tangents, accelerations);
+		numSamples = points.size();
+	}
+	else {
+		points =        uniformPointSample(numSamples);
+		tangents =      uniformTangentSample(numSamples);
+		accelerations = uniformAccelerationSample(numSamples);
+	}
     
     const Basis initialBasis = 
         createInitialReferenceFrame(points[0], tangents[0], accelerations[0]);

@@ -27,9 +27,20 @@ namespace RE167 {
         virtual inline Matrix4 getTransformation() { return transformation; }
         virtual void setTransformation(const Matrix4 &t) { transformation = t; }
  
-        std::vector <Basis> getReferenceFrames(int numSamples) const;
+        std::vector <Basis> getReferenceFrames(int numSamples, bool useAdaptive) const;
         
-        
+		
+		// implements adaptive sampling of the Spline to get position, tangent, and acceleration
+		// note: couldn't figure out how to do it except in the BezierCurve case so that is the only subclass where
+		// these virtual functions are implemented
+		virtual void adaptiveSample(int numSamples, std::vector<Vector3>& position,
+									std::vector<Vector3>& tangent, std::vector<Vector3>& acceleration) const = 0;
+		virtual std::vector<float> getTValues(int numSamples) const = 0;
+		virtual void recursivelyDivide (float maxStepSize, Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3,
+										float scaleTValuesBy, float startingTValue, int level,
+										std::vector<float>& tValues) const = 0;
+        virtual bool flatEnough(Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3, float flatness) const = 0;
+		
         
     protected:
         Matrix4 transformation;
