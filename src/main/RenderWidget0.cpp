@@ -100,7 +100,7 @@ void RenderWidget0::initCamera() {
 	// TODO: the camera stuff will only work if setFrustum is called first!!
 	
 	Camera* camera = new Camera();
-	camera->setFrustum(1, 100, 1, BasicMath::radians(60));
+	camera->setFrustum(0.5, 100, 1, BasicMath::radians(60));
 	camera->changeSettings(cameraCenter, lookAtPoint, upVector);
 	
 	
@@ -161,36 +161,63 @@ void RenderWidget0::resizeRenderWidgetEvent(const QSize &s)
 void RenderWidget0::timerEvent(QTimerEvent *t)
 {
     static int segment = 0;
-    static const int numSegments = 5000;
-    
-        
-    static const std::vector<Vector3> positions = track->uniformPointSample(numSegments);
-    
-
-    Vector3 loc = positions[segment % numSegments];
+	
+	// true indicates that adaptive sampling will be used
+	static const std::vector<Basis> referenceFrames = track->getReferenceFrames(10000, true);
+	
+    static const int numSegments = referenceFrames.size();
+	
+    Vector3 loc = referenceFrames[segment % numSegments].getOrigin();
     segment++;
     
-    
-    minecart->setTransformation(Matrix4::translate(loc.getX(), loc.getY(), loc.getZ()));
+    // in minecart coordinates, the z-axis is the front and the y-axis points up
+	Vector3 zAxis(0,0,1);
+	Vector3 yAxis(0,1,0);
+	// we want the z-axis to line up with the tangent vector and the y-axis to line up with the normal vector
+	Vector3 tangent = referenceFrames[(segment-1) % numSegments].getV();
+	Vector3 normal = referenceFrames[(segment-1) % numSegments].getV();
+	
+	Matrix4 rotationMatrix;
+	if (zAxis == tangent) {
+		rotationMatrix = Matrix4::IDENTITY;
+	}
+	else {
+		Vector3 axis = tangent.crossProduct(zAxis).normalize();
+		Vector4 axisOfRotationVec4 = Vector4::homogeneousVector(axis);
+		
+		float angle = Vector3::angleBetween(tangent, zAxis);
+		rotationMatrix = Matrix4::rotate(axisOfRotationVec4, angle);
+	}
+	
+	// then we need to make sure that the y-axis lines up with the normal vector
+	Matrix4 rotationMatrix2;
+	Vector4 newYAxis = (rotationMatrix*Vector4::homogeneousVector(yAxis)).normalize();
+	if (newYAxis == normal) {
+		rotationMatrix2 = Matrix4::IDENTITY;
+	}
+	else {
+		Vector3 axis = normal.crossProduct(newYAxis).normalize();
+		Vector4 axisOfRotationVec4 = Vector4::homogeneousVector(axis);
+		
+		float angle = Vector3::angleBetween(normal,newYAxis);
+		rotationMatrix2 = Matrix4::rotate(axisOfRotationVec4,angle);
+	}
+	
+    minecart->setTransformation(Matrix4::translate(loc.getX(), loc.getY(), loc.getZ())*rotationMatrix2*rotationMatrix);
     
 	// we now add code to make the camera follow the mine cart
 	// We do not need to worry about changing the center of projection because in the scene graph, the camera is a child
 	// of the minecart so that center should follow the minecart.
 	// We do have to change the lookAtPoint and the lookUpVector and for that we need the referenceFrames for the track
-	
-	static const std::vector<Basis> referenceFrames = track->getReferenceFrames(numSegments);
-	
-	// now that we have the referenceFrames, we need the Basis for this location:
-	// (the -1 is because segment has been incremented)
-		
 	// the tangent is v and the normal is u
+	// (the -1 is because segment has been incremented)
 	Vector3 newLookAt = movingCamera->getCenterOfProjection() + referenceFrames[(segment-1) % numSegments].getV();
 	Vector3 newLookUp = referenceFrames[(segment-1) % numSegments].getU();
 	
 	// now we update the camera
 	movingCamera->updateProjection(movingCamera->getCenterOfProjection(), newLookAt, newLookUp);
-	whiteLight->setSpotDirection(referenceFrames[(segment-1) % numSegments].getV());
-    
+//	whiteLight->setSpotDirection(referenceFrames[(segment-1) % numSegments].getV());
+		    
     updateScene();
 	counter++;
 }
@@ -247,12 +274,7 @@ void RenderWidget0::mouseMoveEvent(QMouseEvent *e)
 	// Apply transformation to the objects in the scene
     TransformGroup * root = sceneManager->getRoot();
     root->setTransformation(rotation * root->getTransformation());
-	
-//	Matrix4 inverseRotation = rotation.inverse();
-//	stillCamera->updateSettings(inverseRotation);
-	
-//	camera->setViewMatrix(camera->getViewMatrix() * rotation);
-    
+	    
     
     /*
     int dx = lastX - x;
@@ -462,9 +484,10 @@ void RenderWidget0::test()
     
 
     // this shader supports two spot lights
-	//Shader* twoSpotTexture = new Shader("src/Shaders/finalSpotLights.vert", "src/Shaders/finalSpotLights.frag");
+	Shader * twoSpotTexture = new Shader("src/Shaders/finalSpotLights.vert", "src/Shaders/finalSpotLights.frag");
+	twoSpotTexture = NULL;
 	// this shader should support 8 lights - 2 spot lights and 6 point lights
-//	Shader* lightingTexture = new Shader("src/Shaders/finalLight.vert", "src/Shaders/finalLight.frag");
+    //	Shader* lightingTexture = new Shader("src/Shaders/finalLight.vert", "src/Shaders/finalLight.frag");
 
     
     Vector3 track1(0, -7998, 0);
@@ -580,7 +603,7 @@ void RenderWidget0::test()
 	Camera* moveCamera = new Camera();
 	movingCamera = new CameraNode(moveCamera);
 	// now we modify the camera so that it sits where we want it to relative to the minecart
-	movingCamera->updateProjection(Vector3(0,0,0),Vector3(0,0,-1),Vector3(0,1,0));
+	movingCamera->updateProjection(Vector3(0,0.5,0),Vector3(0,0.5,-1),Vector3(0,1,0));
 	// then we add it as a child of the minecart so that it follows the cart around
 	minecart->addChild(movingCamera);
 	

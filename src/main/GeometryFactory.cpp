@@ -1685,7 +1685,7 @@ void GeometryFactory::createLoft(
     
     // Calculate local coordinate systems for each point along the path spline
     // that we sample
-    vector <Basis> referenceFrames = path.getReferenceFrames(numPointsToEvaluateAlongPath);
+    vector <Basis> referenceFrames = path.getReferenceFrames(numPointsToEvaluateAlongPath, false);
 
     // For all the points along the path curve
     for (unsigned int i = 0; i < pathPoints.size(); i++) 
@@ -1807,7 +1807,7 @@ std::vector<GeometryFactory::Face> GeometryFactory::createLoft(
     
     // Calculate local coordinate systems for each point along the path spline
     // that we sample
-    vector <Basis> referenceFrames = path.getReferenceFrames(numPointsToEvaluateAlongPath);
+    vector <Basis> referenceFrames = path.getReferenceFrames(numPointsToEvaluateAlongPath, false);
 
     // For all the points along the path curve
     for (unsigned int i = 0; i < pathPoints.size(); i++) 

@@ -41,6 +41,9 @@ namespace RE167
 		void setPosition(const Vector3& p);
 		void setDirection(const Vector3& d);
 		
+		const Vector3& getSpotDirection () const {return spotDirection;}
+		const Vector3& getPosition () const {return position;}
+		
 		void updateLight();
         
 		// to allow some lights to be in use and others not to be in use
