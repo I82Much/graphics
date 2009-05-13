@@ -1731,7 +1731,7 @@ void GeometryFactory::createLoft(
             float v = pathTValue;    
             vecTexCoords[i].push_back(Vector3(u, v, 0));
             
-        }
+        } 
     }
     
     // We now have all of the vertices, normals, and texture coordinates we
