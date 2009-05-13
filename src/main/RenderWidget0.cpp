@@ -170,8 +170,40 @@ void RenderWidget0::timerEvent(QTimerEvent *t)
     Vector3 loc = referenceFrames[segment % numSegments].getOrigin();
     segment++;
     
-    
-    minecart->setTransformation(Matrix4::translate(loc.getX(), loc.getY(), loc.getZ()));
+    // in minecart coordinates, the z-axis is the front and the y-axis points up
+	Vector3 zAxis(0,0,1);
+	Vector3 yAxis(0,1,0);
+	// we want the z-axis to line up with the tangent vector and the y-axis to line up with the normal vector
+	Vector3 tangent = referenceFrames[(segment-1) % numSegments].getV();
+	Vector3 normal = referenceFrames[(segment-1) % numSegments].getV();
+	
+	Matrix4 rotationMatrix;
+	if (zAxis == tangent) {
+		rotationMatrix = Matrix4::IDENTITY;
+	}
+	else {
+		Vector3 axis = tangent.crossProduct(zAxis).normalize();
+		Vector4 axisOfRotationVec4 = Vector4::homogeneousVector(axis);
+		
+		float angle = Vector3::angleBetween(tangent, zAxis);
+		rotationMatrix = Matrix4::rotate(axisOfRotationVec4, angle);
+	}
+	
+	// then we need to make sure that the y-axis lines up with the normal vector
+	Matrix4 rotationMatrix2;
+	Vector4 newYAxis = (rotationMatrix*Vector4::homogeneousVector(yAxis)).normalize();
+	if (newYAxis == normal) {
+		rotationMatrix2 = Matrix4::IDENTITY;
+	}
+	else {
+		Vector3 axis = normal.crossProduct(newYAxis).normalize();
+		Vector4 axisOfRotationVec4 = Vector4::homogeneousVector(axis);
+		
+		float angle = Vector3::angleBetween(normal,newYAxis);
+		rotationMatrix2 = Matrix4::rotate(axisOfRotationVec4,angle);
+	}
+	
+    minecart->setTransformation(Matrix4::translate(loc.getX(), loc.getY(), loc.getZ())*rotationMatrix2*rotationMatrix);
     
 	// we now add code to make the camera follow the mine cart
 	// We do not need to worry about changing the center of projection because in the scene graph, the camera is a child
@@ -184,7 +216,7 @@ void RenderWidget0::timerEvent(QTimerEvent *t)
 	
 	// now we update the camera
 	movingCamera->updateProjection(movingCamera->getCenterOfProjection(), newLookAt, newLookUp);
-	whiteLight->setSpotDirection(referenceFrames[(segment-1) % numSegments].getV());
+//	whiteLight->setSpotDirection(referenceFrames[(segment-1) % numSegments].getV());
 		    
     updateScene();
 	counter++;
@@ -554,7 +586,7 @@ void RenderWidget0::test()
 	Camera* moveCamera = new Camera();
 	movingCamera = new CameraNode(moveCamera);
 	// now we modify the camera so that it sits where we want it to relative to the minecart
-	movingCamera->updateProjection(Vector3(0,0,0),Vector3(0,0,-1),Vector3(0,1,0));
+	movingCamera->updateProjection(Vector3(0,0.5,0),Vector3(0,0.5,-1),Vector3(0,1,0));
 	// then we add it as a child of the minecart so that it follows the cart around
 	minecart->addChild(movingCamera);
 	
