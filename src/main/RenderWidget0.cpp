@@ -78,7 +78,7 @@ void RenderWidget0::initSceneEvent()
 
     
 	initCamera();
-	//initLights();
+	initLights();
     //initStillLife();
 
     test();
@@ -426,8 +426,11 @@ void RenderWidget0::toggleWireframe()
 }
 
 
+
+
 void RenderWidget0::test() 
 {
+    
     
     Vector3 minecart1(3,3,0);
     Vector3 minecart2(2.5,2,0);
@@ -459,7 +462,7 @@ void RenderWidget0::test()
     
 
     // this shader supports two spot lights
-	Shader* twoSpotTexture = new Shader("src/Shaders/finalSpotLights.vert", "src/Shaders/finalSpotLights.frag");
+	//Shader* twoSpotTexture = new Shader("src/Shaders/finalSpotLights.vert", "src/Shaders/finalSpotLights.frag");
 	// this shader should support 8 lights - 2 spot lights and 6 point lights
 //	Shader* lightingTexture = new Shader("src/Shaders/finalLight.vert", "src/Shaders/finalLight.frag");
 
@@ -482,6 +485,10 @@ void RenderWidget0::test()
     Vector3 track16(-4000, -13000, -5869);
     Vector3 trackArray[] = {track1, track2, track3, track4, track5, track6, 
         track7, track8, track9, track10, track11, track12, track13, track14, track15, track16};
+
+
+
+
 
 
     /*track = new Helix(10);
@@ -530,6 +537,16 @@ void RenderWidget0::test()
     
     Object * loft = GeometryFactory::createLoft(square, *track , 5 ,50);
     
+    
+    Object * traditional = GeometryFactory::createLoft(square, *track, 5, 50);
+    
+    std::vector<GeometryFactory::Face> faces = GeometryFactory::createLoft(square, *track, 5, 50, 5);
+    //Object * loft = GeometryFactory::createObjectFromFaces(faces, true, false, true);
+    
+    
+    
+    
+    
     Material * extrudedShapeMaterial = new Material(Brass);
 	//extrudedShapeMaterial->setShader(twoSpotTexture);
     
@@ -550,11 +567,11 @@ void RenderWidget0::test()
     track->setTransformation(Matrix4::translate(0,0,-3) * track->getTransformation());
     
 
-    Object * trackLoft = GeometryFactory::createLoft(circle,  *track, 10 ,50);
+    Object * trackLoft = GeometryFactory::createLoft(circle,  *track, 10, 50);
     //trackLoft->setMaterial(new Material(Bronze));
     
     
-//    sceneManager->getRoot()->addChild(new Shape3D(loft));
+    sceneManager->getRoot()->addChild(new Shape3D(loft));
     sceneManager->getRoot()->addChild(new Shape3D(trackLoft));
     
     
@@ -572,10 +589,12 @@ void RenderWidget0::test()
 	stillCamera->disable();
 	
 	
+	
+	
 	// now we have to set up the lighting....
     // Create a white light
     Light * white = sceneManager->createLight();
-	white->setType(Light::SPOT);
+	white->setType(Light::POINT);
     white->setSpotDirection(Vector3(0,0,-1));
     white->setDiffuseColor(Vector3(1,1,1));
     white->setAmbientColor(Vector3(.2,.2,.2));

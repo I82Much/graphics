@@ -51,6 +51,10 @@ using namespace RE167;
 
 const int GeometryFactory::NUM_TRIANGLES_PER_RECTANGULAR_FACE = 2;
 const int GeometryFactory::NUM_VERTICES_PER_TRIANGLE = 3;
+const int GeometryFactory::NUM_VERTICES_PER_RECTANGULAR_FACE = 
+    NUM_TRIANGLES_PER_RECTANGULAR_FACE * NUM_VERTICES_PER_TRIANGLE;
+
+
 const int GeometryFactory::NUM_COMPONENTS_PER_VERTEX = 3;
 const int GeometryFactory::NUM_COMPONENTS_PER_RECTANGULAR_FACE =
 	GeometryFactory::NUM_TRIANGLES_PER_RECTANGULAR_FACE *
@@ -1737,10 +1741,10 @@ void GeometryFactory::createLoft(
     // We have all of our points; now we need to connect them up correctly. 
     const int NUM_ROWS = numPointsToEvaluateAlongPath - 1;
     const int numFacesPerRow = numPointsToEvaluateAlongShape - 1;
-    const int NUM_COMPONENTS_PER_ROW =
-        NUM_COMPONENTS_PER_RECTANGULAR_FACE * numFacesPerRow;
+    const int NUM_VERTICES_PER_ROW =
+        NUM_VERTICES_PER_RECTANGULAR_FACE * numFacesPerRow;
     	
-    numVertices = NUM_COMPONENTS_PER_ROW * NUM_ROWS;
+    numVertices = NUM_VERTICES_PER_ROW * NUM_ROWS;
     numIndices = numVertices;
     
     // Need 3 times as much space because each vertex has an x,y,z component
@@ -1748,6 +1752,7 @@ void GeometryFactory::createLoft(
     normals = new float[3 * numVertices];
     textureCoords = new float[2 * numVertices];
     indices = new int[numIndices];	
+    
     
     // TODO: make a better name than this
     createConnectivity(vecVertices,
@@ -1766,16 +1771,140 @@ void GeometryFactory::createLoft(
     }
 }
 
-/*
-std::vector<Face> createLoft(
+
+std::vector<GeometryFactory::Face> GeometryFactory::createLoft(
     const Spline &shape,
     const Spline &path,
     const int numPointsToEvaluateAlongShape,
-    const int numPointsToEvaluateAlongPath
-){}*/
+    const int numPointsToEvaluateAlongPath,
+    const int test
+)
+{
+    // Calculate all of the points and tangent vectors for the path curve and
+    // shape curve
+    vector<Vector3> shapePoints    = shape.uniformPointSample(numPointsToEvaluateAlongShape);
+    vector<Vector3> shapeTangents  = shape.uniformTangentSample(numPointsToEvaluateAlongShape);
+    
+    vector<Vector3> pathPoints     = path.uniformPointSample(numPointsToEvaluateAlongPath);
+    vector<Vector3> pathTangents   = path.uniformTangentSample(numPointsToEvaluateAlongPath);
+    
+    // Rotate all of the tangents 90 degrees about the Y axis to make them
+    // normal to the curve
+    Matrix4 normalRotationMatrix = Matrix4::rotateY(BasicMath::radians(90));
+    vector<Vector3> shapeNormals;
+    for (std::vector<Vector3>::iterator i = shapeTangents.begin(); i != shapeTangents.end(); i++) 
+    {
+        Vector4 normal = normalRotationMatrix * Vector4::homogeneousVector(*i);
+        shapeNormals.push_back(Vector3(normal));
+    }
+    
+    
+    // We will be computing all of the vertices, normals, and texcoords and
+    // then figuring out the connectivity later
+    vector <vector<Vector3> > vecVertices;
+    vector <vector<Vector3> > vecNormals;
+    vector <vector<Vector3> > vecTexCoords;
+    
+    // Calculate local coordinate systems for each point along the path spline
+    // that we sample
+    vector <Basis> referenceFrames = path.getReferenceFrames(numPointsToEvaluateAlongPath);
 
+    // For all the points along the path curve
+    for (unsigned int i = 0; i < pathPoints.size(); i++) 
+    {
+        // Add a new vector to each of the vertices, normals, texCoords in 
+        // order to make the two dimensional vector complete
+        vecVertices.push_back(vector<Vector3>());
+        vecNormals.push_back(vector<Vector3>());
+        vecTexCoords.push_back(vector<Vector3>());
 
+        // What is the matrix that takes us from world coordinates to local
+        // coordinate system?
+        const Matrix4 pathTransform = referenceFrames[i].getTransformation();
 
+        // Determine the value of the curve parameter for the path curve
+        float pathTValue = 
+            static_cast<float>(i) / static_cast<float>(pathPoints.size() - 1);
+        
+        // For each point in the shape curve
+        for (unsigned int j = 0; j < shapePoints.size(); j++) {
+        
+            // Multiply it by M to determine the point on shape at this point
+            // on curve
+            // Need to translate Vector3 into Vector4 in order to multiply
+            // by matrices
+            Vector4 curVertex = pathTransform *
+                Vector4::homogeneousPoint(shapePoints[j]);
+            vecVertices[i].push_back(Vector3(curVertex));
+            
+            // Translate the normal vector into the correct coordinate system
+            Vector4 curNormal = pathTransform * 
+                Vector4::homogeneousVector(shapeNormals[j]);
+            vecNormals[i].push_back(Vector3(curNormal));
+            
+            // Determine the value of the curve parameter for the shape curve
+            // Store this as the "v" texture coordinate
+            float shapeTValue = static_cast<float>(j) / 
+                static_cast<float>(shapePoints.size() - 1);
+                
+            // Our texture coordinates are guaranteed to between [0,1] due to
+            // the way curves are defined between t = [0,1]
+            float u = shapeTValue;
+            float v = pathTValue;    
+            vecTexCoords[i].push_back(Vector3(u, v, 0));
+            
+        }
+    }
+    
+    // We now have all of the vertices, normals, and texture coordinates we
+    // need.  Create the faces from them and return the vector
+    
+    const int numRows = numPointsToEvaluateAlongPath - 1;
+    const int numFacesPerRow = numPointsToEvaluateAlongShape - 1;
+    
+    // This vector will hold each quadrilateral face of our object
+    std::vector<Face> faces;
+    
+
+    for (int row = 0; row < numRows; row++) {
+		for (int face = 0; face < numFacesPerRow; face++) {
+
+            // Pull out all the attributes related to upper left point
+            VertexAttributes upperLeft;
+            upperLeft.position = vecVertices[row][face];
+            upperLeft.textureCoords = vecTexCoords[row][face];
+            upperLeft.normal = vecNormals[row][face];
+            
+            // Ditto for upper right
+            VertexAttributes upperRight;
+            upperRight.position = vecVertices[row][face+1];
+            upperRight.textureCoords = vecTexCoords[row][face+1];
+            upperRight.normal = vecNormals[row][face+1];
+            
+            VertexAttributes lowerRight;
+            lowerRight.position = vecVertices[row+1][face+1];
+            lowerRight.textureCoords = vecTexCoords[row+1][face+1];
+            lowerRight.normal = vecNormals[row+1][face+1];
+
+            VertexAttributes lowerLeft;
+            lowerLeft.position = vecVertices[row+1][face];
+            lowerLeft.textureCoords = vecTexCoords[row+1][face];
+            lowerLeft.normal = vecNormals[row+1][face];
+
+            Face f;
+            f.upperLeft = upperLeft;
+            f.upperRight = upperRight;
+            f.lowerRight = lowerRight;
+            f.lowerLeft = lowerLeft;
+            faces.push_back(f);
+            
+            
+        }
+    }
+    
+    return faces;
+}
+    
 
 /**
 * 
@@ -1793,6 +1922,7 @@ Object * GeometryFactory::createObjectFromFaces( std::vector<Face> faces,
     
     // Allocate space for the raw arrays
     float * vertices = new float[numVertices * NUM_POSITION_COMPONENTS_PER_VERTEX];
+    
     float * normals;
     float * textureCoords;
     float * colors;
@@ -1918,17 +2048,6 @@ void GeometryFactory::createConnectivity(const vector <vector<Vector3> > &vecVer
     createConnectivity(vecTexCoords, numPointsRows, numPointsCols, textureCoords, 2);
 }
 
-/*
-static std::vector<Face> calculateFaces(
-    const std::vector <std::vector<Vector3> > &vecVertices,
-    const std::vector <std::vector<Vector3> > &vecNormals,
-    const std::vector <std::vector<Vector3> > &vecTexCoords,
-    int numVerticesRows,
-    int numVerticesCols,
-)
-{
-    
-}*/
 
 /**
 * Given a two dimensional vector of some sort of aspect of the geometry, go

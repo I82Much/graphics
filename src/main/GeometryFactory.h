@@ -42,6 +42,8 @@ namespace RE167 {
 
     	static const int NUM_TRIANGLES_PER_RECTANGULAR_FACE;
     	static const int NUM_VERTICES_PER_TRIANGLE;
+    	static const int NUM_VERTICES_PER_RECTANGULAR_FACE;
+        
     	static const int NUM_COMPONENTS_PER_VERTEX;
     	static const int NUM_COMPONENTS_PER_RECTANGULAR_FACE;
         static const int NUM_POSITION_COMPONENTS_PER_VERTEX;
@@ -128,15 +130,13 @@ namespace RE167 {
         );
         
         
-        // static std::vector<Face> createLoft(
-        //             const Spline &shape,
-        //             const Spline &path,
-        //             const int numPointsToEvaluateAlongShape,
-        //             const int numPointsToEvaluateAlongPath
-        //         );
-        //         
-         
-        
+        static std::vector<Face> createLoft(
+            const Spline &shape,
+            const Spline &path,
+            const int numPointsToEvaluateAlongShape,
+            const int numPointsToEvaluateAlongPath,
+            const int test
+        );
         
         static Object * createSurfaceOfRevolution( 
             const Spline &generatrix,
