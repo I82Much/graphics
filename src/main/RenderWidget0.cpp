@@ -556,15 +556,15 @@ void RenderWidget0::test()
     circle2.setTransformation(Matrix4::rotateX(BasicMath::radians(90)));
     
     Square square;
-    square.setTransformation(Matrix4::scale(4,4,4) * Matrix4::rotateX(BasicMath::radians(90)));
+    square.setTransformation(Matrix4::scale(2,2,2) * Matrix4::rotateX(BasicMath::radians(90)));
     
-    Object * loft = GeometryFactory::createLoft(square, *track , 5 ,50);
+    //Object * loft = GeometryFactory::createLoft(square, *track , 5 ,50);
     
     
-    Object * traditional = GeometryFactory::createLoft(square, *track, 5, 50);
+    //Object * traditional = GeometryFactory::createLoft(square, *track, 5, 50);
     
     std::vector<GeometryFactory::Face> faces = GeometryFactory::createLoft(square, *track, 5, 50, 5);
-    //Object * loft = GeometryFactory::createObjectFromFaces(faces, true, false, true);
+    Object * loft = GeometryFactory::createObjectFromFaces(faces, true, false, true);
     
     
     
@@ -587,11 +587,12 @@ void RenderWidget0::test()
     circle.setTransformation(Matrix4::scale(.5,.5,.5) * Matrix4::rotateX(BasicMath::radians(90)));
     
      
-    track->setTransformation(Matrix4::translate(0,0,-3) * track->getTransformation());
+    track->setTransformation(Matrix4::translate(0,0,-2) * track->getTransformation());
     
 
     Object * trackLoft = GeometryFactory::createLoft(circle,  *track, 10, 50);
-    //trackLoft->setMaterial(new Material(Bronze));
+    
+    
     
     
     sceneManager->getRoot()->addChild(new Shape3D(loft));

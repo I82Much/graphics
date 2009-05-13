@@ -1898,7 +1898,7 @@ std::vector<GeometryFactory::Face> GeometryFactory::createLoft(
             f.lowerLeft = lowerLeft;
             faces.push_back(f);
             
-            
+            //cout << upperLeft.position << "," << upperRight.position << "," << lowerRight.position << "," << lowerLeft.position << endl;
         }
     }
     
@@ -1965,9 +1965,9 @@ Object * GeometryFactory::createObjectFromFaces( std::vector<Face> faces,
         // Need to figure out where they go in the raw arrays
 
         int start3Index =   NUM_TRIANGLES_PER_RECTANGULAR_FACE * 
-                            NUM_VERTICES_PER_TRIANGLE * 3;
+                            NUM_VERTICES_PER_TRIANGLE * 3 * i;
         int start2Index =   NUM_TRIANGLES_PER_RECTANGULAR_FACE * 
-                            NUM_VERTICES_PER_TRIANGLE * 2;
+                            NUM_VERTICES_PER_TRIANGLE * 2 * i;
 
         // Fill in all the raw arrays
         fillInVertex(vertices, start3Index,    f1_1.position);
@@ -2043,8 +2043,10 @@ void GeometryFactory::createConnectivity(const vector <vector<Vector3> > &vecVer
                         float *&normals,
                         float *&textureCoords) 
 {
+    std::cout << "Going to create the connectivity." << std::endl;
+    
     createConnectivity(vecVertices, numPointsRows, numPointsCols, vertices, 3);
-    createConnectivity(vecNormals, numPointsRows, numPointsCols, normals, 3);
+    //createConnectivity(vecNormals, numPointsRows, numPointsCols, normals, 3);
     createConnectivity(vecTexCoords, numPointsRows, numPointsCols, textureCoords, 2);
 }
 
@@ -2095,12 +2097,12 @@ void GeometryFactory::createConnectivity(const vector <vector<Vector3> > &values
             
             int startIndex = (row * NUM_COMPONENTS_PER_ROW) + (NUM_COMPONENTS_PER_FACE * face);
                     
-                    /*    
-            if (numComponents == 3) {
-                // Upper left, upper right, lower right, lower left
-                std::cout << f1_1 << "," << f1_3 << "," << f2_3 << "," << f2_2 << std::endl;
-            }         */   
-                        
+                        // 
+                        // if (numComponents == 3) {
+                        //     // Upper left, upper right, lower right, lower left
+                        //     std::cout << f1_1 << "," << f1_3 << "," << f2_3 << "," << f2_2 << std::endl;
+                        // }
+                        //             
                         
             // TODO: really shouldn't need two separate methods for this.
             if (numComponents == 2) {
