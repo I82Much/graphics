@@ -1774,6 +1774,12 @@ std::vector<Face> createLoft(
     const int numPointsToEvaluateAlongPath
 ){}*/
 
+
+
+
+/**
+* 
+**/
 Object * GeometryFactory::createObjectFromFaces( std::vector<Face> faces, 
                                 bool hasNormals, 
                                 bool hasColors,
@@ -1784,12 +1790,25 @@ Object * GeometryFactory::createObjectFromFaces( std::vector<Face> faces,
                             faces.size();
     const int numIndices = numVertices;
                         
-
+    
     // Allocate space for the raw arrays
     float * vertices = new float[numVertices * NUM_POSITION_COMPONENTS_PER_VERTEX];
-    float * normals = new float[numVertices * NUM_NORMAL_COMPONENTS_PER_VERTEX];
-    float * colors = new float[numVertices * NUM_COLOR_COMPONENTS_PER_VERTEX];
-    float * textureCoords = new float[numVertices * NUM_TEXTURE_COMPONENTS_PER_VERTEX];
+    float * normals;
+    float * textureCoords;
+    float * colors;
+    
+    // Only allocate space if necessary
+    if (hasNormals) {
+        normals = new float[numVertices * NUM_NORMAL_COMPONENTS_PER_VERTEX];
+    }
+    if (hasColors) {
+        colors = new float[numVertices * NUM_COLOR_COMPONENTS_PER_VERTEX];
+    }
+    if (hasTextureCoords) {
+        textureCoords = new float[numVertices * NUM_TEXTURE_COMPONENTS_PER_VERTEX];
+    }
+    
+    
     int * indices = new int[numIndices];
     
     for(size_t i = 0; i < faces.size(); ++i)
@@ -1828,27 +1847,33 @@ Object * GeometryFactory::createObjectFromFaces( std::vector<Face> faces,
         fillInVertex(vertices, start3Index+12, f2_2.position);
         fillInVertex(vertices, start3Index+15, f2_3.position);
 
-        fillInVertex(normals, start3Index,    f1_1.normal);
-        fillInVertex(normals, start3Index+3,  f1_2.normal);
-        fillInVertex(normals, start3Index+6,  f1_3.normal);
-        fillInVertex(normals, start3Index+9,  f2_1.normal);
-        fillInVertex(normals, start3Index+12, f2_2.normal);
-        fillInVertex(normals, start3Index+15, f2_3.normal);
-        
-        fillInVertex(colors, start3Index,    f1_1.color);
-        fillInVertex(colors, start3Index+3,  f1_2.color);
-        fillInVertex(colors, start3Index+6,  f1_3.color);
-        fillInVertex(colors, start3Index+9,  f2_1.color);
-        fillInVertex(colors, start3Index+12, f2_2.color);
-        fillInVertex(colors, start3Index+15, f2_3.color);
-        
-        fillIn2DCoords(textureCoords, start2Index,      f1_1.textureCoords);
-        fillIn2DCoords(textureCoords, start2Index+2,    f1_2.textureCoords);
-        fillIn2DCoords(textureCoords, start2Index+4,    f1_3.textureCoords);
-        fillIn2DCoords(textureCoords, start2Index+6,    f2_1.textureCoords);
-        fillIn2DCoords(textureCoords, start2Index+8,    f2_2.textureCoords);
-        fillIn2DCoords(textureCoords, start2Index+10,   f2_3.textureCoords);
-        
+        if (hasNormals) {
+            fillInVertex(normals, start3Index,    f1_1.normal);
+            fillInVertex(normals, start3Index+3,  f1_2.normal);
+            fillInVertex(normals, start3Index+6,  f1_3.normal);
+            fillInVertex(normals, start3Index+9,  f2_1.normal);
+            fillInVertex(normals, start3Index+12, f2_2.normal);
+            fillInVertex(normals, start3Index+15, f2_3.normal);
+        }
+    
+    
+        if (hasColors) {
+            fillInVertex(colors, start3Index,    f1_1.color);
+            fillInVertex(colors, start3Index+3,  f1_2.color);
+            fillInVertex(colors, start3Index+6,  f1_3.color);
+            fillInVertex(colors, start3Index+9,  f2_1.color);
+            fillInVertex(colors, start3Index+12, f2_2.color);
+            fillInVertex(colors, start3Index+15, f2_3.color);
+        }
+    
+        if (hasTextureCoords) {
+            fillIn2DCoords(textureCoords, start2Index,      f1_1.textureCoords);
+            fillIn2DCoords(textureCoords, start2Index+2,    f1_2.textureCoords);
+            fillIn2DCoords(textureCoords, start2Index+4,    f1_3.textureCoords);
+            fillIn2DCoords(textureCoords, start2Index+6,    f2_1.textureCoords);
+            fillIn2DCoords(textureCoords, start2Index+8,    f2_2.textureCoords);
+            fillIn2DCoords(textureCoords, start2Index+10,   f2_3.textureCoords);
+        }
     }
     
     // Put in all the indices
@@ -1862,7 +1887,16 @@ Object * GeometryFactory::createObjectFromFaces( std::vector<Face> faces,
     // Copy all these raw arrays into the object
     fillInObject(o, vertices, normals, textureCoords, colors, indices,
             numVertices, numIndices);
-
+            
+    // Free allocated space
+    delete[] vertices;
+    if (normals != NULL) {
+        delete[] normals;
+    }
+    if (textureCoords != NULL) {
+        delete[] textureCoords;
+    }
+    delete[] indices;
     return o;
 }
 
