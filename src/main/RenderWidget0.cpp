@@ -429,26 +429,40 @@ void RenderWidget0::toggleWireframe()
 void RenderWidget0::test() 
 {
     
+    Vector3 minecart1(3,3,0);
+    Vector3 minecart2(2.5,2,0);
+    Vector3 minecart3(2,1,0);
+    Vector3 minecart4(1.5,0,0);
+    Vector3 minecart5(1,0,0);
+    Vector3 minecart6(.5,0,0);
+    Vector3 minecart7(0,0,0);
+    
+    Vector3 minecartArray[] = {minecart1, minecart2, minecart3, minecart4, minecart5, minecart6, minecart7 };
+    
+    BezierCurve minecartProfile(minecartArray, sizeof(minecartArray) / sizeof(Vector3));
+    
+    /*
+     Object * mineCartObj = sceneManager->createObject();
+     GeometryFactory::createSphere(mineCartObj);
+     mineCartObj->setTransformation(Matrix4::scale(.001,.001,.001));
+     */
+
+     Object * minecartObj = GeometryFactory::createSurfaceOfRevolution(minecartProfile, 3, 4);
+
+     // Need to compensate for surface of revolution weirdness.
+     minecartObj->setTransformation(Matrix4::rotateX(BasicMath::radians(90)) * Matrix4::rotateY(BasicMath::radians(45)));
+
+     Shape3D * minecartShape = new Shape3D(minecartObj);
+     minecart = new TransformGroup();
+     minecart->addChild(minecartShape);
+
+    
 
     // this shader supports two spot lights
 	Shader* twoSpotTexture = new Shader("src/Shaders/finalSpotLights.vert", "src/Shaders/finalSpotLights.frag");
 	// this shader should support 8 lights - 2 spot lights and 6 point lights
 //	Shader* lightingTexture = new Shader("src/Shaders/finalLight.vert", "src/Shaders/finalLight.frag");
-	
-    Vector3 t1(0,4,1);
-    Vector3 t2(1,3,5);
-    Vector3 t3(2,2,6);
-    Vector3 t4(3,3,3);
-    Vector3 t5(5,3,2);
-    Vector3 t6(5.5,4,4);
-    Vector3 t7(6,1,5);
-    
-    Vector3 p1(0,4,0);
-    Vector3 p2(0,3,0);
-    Vector3 p3(0,2,0);
-    Vector3 p4(0,1,0);
-    
-    
+
     
     Vector3 track1(0, -7998, 0);
     Vector3 track2(0, -3895, 0);
@@ -459,26 +473,16 @@ void RenderWidget0::test()
     Vector3 track7(2011, -934, -500);
     Vector3 track8(2011, -2458, -2536);
     Vector3 track9(1986, -4130, -4754);
-    
     Vector3 track10(1986, -4100, -4800);
     Vector3 track11(3000, -8000, -5000);
-    
-    
     Vector3 track12(3166, -13013, -4700);
     Vector3 track13(0, -15000, -5869);
-    
     Vector3 track14(-2000, -15000, -5869);
     Vector3 track15(-3000, -15000, -5869);
     Vector3 track16(-4000, -13000, -5869);
-
-    
-
-    //Vector3 trackArray[] = {t1,t2,t3,t4,t5,t6,t7};
-    Vector3 pathArray[] = {p1,p2,p3,p4};
     Vector3 trackArray[] = {track1, track2, track3, track4, track5, track6, 
         track7, track8, track9, track10, track11, track12, track13, track14, track15, track16};
 
-    BezierCurve path(pathArray, sizeof(pathArray)/ sizeof(Vector3));
 
     /*track = new Helix(10);
     track->setTransformation(Matrix4::scale(3,3,10));
@@ -488,19 +492,10 @@ void RenderWidget0::test()
     track->setTransformation(Matrix4::scale(.001, .001, .001));
 
     
-    //Helix path(10);
+
 
     Helix helix(2);
-//    helix.setTransformation(Matrix4::scale(1,1,20));
-
-    Vector3 c1(0,0,.5);
-    Vector3 c2(.5,0,.5);
-    Vector3 c3(.5,0,-.5);
-    Vector3 c4(0,0,-.5);
-    Vector3 c5(-.5,0,-.5);
-    Vector3 c6(-.5,0,.5);
-    Vector3 c7(0,0,.5);
-    
+    //    helix.setTransformation(Matrix4::scale(1,1,20));
     
     Vector3 s1(2,0,0);
     Vector3 s2(1,0,0);
@@ -509,8 +504,7 @@ void RenderWidget0::test()
     Vector3 s5(0,0,2);
     Vector3 s6(-1,0,0);
     Vector3 s7(-2,0,0);
-    
-    
+        
     Vector3 torch1(.5,2,0);
     Vector3 torch2(.3,1.5,0);
     Vector3 torch3(.1,.1,0);
@@ -521,29 +515,11 @@ void RenderWidget0::test()
     sceneManager->getRoot()->addChild(new Shape3D(torch));
     
     
-    Vector3 shapeArray[] = {c1,c2,c3,c4,c5,c6,c7};
-    //Vector3 shapeArray[] = {s1,s2,s3,s4,s5,s6,s7};
-    int numElements = sizeof(shapeArray) / sizeof(Vector3);
-    
-    BezierCurve curvedLine(shapeArray, numElements);
-    curvedLine.setTransformation(Matrix4::scale(.2,.2,.2));
-    
-    BezierCurve nearCircle(shapeArray, numElements);
-    
-    /*
-    PiecewiseSpline piecewise(&gobletCurve);
-
-
-    piecewise.addSpline(&curvedLine);
-    piecewise.addSpline(&nearCircle);
-    */
-        
     Vector3 str1(0,1,0);
     Vector3 str2(0,.5,0);
     Vector3 str3(0,-.5,0);
     Vector3 str4(0,-1,0);
-    
-    
+        
     BezierCurve straightLine(str1, str2, str3, str4);
     
     Circle circle2;
@@ -581,14 +557,8 @@ void RenderWidget0::test()
 //    sceneManager->getRoot()->addChild(new Shape3D(loft));
     sceneManager->getRoot()->addChild(new Shape3D(trackLoft));
     
-    Object * mineCartObj = sceneManager->createObject();
-    GeometryFactory::createSphere(mineCartObj);
-    mineCartObj->setTransformation(Matrix4::scale(.001,.001,.001));
     
-    Shape3D * minecartShape = new Shape3D(mineCartObj);
-    minecart = new TransformGroup();
-    minecart->addChild(minecartShape);
-	
+ 
 	// first we have to create the camera and cameraNode:
 	Camera* moveCamera = new Camera();
 	movingCamera = new CameraNode(moveCamera);
