@@ -24,6 +24,7 @@ SOURCES += src/re167/BasicMath.cpp \
  src/re167/VertexDeclaration.cpp \
  src/main/ColorFactory.cpp \
  src/main/GeometryFactory.cpp \
+ src/main/FractalSurface.cpp \
  src/re167/SWWidget.cpp \
  src/re167/Vector3.cpp \
  src/re167/Vector4.cpp \
@@ -85,6 +86,7 @@ HEADERS += src/re167/BasicMath.h \
  src/re167/RE167_global.h \
  src/main/ColorFactory.h \
  src/main/GeometryFactory.h \
+ src/main/FractalSurface.h \
  src/re167/SWWidget.h \
  src/re167/Vector3.h \
  src/re167/Vector4.h \

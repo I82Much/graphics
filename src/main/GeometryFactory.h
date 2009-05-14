@@ -218,12 +218,13 @@ namespace RE167 {
                                                 const Vector3 &v2, 
                                                 const Vector3 &v3);
     
-        static void runTestSuite();
-
-
-    private:
+      
         static void fillInObject(Object *o, float *vertices, float *normals, float * textureCoords, float *colors, int *indices,
             int numVertices, int numIndices);
+       
+        static void runTestSuite();
+
+    private:
 
         static void createConnectivity(
             const std::vector <std::vector<Vector3> > &values,
