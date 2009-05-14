@@ -225,7 +225,7 @@ void RenderWidget0::timerEvent(QTimerEvent *t)
 	// We do have to change the lookAtPoint and the lookUpVector and for that we need the referenceFrames for the track
 	// the tangent is v and the normal is u
 	// (the -1 is because segment has been incremented)
-	Vector3 newCenter = referenceFrames[(segment-1) % numSegments].getW();
+    Vector3 newCenter(0,0,0);// referenceFrames[(segment-1) % numSegments].getW();
 	Vector3 newLookAt = newCenter + referenceFrames[(segment-1) % numSegments].getV();
 	Vector3 newLookUp = -referenceFrames[(segment-1) % numSegments].getW();
 	
@@ -518,55 +518,55 @@ void RenderWidget0::test()
     // this shader supports two spot lights
     Shader * twoSpotTexture = NULL;// new Shader("src/Shaders/finalSpotLights.vert", "src/Shaders/finalSpotLights.frag");
 	// this shader should support 8 lights - 2 spot lights and 6 point lights
-//	Shader* lightingTexture = new Shader("src/Shaders/finalLight.vert", "src/Shaders/finalLight.frag");
+    //	Shader* lightingTexture = new Shader("src/Shaders/finalLight.vert", "src/Shaders/finalLight.frag");
+
+	
+	// An (almost) C1 continue curve.  See the picture
+    Vector3 track0(145, 187, 0);
+    Vector3 track1(197, 433, 0);
+    Vector3 track2(408, 395, 0);
+    Vector3 track3(545, 284, 0);
+    Vector3 track4(629, 214, 0);
+    Vector3 track5(622, 183, -100);
+    Vector3 track6(599, 139, -200);
+    Vector3 track7(568, 65, -300);
+    Vector3 track8(342, 10, -350);
+    Vector3 track9(362, 193, -375);
+    Vector3 track10(385, 439, -400);
+    Vector3 track11(520, 477, -400);
+    Vector3 track12(624, 363, -350);
+    Vector3 track13(751, 241, -300);
+    Vector3 track14(732, 14, -300);
+    Vector3 track15(582, 20, -200);
+    // Need to put some intermediate points so
+    // we do not travel so absurdly fast
+    Vector3 track16(463.25, 21, -175);
+    Vector3 track17(344.5, 22, -150);
+    Vector3 track18(225.75, 23, -125);
+
+    Vector3 track19(107, 24, -100);
+    Vector3 track20(123, 63, 0);
+    Vector3 track21(145, 187, 0);
 
     
-    // Vector3 track1(0, -7998, 0);
-    //     Vector3 track2(0, -3895, 0);
-    //     Vector3 track3(0, -793, 0);
-    //     Vector3 track4(209, 11, 0);
-    //     Vector3 track5(934, 446, 0);
-    //     Vector3 track6(1777, 22, 0);
-    //     Vector3 track7(2011, -934, -500);
-    //     Vector3 track8(2011, -2458, -2536);
-    //     Vector3 track9(1986, -4130, -4754);
-    //     Vector3 track10(1986, -4100, -4800);
-    //     Vector3 track11(3000, -8000, -5000);
-    //     Vector3 track12(3166, -13013, -4700);
-    //     Vector3 track13(0, -15000, -5869);
-    //     Vector3 track14(-2000, -15000, -5869);
-    //     Vector3 track15(-3000, -15000, -5869);
-    //  Vector3 track16(-4000, -13000, -5869);
-    //  Vector3 trackArray[] = {track1, track2, track3, track4, track5, track6, 
-    //      track7, track8, track9, track10, track11, track12, track13, track14, track15, track16};
-    
-	
-    Vector3 track1(14,   -114, 0);
-    Vector3 track2(88,   -123, 0);
-    Vector3 track3(175,  -127, 0);
-    Vector3 track4(243,  -157, 0);
-    Vector3 track5(284,  -176, 0);
-    Vector3 track6(282,  -208, 0);
-    Vector3 track7(291,  -260, 0);
-    Vector3 track8(298,  -310, 0);
-    Vector3 track9(326,  -326, 0);
-    Vector3 track10(367,  -336, 0);
-    Vector3 track11(408,  -348, 0);
-    Vector3 track12(445,  -370, 0);
-    Vector3 track13(466,  -401, 0);
-    Vector3 track14(486,  -430, 0);
-    Vector3 track15(532, -442, 0);
-    Vector3 track16(583,  -448, 0);
+   
+
+    Vector3 trackArray[] = {
+        track0, track1, track2, track3, track4, track5, track6, track7, 
+        track8, track9, track10, track11, track12, track13, track14, 
+        track15, track16, track17, track18, track19, track20, track21
+    };
     
     
-    Vector3 trackArray[] = //{minecart1, minecart2, minecart3, minecart4, minecart5, minecart6, minecart7};//
-          {track1, track2, track3, track4, track5, track6, track7, track8, track9, track10, track11, track12, track13, track14, track15, track16};
-    
+    static const int NUM_SEGMENTS_TO_SAMPLE_ALONG_CURVE = 500;
 
 
     Helix helix(2);
     
     track = new BezierCurve(trackArray, sizeof(trackArray) / sizeof(Vector3));
+    
+//    track->setTransformation(Matrix4)
+    
     //track->setTransformation(Matrix4::scale(.001, .001, .001));
     
     Vector3 torch1(.5,2,0);
@@ -594,7 +594,7 @@ void RenderWidget0::test()
     
 
     
-    std::vector<GeometryFactory::Face> faces = GeometryFactory::createLoft(square, *track, 5, 50, 5);
+    std::vector<GeometryFactory::Face> faces = GeometryFactory::createLoft(square, *track, 5, NUM_SEGMENTS_TO_SAMPLE_ALONG_CURVE, 5);
     Object * loft = GeometryFactory::createObjectFromFaces(faces, true, false, true);
     
     
@@ -622,10 +622,15 @@ void RenderWidget0::test()
     Circle circle;
     circle.setTransformation(Matrix4::scale(.5,.5,.5) * Matrix4::rotateX(BasicMath::radians(90)));
 
-    track->setTransformation(Matrix4::translate(0,3,0) * track->getTransformation());
+    static const int AMOUNT_TO_MOVE_TRACK_DOWN = 3;
+
+    track->setTransformation(Matrix4::translate(0,AMOUNT_TO_MOVE_TRACK_DOWN,0) * track->getTransformation());
     
 
-    Object * trackLoft = GeometryFactory::createLoft(circle,  *track, 10, 50);
+    Object * trackLoft = GeometryFactory::createLoft(circle,  *track, 10, NUM_SEGMENTS_TO_SAMPLE_ALONG_CURVE);
+    
+    // Move the track back to the center of the tunnel
+    track->setTransformation(Matrix4::translate(0,-AMOUNT_TO_MOVE_TRACK_DOWN,0) * track->getTransformation());
     
     // Make the track be scratchy metal
     trackLoft->setMaterial(trackMaterial);

@@ -1534,6 +1534,7 @@ Object * GeometryFactory::createLoft(
     const bool normalize
 )
 {
+    
     int *indices = NULL;
 	float *vertices= NULL;
 	float *colors = NULL;
@@ -1554,8 +1555,6 @@ Object * GeometryFactory::createLoft(
 	    indices,
 	    numVertices,
         numIndices);
-    
-    
     
         
     assert (indices != NULL);

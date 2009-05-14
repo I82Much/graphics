@@ -1,0 +1,26 @@
+Vector3 track0(145, 187, 0);
+Vector3 track1(197, 433, 0);
+Vector3 track2(408, 395, 0);
+Vector3 track3(545, 284, 0);
+Vector3 track4(629, 214, 0);
+Vector3 track5(622, 183, -100);
+Vector3 track6(599, 139, -200);
+Vector3 track7(568, 65, -300);
+Vector3 track8(342, 10, -350);
+Vector3 track9(362, 193, -375);
+Vector3 track10(385, 439, -400);
+Vector3 track11(520, 477, -400);
+Vector3 track12(624, 363, -350);
+Vector3 track13(751, 241, -300);
+Vector3 track14(732, 14, -300);
+Vector3 track15(582, 20, -200);
+// Need to put some intermediate points so
+// we do not travel so absurdly fast
+Vector3 track16(463.25, 21, -175);
+Vector3 track17(344.5, 22, -150);
+Vector3 track18(225.75, 23, -125);
+
+Vector3 track19(107, 24, -100);
+Vector3 track20(123, 63, 0);
+Vector3 track21(145, 187, 0);
+
