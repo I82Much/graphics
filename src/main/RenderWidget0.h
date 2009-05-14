@@ -67,6 +67,8 @@ namespace RE167 {
         
     
         Spline * track;
+	
+
 		
 		// added a LightNode to start experimenting with putting a light in front of the minecart
 		LightNode* whiteLight;

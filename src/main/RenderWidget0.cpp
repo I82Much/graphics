@@ -225,13 +225,13 @@ void RenderWidget0::timerEvent(QTimerEvent *t)
 	// We do have to change the lookAtPoint and the lookUpVector and for that we need the referenceFrames for the track
 	// the tangent is v and the normal is u
 	// (the -1 is because segment has been incremented)
-	Vector3 newCenter = -referenceFrames[(segment-1) % numSegments].getV();
+	Vector3 newCenter = referenceFrames[(segment-1) % numSegments].getW();
 	Vector3 newLookAt = newCenter + referenceFrames[(segment-1) % numSegments].getV();
-	Vector3 newLookUp = -referenceFrames[(segment-1) % numSegments].getV();
+	Vector3 newLookUp = -referenceFrames[(segment-1) % numSegments].getW();
 	
 	// now we update the camera
 	movingCamera->updateProjection(newCenter, newLookAt, newLookUp);
-	whiteLight->setSpotDirection(referenceFrames[(segment-1) % numSegments].getW());
+	whiteLight->setSpotDirection(referenceFrames[(segment-1) % numSegments].getV());
 	whiteLight->setPosition(newCenter);
 //	whiteLight->setSpotDirection(newLookAt);
 		    
@@ -396,7 +396,7 @@ void RenderWidget0::toggleCulling()
 }
 
 
-// TODO: Clean all this code up
+
 void RenderWidget0::keyPressEvent ( QKeyEvent * k )
 {
     
@@ -514,58 +514,61 @@ void RenderWidget0::test()
 	minecart = new TransformGroup();
 	minecart->addChild(minecartShape);
 
-    
 
     // this shader supports two spot lights
-	Shader * twoSpotTexture = new Shader("src/Shaders/finalSpotLights.vert", "src/Shaders/finalSpotLights.frag");
+    Shader * twoSpotTexture = NULL;// new Shader("src/Shaders/finalSpotLights.vert", "src/Shaders/finalSpotLights.frag");
 	// this shader should support 8 lights - 2 spot lights and 6 point lights
 //	Shader* lightingTexture = new Shader("src/Shaders/finalLight.vert", "src/Shaders/finalLight.frag");
 
     
-    Vector3 track1(0, -7998, 0);
-    Vector3 track2(0, -3895, 0);
-    Vector3 track3(0, -793, 0);
-    Vector3 track4(209, 11, 0);
-    Vector3 track5(934, 446, 0);
-    Vector3 track6(1777, 22, 0);
-    Vector3 track7(2011, -934, -500);
-    Vector3 track8(2011, -2458, -2536);
-    Vector3 track9(1986, -4130, -4754);
-    Vector3 track10(1986, -4100, -4800);
-    Vector3 track11(3000, -8000, -5000);
-    Vector3 track12(3166, -13013, -4700);
-    Vector3 track13(0, -15000, -5869);
-    Vector3 track14(-2000, -15000, -5869);
-    Vector3 track15(-3000, -15000, -5869);
-	Vector3 track16(-4000, -13000, -5869);
-	Vector3 trackArray[] = {track1, track2, track3, track4, track5, track6, 
-		track7, track8, track9, track10, track11, track12, track13, track14, track15, track16};
-
+    // Vector3 track1(0, -7998, 0);
+    //     Vector3 track2(0, -3895, 0);
+    //     Vector3 track3(0, -793, 0);
+    //     Vector3 track4(209, 11, 0);
+    //     Vector3 track5(934, 446, 0);
+    //     Vector3 track6(1777, 22, 0);
+    //     Vector3 track7(2011, -934, -500);
+    //     Vector3 track8(2011, -2458, -2536);
+    //     Vector3 track9(1986, -4130, -4754);
+    //     Vector3 track10(1986, -4100, -4800);
+    //     Vector3 track11(3000, -8000, -5000);
+    //     Vector3 track12(3166, -13013, -4700);
+    //     Vector3 track13(0, -15000, -5869);
+    //     Vector3 track14(-2000, -15000, -5869);
+    //     Vector3 track15(-3000, -15000, -5869);
+    //  Vector3 track16(-4000, -13000, -5869);
+    //  Vector3 trackArray[] = {track1, track2, track3, track4, track5, track6, 
+    //      track7, track8, track9, track10, track11, track12, track13, track14, track15, track16};
+    
 	
-
-
-
-    /*track = new Helix(10);
-    track->setTransformation(Matrix4::scale(3,3,10));
-*/
-
-    track = new BezierCurve(trackArray, sizeof(trackArray) / sizeof(Vector3));
-    track->setTransformation(Matrix4::scale(.001, .001, .001));
-
+    Vector3 track1(14,   -114, 0);
+    Vector3 track2(88,   -123, 0);
+    Vector3 track3(175,  -127, 0);
+    Vector3 track4(243,  -157, 0);
+    Vector3 track5(284,  -176, 0);
+    Vector3 track6(282,  -208, 0);
+    Vector3 track7(291,  -260, 0);
+    Vector3 track8(298,  -310, 0);
+    Vector3 track9(326,  -326, 0);
+    Vector3 track10(367,  -336, 0);
+    Vector3 track11(408,  -348, 0);
+    Vector3 track12(445,  -370, 0);
+    Vector3 track13(466,  -401, 0);
+    Vector3 track14(486,  -430, 0);
+    Vector3 track15(532, -442, 0);
+    Vector3 track16(583,  -448, 0);
+    
+    
+    Vector3 trackArray[] = //{minecart1, minecart2, minecart3, minecart4, minecart5, minecart6, minecart7};//
+          {track1, track2, track3, track4, track5, track6, track7, track8, track9, track10, track11, track12, track13, track14, track15, track16};
     
 
 
     Helix helix(2);
-    //    helix.setTransformation(Matrix4::scale(1,1,20));
     
-    Vector3 s1(2,0,0);
-    Vector3 s2(1,0,0);
-    Vector3 s3(0,0,2);
-    Vector3 s4(0,0,3);
-    Vector3 s5(0,0,2);
-    Vector3 s6(-1,0,0);
-    Vector3 s7(-2,0,0);
-        
+    track = new BezierCurve(trackArray, sizeof(trackArray) / sizeof(Vector3));
+    //track->setTransformation(Matrix4::scale(.001, .001, .001));
+    
     Vector3 torch1(.5,2,0);
     Vector3 torch2(.3,1.5,0);
     Vector3 torch3(.1,.1,0);
@@ -587,7 +590,7 @@ void RenderWidget0::test()
     circle2.setTransformation(Matrix4::rotateX(BasicMath::radians(90)));
     
     Square square;
-    square.setTransformation(Matrix4::scale(2,2,2) * Matrix4::rotateX(BasicMath::radians(90)));
+    square.setTransformation(Matrix4::scale(4,4,4) * Matrix4::rotateX(BasicMath::radians(90)));
     
     //Object * loft = GeometryFactory::createLoft(square, *track , 5 ,50);
     
@@ -598,39 +601,42 @@ void RenderWidget0::test()
     Object * loft = GeometryFactory::createObjectFromFaces(faces, true, false, true);
     
     
-    
-    
-    
     Material * extrudedShapeMaterial = new Material(Brass);
     
     // Set up the textures
 
     //http://ryane.com/wp-content/uploads/2007/04/rock_02.jpg
     QImage *rockImg = new QImage("images/rock_02.jpg", "jpg");
-    assert(rockImg != NULL);
     Texture *rockTexture = new Texture(rockImg);
     extrudedShapeMaterial->setTexture(rockTexture);
 	extrudedShapeMaterial->setShader(twoSpotTexture);
 
+    Material *trackMaterial = new Material();
+
+    // http://www.stock-textures.com/images/wallpapers/44719319/Metal/metal-scratch.jpg
+    QImage *metalImg = new QImage("images/metal-scratch.jpg", "jpg");
+    Texture *metalTexture = new Texture(rockImg);
+    trackMaterial->setTexture(metalTexture);
+	trackMaterial->setShader(twoSpotTexture);
+
+
     loft->setMaterial(extrudedShapeMaterial);
-    
+
     Circle circle;
     circle.setTransformation(Matrix4::scale(.5,.5,.5) * Matrix4::rotateX(BasicMath::radians(90)));
-    
-     
+
     track->setTransformation(Matrix4::translate(0,0,-2) * track->getTransformation());
     
 
     Object * trackLoft = GeometryFactory::createLoft(circle,  *track, 10, 50);
     
-    
-    
+    // Make the track be scratchy metal
+    trackLoft->setMaterial(trackMaterial);
     
     sceneManager->getRoot()->addChild(new Shape3D(loft));
     sceneManager->getRoot()->addChild(new Shape3D(trackLoft));
     
     
- 
 	// first we have to create the camera and cameraNode:
 	Camera* moveCamera = new Camera();
 	movingCamera = new CameraNode(moveCamera);
@@ -649,7 +655,7 @@ void RenderWidget0::test()
 	// now we have to set up the lighting....
     // Create a white light
     Light * white = sceneManager->createLight();
-	white->setType(Light::SPOT);
+	white->setType(Light::POINT);
     white->setSpotDirection(Vector3(0,0,-1));
     white->setDiffuseColor(Vector3(1,1,1));
     white->setAmbientColor(Vector3(.2,.2,.2));
@@ -661,8 +667,6 @@ void RenderWidget0::test()
     whiteLight = new LightNode(white);
 	whiteLight->setPosition(Vector3(0,0,0));
 	minecart->addChild(whiteLight);
-	
-	
 
     sceneManager->getRoot()->addChild(minecart);
     
