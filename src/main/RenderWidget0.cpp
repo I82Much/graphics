@@ -77,9 +77,11 @@ void RenderWidget0::initSceneEvent()
 	sceneManager = new SceneManager();
 
     
-	initCamera();
+	initCameras();
+	
+	initSplines();
+    initGeometry();
 	initLights();
-    //initStillLife();
 
     test();
 	
@@ -87,10 +89,80 @@ void RenderWidget0::initSceneEvent()
 	timerId = startTimer(5);
 }
 
+/**
+* Creates all the splines we need for our scene, including the track spline
+* and the cross sectional splines.
+**/
+void RenderWidget0::initSplines()
+{
+    // This is the track that we use for our geometry and for our camera
+    // to move around
+    // An (almost) C1 continue curve.  See the picture in Data:Screenshots/Final curve.png
+    Vector3 track0(145, 187, 0);
+    Vector3 track1(197, 433, 0);
+    Vector3 track2(408, 395, 0);
+    Vector3 track3(545, 284, 0);
+    Vector3 track4(629, 214, 0);
+    Vector3 track5(622, 183, -100);
+    Vector3 track6(599, 139, -200);
+    Vector3 track7(568, 65, -300);
+    Vector3 track8(342, 10, -350);
+    Vector3 track9(362, 193, -375);
+    Vector3 track10(385, 439, -400);
+    Vector3 track11(520, 477, -400);
+    Vector3 track12(624, 363, -350);
+    Vector3 track13(751, 241, -300);
+    Vector3 track14(732, 14, -300);
+    Vector3 track15(582, 20, -200);
+    // Need to put some intermediate points so
+    // we do not travel so absurdly fast
+    Vector3 track16(463.25, 21, -175);
+    Vector3 track17(344.5, 22, -150);
+    Vector3 track18(225.75, 23, -125);
+
+    Vector3 track19(107, 24, -100);
+    Vector3 track20(123, 63, 0);
+    Vector3 track21(145, 187, 0);
+
+    Vector3 trackArray[] = {
+        track0, track1, track2, track3, track4, track5, track6, track7, 
+        track8, track9, track10, track11, track12, track13, track14, 
+        track15, track16, track17, track18, track19, track20, track21
+    };
+    
+    track = new BezierCurve(trackArray, sizeof(trackArray) / sizeof(Vector3));
+
+
+    // Make the curve that we will rotate around the y axis to create a
+    // torch to place on the walls
+    Vector3 torch0(.5,2,0);
+    Vector3 torch1(.3,1.5,0);
+    Vector3 torch2(.1,.1,0);
+    Vector3 torch3(0,0,0);
+    
+    torchCurve = new BezierCurve(torch0, torch1, torch2, torch3);
+    
+    
+    
+    
+}
+
+/**
+* Creates all of the geometry in the scene, using helper methods in 
+* GeometryFactory
+**/
+void RenderWidget0::initGeometry()
+{
+    
+}
+
+
 void RenderWidget0::initMaterials()
 {}
 
-void RenderWidget0::initCamera() {
+
+void RenderWidget0::initCameras() 
+{
     Vector3 cameraCenter = Vector3(0,0,10);
 	Vector3 lookAtPoint = Vector3(0,0,-1);
 	Vector3 upVector = Vector3(0,1,0);
@@ -109,6 +181,11 @@ void RenderWidget0::initCamera() {
     
     sceneManager->getRoot()->addChild(stillCamera);
 	
+    
+}
+
+void RenderWidget0::initShaders()
+{
     
 }
 
@@ -396,7 +473,6 @@ void RenderWidget0::toggleCulling()
 }
 
 
-
 void RenderWidget0::keyPressEvent ( QKeyEvent * k )
 {
     
@@ -483,8 +559,6 @@ void RenderWidget0::toggleWireframe()
 
 void RenderWidget0::test() 
 {
-    
-    
     Vector3 minecart1(3,3,0);
     Vector3 minecart2(2.5,2,0);
     Vector3 minecart3(2,1,0);
@@ -521,61 +595,14 @@ void RenderWidget0::test()
     //	Shader* lightingTexture = new Shader("src/Shaders/finalLight.vert", "src/Shaders/finalLight.frag");
 
 	
-	// An (almost) C1 continue curve.  See the picture
-    Vector3 track0(145, 187, 0);
-    Vector3 track1(197, 433, 0);
-    Vector3 track2(408, 395, 0);
-    Vector3 track3(545, 284, 0);
-    Vector3 track4(629, 214, 0);
-    Vector3 track5(622, 183, -100);
-    Vector3 track6(599, 139, -200);
-    Vector3 track7(568, 65, -300);
-    Vector3 track8(342, 10, -350);
-    Vector3 track9(362, 193, -375);
-    Vector3 track10(385, 439, -400);
-    Vector3 track11(520, 477, -400);
-    Vector3 track12(624, 363, -350);
-    Vector3 track13(751, 241, -300);
-    Vector3 track14(732, 14, -300);
-    Vector3 track15(582, 20, -200);
-    // Need to put some intermediate points so
-    // we do not travel so absurdly fast
-    Vector3 track16(463.25, 21, -175);
-    Vector3 track17(344.5, 22, -150);
-    Vector3 track18(225.75, 23, -125);
-
-    Vector3 track19(107, 24, -100);
-    Vector3 track20(123, 63, 0);
-    Vector3 track21(145, 187, 0);
-
-    
-   
-
-    Vector3 trackArray[] = {
-        track0, track1, track2, track3, track4, track5, track6, track7, 
-        track8, track9, track10, track11, track12, track13, track14, 
-        track15, track16, track17, track18, track19, track20, track21
-    };
-    
-    
     static const int NUM_SEGMENTS_TO_SAMPLE_ALONG_CURVE = 500;
-
+    
 
     Helix helix(2);
     
-    track = new BezierCurve(trackArray, sizeof(trackArray) / sizeof(Vector3));
+        
     
-//    track->setTransformation(Matrix4)
-    
-    //track->setTransformation(Matrix4::scale(.001, .001, .001));
-    
-    Vector3 torch1(.5,2,0);
-    Vector3 torch2(.3,1.5,0);
-    Vector3 torch3(.1,.1,0);
-    Vector3 torch4(0,0,0);
-    
-    BezierCurve torchCurve(torch1, torch2, torch3, torch4);
-    Object * torch = GeometryFactory::createSurfaceOfRevolution(torchCurve);
+    Object * torch = GeometryFactory::createSurfaceOfRevolution(*torchCurve);
     sceneManager->getRoot()->addChild(new Shape3D(torch));
     
     
