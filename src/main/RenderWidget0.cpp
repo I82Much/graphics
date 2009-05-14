@@ -12,6 +12,7 @@
 
 #include <QtOpenGL>
 #include "GeometryFactory.h"
+#include "FractalSurface.h"
 #include "ColorFactory.h"
 #include "Vector4.h"
 #include "BasicMath.h"
@@ -592,32 +593,42 @@ void RenderWidget0::test()
     Square square;
     square.setTransformation(Matrix4::scale(4,4,4) * Matrix4::rotateX(BasicMath::radians(90)));
     
-
-    
-    std::vector<GeometryFactory::Face> faces = GeometryFactory::createLoft(square, *track, 5, NUM_SEGMENTS_TO_SAMPLE_ALONG_CURVE, 5);
-    Object * loft = GeometryFactory::createObjectFromFaces(faces, true, false, true);
-    
+    // Create the textures
     
     Material * extrudedShapeMaterial = new Material(Brass);
-    
-    // Set up the textures
-
     //http://ryane.com/wp-content/uploads/2007/04/rock_02.jpg
     QImage *rockImg = new QImage("images/rock_02.jpg", "jpg");
     Texture *rockTexture = new Texture(rockImg);
     extrudedShapeMaterial->setTexture(rockTexture);
-	extrudedShapeMaterial->setShader(twoSpotTexture);
+	  extrudedShapeMaterial->setShader(twoSpotTexture);
 
     Material *trackMaterial = new Material();
-
     // http://www.stock-textures.com/images/wallpapers/44719319/Metal/metal-scratch.jpg
     QImage *metalImg = new QImage("images/metal-scratch.jpg", "jpg");
     Texture *metalTexture = new Texture(rockImg);
     trackMaterial->setTexture(metalTexture);
-	trackMaterial->setShader(twoSpotTexture);
-
-
-    loft->setMaterial(extrudedShapeMaterial);
+	  trackMaterial->setShader(twoSpotTexture);
+    
+    // TODO: doc
+    std::vector<GeometryFactory::Face> faces = GeometryFactory::createLoft(square, *track, 5, NUM_SEGMENTS_TO_SAMPLE_ALONG_CURVE, 5);
+    for (std::vector<GeometryFactory::Face>::iterator i = faces.begin(); i != faces.end(); i++) {
+      GeometryFactory::Face face = *i;
+      Vector3 ll = face.lowerLeft.position;
+      Vector3 ul = face.upperLeft.position;
+      Vector3 ur = face.upperRight.position;
+      Vector3 lr = face.lowerRight.position;
+      Object* shaftWall = 
+        FractalSurface::buildSurfaceAmong(
+          ll+ (ll - lr)*0.1,
+          ul+ (ul - ur)*0.1,
+          ur+ (lr - ll)*0.1,
+          lr+ (ur - ul)*0.1,
+          32,
+          0.5,
+          1.5);
+      shaftWall->setMaterial(extrudedShapeMaterial);
+      sceneManager->getRoot()->addChild(new Shape3D(shaftWall));
+    }     
 
     Circle circle;
     circle.setTransformation(Matrix4::scale(.5,.5,.5) * Matrix4::rotateX(BasicMath::radians(90)));
@@ -635,7 +646,6 @@ void RenderWidget0::test()
     // Make the track be scratchy metal
     trackLoft->setMaterial(trackMaterial);
     
-    sceneManager->getRoot()->addChild(new Shape3D(loft));
     sceneManager->getRoot()->addChild(new Shape3D(trackLoft));
     
     
