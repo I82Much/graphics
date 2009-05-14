@@ -199,3 +199,14 @@ void PiecewiseSpline::test()
     
 }
 
+
+// Not sure how to adaptively sample a piecewise spline, so we just uniformly sample it instead
+void PiecewiseSpline::adaptiveSample(int numSamples, std::vector<Vector3>& position,
+									 std::vector<Vector3>& tangent, std::vector<Vector3>& acceleration) const {
+	
+	position = uniformPointSample(numSamples);
+	tangent = uniformTangentSample(numSamples);
+	acceleration = uniformAccelerationSample(numSamples);
+	
+}
+

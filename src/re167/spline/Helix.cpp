@@ -87,3 +87,13 @@ Vector3 Helix::acceleration(float t) const
     Vector4 vec4Result = transformation * scaleMatrix * Vector4(-cos(tPrime), -sin(tPrime), 0, 0);
     return Vector3(vec4Result);
 }
+
+// since a helix is equally curvey at all points, adaptive sampling a circle is the same as uniformly sampling it
+void Helix::adaptiveSample(int numSamples, std::vector<Vector3>& position,
+						   std::vector<Vector3>& tangent, std::vector<Vector3>& acceleration) const {
+	
+	position = uniformPointSample(numSamples);
+	tangent = uniformTangentSample(numSamples);
+	acceleration = uniformAccelerationSample(numSamples);
+	
+}
