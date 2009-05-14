@@ -109,6 +109,8 @@ void GLRenderContext::setProjectionMatrix(const Matrix4 &m)
 
 void GLRenderContext::render(Object *object)
 {
+	setMaterial(object->getMaterial());
+	
 	VertexData& vertexData = object->vertexData;
 	VertexDeclaration& vertexDeclaration = vertexData.vertexDeclaration;
 	VertexBufferBinding& vertexBufferBinding = vertexData.vertexBufferBinding;
@@ -348,7 +350,7 @@ void GLRenderContext::setLights(const std::list<Light*> &lightList)
 				spotDirection[0] = l->getSpotDirection().getX();
 				spotDirection[1] = l->getSpotDirection().getY();
 				spotDirection[2] = l->getSpotDirection().getZ();
-				std::cout << "spotExponent = " << l->getSpotExponent() << ", spotCutoff = " << l->getSpotCutoff() << std::endl;
+//				std::cout << "spotExponent = " << l->getSpotExponent() << ", spotCutoff = " << l->getSpotCutoff() << std::endl;
 				glLightfv(lightIndex[i], GL_SPOT_DIRECTION, spotDirection);
 				glLightf(lightIndex[i], GL_SPOT_EXPONENT, l->getSpotExponent());
 				glLightf(lightIndex[i], GL_SPOT_CUTOFF, l->getSpotCutoff());
@@ -433,7 +435,7 @@ void GLRenderContext::setMaterial(const Material *m)
 		}
         // No texture
 		else {
-			std::cout << "I am here" << std::endl;
+//			std::cout << "I am here" << std::endl;
             glDisable(GL_TEXTURE_2D);
 		}
 

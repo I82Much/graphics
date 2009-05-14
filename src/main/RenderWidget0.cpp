@@ -78,7 +78,7 @@ void RenderWidget0::initSceneEvent()
 
     
 	initCamera();
-//	initLights();
+	initLights();
     //initStillLife();
 
     test();
@@ -177,7 +177,7 @@ void RenderWidget0::timerEvent(QTimerEvent *t)
 	// we want the z-axis to line up with the tangent vector and the y-axis to line up with the normal vector
 	Vector3 tangent = referenceFrames[(segment-1) % numSegments].getV();
 	assert(tangent.isUnitVector());
-	Vector3 normal = referenceFrames[(segment-1) % numSegments].getU();
+	Vector3 normal = referenceFrames[(segment-1) % numSegments].getW();
 	
 	Matrix4 rotationMatrix;
 	if (toFront == tangent || toFront == -tangent) {
@@ -225,13 +225,15 @@ void RenderWidget0::timerEvent(QTimerEvent *t)
 	// We do have to change the lookAtPoint and the lookUpVector and for that we need the referenceFrames for the track
 	// the tangent is v and the normal is u
 	// (the -1 is because segment has been incremented)
-	Vector3 newCenter = referenceFrames[(segment-1) % numSegments].getU();
+	Vector3 newCenter = -referenceFrames[(segment-1) % numSegments].getV();
 	Vector3 newLookAt = newCenter + referenceFrames[(segment-1) % numSegments].getV();
-	Vector3 newLookUp = referenceFrames[(segment-1) % numSegments].getU();
+	Vector3 newLookUp = -referenceFrames[(segment-1) % numSegments].getV();
 	
 	// now we update the camera
 	movingCamera->updateProjection(newCenter, newLookAt, newLookUp);
-	whiteLight->setSpotDirection(referenceFrames[(segment-1) % numSegments].getV());
+	whiteLight->setSpotDirection(referenceFrames[(segment-1) % numSegments].getW());
+	whiteLight->setPosition(newCenter);
+//	whiteLight->setSpotDirection(newLookAt);
 		    
     updateScene();
 	counter++;
@@ -405,19 +407,19 @@ void RenderWidget0::keyPressEvent ( QKeyEvent * k )
 		case Qt::Key_R:                               
 			stillCamera->resetTransformation();
 			break;
-		// move forward
+		// move still camera forward
 		case Qt::Key_Up: // Qt::Key_W
 			stillCamera->translateCamera(0,0,-1);
 			break;
-		// Move camera backwards
+		// Move still camera backwards
 		case Qt::Key_Down: //Qt::Key_S:
 			stillCamera->translateCamera(0,0,1);
 			break;
-		// Move camera left
+		// Move still camera left
 		case Qt::Key_Left: //Key_A:
 			stillCamera->translateCamera(-1,0,0);
 			break;
-		// Move camera right
+		// Move still camera right
 		case Qt::Key_Right: //D:
 			stillCamera->translateCamera(1,0,0);
 			break;
@@ -428,13 +430,27 @@ void RenderWidget0::keyPressEvent ( QKeyEvent * k )
 			toggleCulling();
 			break;
     
-		// Move camera up
+		// Move still camera up
 		case Qt::Key_Q:
 			stillCamera->translateCamera(0,1,0);
 			break;
-		// Move camera down
+		// Move still camera down
 		case Qt::Key_Z:
 			stillCamera->translateCamera(0,-1,0);
+			break;
+
+		
+		// rotate the moving camera to the left
+		case Qt::Key_J:
+			stillCamera->setRotation(stillCamera->getRotation() + 0.1);
+			break;
+		// rotate the moving camera to the right
+		case Qt::Key_L:
+			stillCamera->setRotation(stillCamera->getRotation() - 0.1);
+			break;
+		// put moving camera back at initial direction
+		case Qt::Key_I:
+			stillCamera->setRotation(0);
 			break;
 			
 			
@@ -490,7 +506,8 @@ void RenderWidget0::test()
 	Object * minecartObj = GeometryFactory::createSurfaceOfRevolution(minecartProfile, 3, 4);
 
 	// Need to compensate for surface of revolution weirdness.
-	minecartObj->setTransformation(Matrix4::rotateX(BasicMath::radians(90)) * Matrix4::rotateY(BasicMath::radians(45)));
+	minecartObj->setTransformation(Matrix4::scale(.001,.001,.001));
+//	minecartObj->setTransformation(Matrix4::rotateX(BasicMath::radians(90)) * Matrix4::rotateY(BasicMath::radians(45)));
 	TransformGroup* minecartShape = new TransformGroup();
 	minecartShape->addChild(new Shape3D(minecartObj));
 
@@ -501,7 +518,6 @@ void RenderWidget0::test()
 
     // this shader supports two spot lights
 	Shader * twoSpotTexture = new Shader("src/Shaders/finalSpotLights.vert", "src/Shaders/finalSpotLights.frag");
-//	twoSpotTexture = NULL;
 	// this shader should support 8 lights - 2 spot lights and 6 point lights
 //	Shader* lightingTexture = new Shader("src/Shaders/finalLight.vert", "src/Shaders/finalLight.frag");
 
@@ -521,12 +537,11 @@ void RenderWidget0::test()
     Vector3 track13(0, -15000, -5869);
     Vector3 track14(-2000, -15000, -5869);
     Vector3 track15(-3000, -15000, -5869);
-    Vector3 track16(-4000, -13000, -5869);
-    Vector3 trackArray[] = {track1, track2, track3, track4, track5, track6, 
-        track7, track8, track9, track10, track11, track12, track13, track14, track15, track16};
+	Vector3 track16(-4000, -13000, -5869);
+	Vector3 trackArray[] = {track1, track2, track3, track4, track5, track6, 
+		track7, track8, track9, track10, track11, track12, track13, track14, track15, track16};
 
-
-
+	
 
 
 
@@ -595,8 +610,7 @@ void RenderWidget0::test()
     assert(rockImg != NULL);
     Texture *rockTexture = new Texture(rockImg);
     extrudedShapeMaterial->setTexture(rockTexture);
-//	extrudedShapeMaterial->setShader(twoSpotTexture);
-	extrudedShapeMaterial->setShader(new Shader("src/Shaders/texture2DLight.vert", "src/Shaders/texture2DLight.frag"));
+	extrudedShapeMaterial->setShader(twoSpotTexture);
 
     loft->setMaterial(extrudedShapeMaterial);
     

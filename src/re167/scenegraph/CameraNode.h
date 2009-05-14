@@ -38,6 +38,7 @@ namespace RE167
 		void setLookUp (Vector3 lookUp);
 		
 		void setRotation (float rotate);
+		const float getRotation () {return rotation;}
 		
 		void updateProjection();
 		void updateProjection(Vector3 center, Vector3 lookAt, Vector3 lookUp);

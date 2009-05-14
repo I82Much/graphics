@@ -29,7 +29,9 @@ void CameraNode::setTransformation(const Matrix4 &t) {
 void CameraNode::translateCamera(float dx, float dy, float dz) {
 	Matrix4 t = Matrix4::translate(dx, dy, dz);
 	Vector3 newCenter = Vector3(t*Vector4(centerOfProj));
-	Vector3 newLookAt = Vector3(t*Vector4(lookAtPoint));
+	Matrix4 rotationMatrix = Matrix4::rotate(Vector4(lookUpVector), rotation);
+	Vector3 newLookAt = Vector3(rotationMatrix*t*Vector4(lookAtPoint));
+	rotation = 0;
 	updateProjection(newCenter, newLookAt, lookUpVector);
 }
 
@@ -53,7 +55,9 @@ void CameraNode::setLookUp (Vector3 lookUp) {
 }
 
 void CameraNode::setRotation (float rotate) {
-	rotation = rotate;
+	std::cout << "Rotate = " << rotate << std::endl;
+	rotation = BasicMath::clamp(rotate, -BasicMath::PI / 2.0, BasicMath::PI / 2.0);
+	std::cout << "      Rotation = " << rotation << std::endl;
 	valueWasChanged = true;
 	updateProjection();
 }
@@ -64,7 +68,7 @@ void CameraNode::updateProjection () {
 		Vector3 newCenter = Vector3(transform*Vector4(centerOfProj));
 		
 		Matrix4 rotationMatrix = Matrix4::rotate(Vector4(lookUpVector), rotation);
-		Vector3 newLookAt = Vector3(transform*rotationMatrix*Vector4(lookAtPoint));
+		Vector3 newLookAt = Vector3(rotationMatrix*transform*Vector4(lookAtPoint));
 		
 		Vector3 newLookUp = Vector3(transform*Vector4(lookUpVector));
 		

@@ -40,9 +40,16 @@ void main() {
 		
 		colorFrom0 += diffuse0 + specular0 + ambientColor0 * gl_FrontMaterial.ambient;
 
+	gl_FragColor = colorFrom0;// + colorFrom1;
+	gl_FragColor *= gl_TexCoord[0];
+
 	}
 	else {
 		colorFrom0 += gl_LightSource[0].ambient * gl_FrontMaterial.ambient;
+
+	gl_FragColor = colorFrom0;// + colorFrom1;
+	gl_FragColor *= gl_TexCoord[0];
+
 	}
 
 
@@ -76,7 +83,7 @@ void main() {
 	}
 
 
-	gl_FragColor = colorFrom0 + colorFrom1;
-	gl_FragColor *= gl_TexCoord[0];
+	gl_FragColor = colorFrom0;// + colorFrom1;
+	gl_FragColor *= texture2D(tex, gl_TexCoord[0].st);
 } 
 
