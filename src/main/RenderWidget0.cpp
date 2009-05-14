@@ -592,10 +592,7 @@ void RenderWidget0::test()
     Square square;
     square.setTransformation(Matrix4::scale(4,4,4) * Matrix4::rotateX(BasicMath::radians(90)));
     
-    //Object * loft = GeometryFactory::createLoft(square, *track , 5 ,50);
-    
-    
-    //Object * traditional = GeometryFactory::createLoft(square, *track, 5, 50);
+
     
     std::vector<GeometryFactory::Face> faces = GeometryFactory::createLoft(square, *track, 5, 50, 5);
     Object * loft = GeometryFactory::createObjectFromFaces(faces, true, false, true);
@@ -625,7 +622,7 @@ void RenderWidget0::test()
     Circle circle;
     circle.setTransformation(Matrix4::scale(.5,.5,.5) * Matrix4::rotateX(BasicMath::radians(90)));
 
-    track->setTransformation(Matrix4::translate(0,0,-2) * track->getTransformation());
+    track->setTransformation(Matrix4::translate(0,3,0) * track->getTransformation());
     
 
     Object * trackLoft = GeometryFactory::createLoft(circle,  *track, 10, 50);
