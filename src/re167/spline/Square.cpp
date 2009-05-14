@@ -116,3 +116,12 @@ void Square::translateT(float t, float &tPrime, int &side) const
 }
 
 
+// since a square is equally curvey at all points, adaptive sampling a circle is the same as uniformly sampling it
+void Square::adaptiveSample(int numSamples, std::vector<Vector3>& position,
+							std::vector<Vector3>& tangent, std::vector<Vector3>& acceleration) const {
+	
+	position = uniformPointSample(numSamples);
+	tangent = uniformTangentSample(numSamples);
+	acceleration = uniformAccelerationSample(numSamples);
+	
+}
