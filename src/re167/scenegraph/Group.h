@@ -15,6 +15,9 @@ namespace RE167
         bool addChild(Node * n);
         bool removeChild(Node * n);
         static void test();
+		
+		// get child at given index - 0 based
+		Node* getChild (int i);
         
 
         // TODO: make this private or protected

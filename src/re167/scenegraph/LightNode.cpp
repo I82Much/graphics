@@ -34,8 +34,8 @@ void LightNode::setTransformation(const Matrix4& t) {
 }
 
 void LightNode::updateLight() {
-//	light->setSpotDirection(Vector3(transform*Vector4(spotDirection)));
-	light->setSpotDirection(spotDirection);
+	light->setSpotDirection(Vector3(transform*Vector4(spotDirection)));
+//	light->setSpotDirection(spotDirection);
 	light->setPosition(Vector3(transform*Vector4(position)));
 	light->setDirection(Vector3(transform*Vector4(direction)));
 }

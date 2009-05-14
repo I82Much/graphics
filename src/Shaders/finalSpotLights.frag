@@ -20,7 +20,7 @@ void main() {
 	vec4 diffuseColor0 = vec4(0,0,0,0);
 	vec4 specularColor0 = vec4(0,0,0,0);
 	vec4 ambientColor0 = vec4(0,0,0,0);
-	vec4 colorFrom0 = vec4(0.0,0.0,0.0,0.0);
+	vec4 colorFrom0 = vec4(0.0,0.0,0.0,1.0);
 
 	vec3 light0 = normalize(lightDir0);
 	vec3 reflect0 = normalize(reflection0);
@@ -42,7 +42,7 @@ void main() {
 
 	}
 	else {
-		colorFrom0 += gl_LightSource[1].ambient * gl_FrontMaterial.ambient;
+		colorFrom0 += gl_LightSource[0].ambient * gl_FrontMaterial.ambient;
 	}
 
 

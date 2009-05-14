@@ -78,7 +78,7 @@ void RenderWidget0::initSceneEvent()
 
     
 	initCamera();
-	initLights();
+//	initLights();
     //initStillLife();
 
     test();
@@ -171,39 +171,53 @@ void RenderWidget0::timerEvent(QTimerEvent *t)
     segment++;
     
     // in minecart coordinates, the z-axis is the front and the y-axis points up
-	Vector3 zAxis(0,0,1);
-	Vector3 yAxis(0,1,0);
+	Vector3 toFront(1,0,0);
+	toFront = toFront.normalize();
+	Vector3 pointsUp(0,1,0);
 	// we want the z-axis to line up with the tangent vector and the y-axis to line up with the normal vector
 	Vector3 tangent = referenceFrames[(segment-1) % numSegments].getV();
-	Vector3 normal = referenceFrames[(segment-1) % numSegments].getV();
+	assert(tangent.isUnitVector());
+	Vector3 normal = referenceFrames[(segment-1) % numSegments].getU();
 	
 	Matrix4 rotationMatrix;
-	if (zAxis == tangent) {
+	if (toFront == tangent || toFront == -tangent) {
 		rotationMatrix = Matrix4::IDENTITY;
 	}
+//	else if (zAxis == -tangent) {
+//		rotationMatrix = Matrix4::rotate(yAxis, BasicMath::PI);
+//	}
 	else {
-		Vector3 axis = tangent.crossProduct(zAxis).normalize();
+		Vector3 axis = tangent.crossProduct(toFront).normalize();
 		Vector4 axisOfRotationVec4 = Vector4::homogeneousVector(axis);
 		
-		float angle = Vector3::angleBetween(tangent, zAxis);
+		float angle = Vector3::angleBetween(tangent, toFront);
 		rotationMatrix = Matrix4::rotate(axisOfRotationVec4, angle);
 	}
 	
 	// then we need to make sure that the y-axis lines up with the normal vector
 	Matrix4 rotationMatrix2;
-	Vector4 newYAxis = (rotationMatrix*Vector4::homogeneousVector(yAxis)).normalize();
-	if (newYAxis == normal) {
+	Vector4 newPointsUp = (rotationMatrix*Vector4::homogeneousVector(pointsUp)).normalize();
+	if (newPointsUp == normal || newPointsUp == -normal) {
 		rotationMatrix2 = Matrix4::IDENTITY;
 	}
+//	else if (newYAxis == -normal) {
+//		rotationMatrix = Matrix4::rotate(zAxis, BasicMath::PI);
+//	}
 	else {
-		Vector3 axis = normal.crossProduct(newYAxis).normalize();
+		Vector3 axis = normal.crossProduct(newPointsUp).normalize();
 		Vector4 axisOfRotationVec4 = Vector4::homogeneousVector(axis);
 		
-		float angle = Vector3::angleBetween(normal,newYAxis);
+		float angle = Vector3::angleBetween(normal,newPointsUp);
 		rotationMatrix2 = Matrix4::rotate(axisOfRotationVec4,angle);
 	}
 	
-    minecart->setTransformation(Matrix4::translate(loc.getX(), loc.getY(), loc.getZ())*rotationMatrix2*rotationMatrix);
+	// added this because I could not figure out how to rotate the shape and have the camera work in the right way without it
+    TransformGroup* minecartShape = dynamic_cast<TransformGroup*>(minecart->getChild(0));
+	if (minecartShape == NULL) {
+		std::cout << "ERROR" << std::endl;
+	}
+	minecartShape->setTransformation(rotationMatrix2*rotationMatrix);
+	minecart->setTransformation(Matrix4::translate(loc.getX(), loc.getY(), loc.getZ()));
     
 	// we now add code to make the camera follow the mine cart
 	// We do not need to worry about changing the center of projection because in the scene graph, the camera is a child
@@ -211,12 +225,13 @@ void RenderWidget0::timerEvent(QTimerEvent *t)
 	// We do have to change the lookAtPoint and the lookUpVector and for that we need the referenceFrames for the track
 	// the tangent is v and the normal is u
 	// (the -1 is because segment has been incremented)
-	Vector3 newLookAt = movingCamera->getCenterOfProjection() + referenceFrames[(segment-1) % numSegments].getV();
+	Vector3 newCenter = referenceFrames[(segment-1) % numSegments].getU();
+	Vector3 newLookAt = newCenter + referenceFrames[(segment-1) % numSegments].getV();
 	Vector3 newLookUp = referenceFrames[(segment-1) % numSegments].getU();
 	
 	// now we update the camera
-	movingCamera->updateProjection(movingCamera->getCenterOfProjection(), newLookAt, newLookUp);
-//	whiteLight->setSpotDirection(referenceFrames[(segment-1) % numSegments].getV());
+	movingCamera->updateProjection(newCenter, newLookAt, newLookUp);
+	whiteLight->setSpotDirection(referenceFrames[(segment-1) % numSegments].getV());
 		    
     updateScene();
 	counter++;
@@ -472,22 +487,23 @@ void RenderWidget0::test()
      mineCartObj->setTransformation(Matrix4::scale(.001,.001,.001));
      */
 
-     Object * minecartObj = GeometryFactory::createSurfaceOfRevolution(minecartProfile, 3, 4);
+	Object * minecartObj = GeometryFactory::createSurfaceOfRevolution(minecartProfile, 3, 4);
 
-     // Need to compensate for surface of revolution weirdness.
-     minecartObj->setTransformation(Matrix4::rotateX(BasicMath::radians(90)) * Matrix4::rotateY(BasicMath::radians(45)));
+	// Need to compensate for surface of revolution weirdness.
+	minecartObj->setTransformation(Matrix4::rotateX(BasicMath::radians(90)) * Matrix4::rotateY(BasicMath::radians(45)));
+	TransformGroup* minecartShape = new TransformGroup();
+	minecartShape->addChild(new Shape3D(minecartObj));
 
-     Shape3D * minecartShape = new Shape3D(minecartObj);
-     minecart = new TransformGroup();
-     minecart->addChild(minecartShape);
+	minecart = new TransformGroup();
+	minecart->addChild(minecartShape);
 
     
 
     // this shader supports two spot lights
 	Shader * twoSpotTexture = new Shader("src/Shaders/finalSpotLights.vert", "src/Shaders/finalSpotLights.frag");
-	twoSpotTexture = NULL;
+//	twoSpotTexture = NULL;
 	// this shader should support 8 lights - 2 spot lights and 6 point lights
-    //	Shader* lightingTexture = new Shader("src/Shaders/finalLight.vert", "src/Shaders/finalLight.frag");
+//	Shader* lightingTexture = new Shader("src/Shaders/finalLight.vert", "src/Shaders/finalLight.frag");
 
     
     Vector3 track1(0, -7998, 0);
@@ -571,7 +587,6 @@ void RenderWidget0::test()
     
     
     Material * extrudedShapeMaterial = new Material(Brass);
-	//extrudedShapeMaterial->setShader(twoSpotTexture);
     
     // Set up the textures
 
@@ -580,6 +595,8 @@ void RenderWidget0::test()
     assert(rockImg != NULL);
     Texture *rockTexture = new Texture(rockImg);
     extrudedShapeMaterial->setTexture(rockTexture);
+//	extrudedShapeMaterial->setShader(twoSpotTexture);
+	extrudedShapeMaterial->setShader(new Shader("src/Shaders/texture2DLight.vert", "src/Shaders/texture2DLight.frag"));
 
     loft->setMaterial(extrudedShapeMaterial);
     
@@ -604,7 +621,7 @@ void RenderWidget0::test()
 	Camera* moveCamera = new Camera();
 	movingCamera = new CameraNode(moveCamera);
 	// now we modify the camera so that it sits where we want it to relative to the minecart
-	movingCamera->updateProjection(Vector3(0,0.5,0),Vector3(0,0.5,-1),Vector3(0,1,0));
+	movingCamera->updateProjection(Vector3(0,0,0),Vector3(0,0,-1),Vector3(0,1,0));
 	// then we add it as a child of the minecart so that it follows the cart around
 	minecart->addChild(movingCamera);
 	
@@ -618,7 +635,7 @@ void RenderWidget0::test()
 	// now we have to set up the lighting....
     // Create a white light
     Light * white = sceneManager->createLight();
-	white->setType(Light::POINT);
+	white->setType(Light::SPOT);
     white->setSpotDirection(Vector3(0,0,-1));
     white->setDiffuseColor(Vector3(1,1,1));
     white->setAmbientColor(Vector3(.2,.2,.2));

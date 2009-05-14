@@ -46,6 +46,21 @@ bool Group::removeChild(Node * n)
     
 }
 
+// get child that was the ith child added to children (0 based)
+Node* Group::getChild (int i) {
+	i = children.size() - 1 - i;
+	int counter = 0;
+	for (std::list<Node*>::iterator it = children.begin(); it != children.end(); it++) {
+		if (counter == i) {
+			return *it;
+		}
+		counter++;
+	}
+	std::cout << "I should so not be here" << std::endl;
+	return NULL;
+}
+
+
 /*
 void Group::draw() {}
 

@@ -348,6 +348,7 @@ void GLRenderContext::setLights(const std::list<Light*> &lightList)
 				spotDirection[0] = l->getSpotDirection().getX();
 				spotDirection[1] = l->getSpotDirection().getY();
 				spotDirection[2] = l->getSpotDirection().getZ();
+				std::cout << "spotExponent = " << l->getSpotExponent() << ", spotCutoff = " << l->getSpotCutoff() << std::endl;
 				glLightfv(lightIndex[i], GL_SPOT_DIRECTION, spotDirection);
 				glLightf(lightIndex[i], GL_SPOT_EXPONENT, l->getSpotExponent());
 				glLightf(lightIndex[i], GL_SPOT_CUTOFF, l->getSpotCutoff());
@@ -432,6 +433,7 @@ void GLRenderContext::setMaterial(const Material *m)
 		}
         // No texture
 		else {
+			std::cout << "I am here" << std::endl;
             glDisable(GL_TEXTURE_2D);
 		}
 
