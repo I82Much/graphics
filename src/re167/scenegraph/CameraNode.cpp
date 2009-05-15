@@ -68,25 +68,30 @@ void CameraNode::updateProjection () {
 		
 		Vector3 newCenter = Vector3(transform*Vector4(centerOfProj));
 		
-		Vector3 newLookUp = Vector3(transform*Vector4(lookUpVector));
-		
+		// fix the lookAtPoint
 		Matrix4 rotationMatrix = Matrix4::rotate(Vector4(lookUpVector), rotation);
 		Vector4 lookAtVector = Vector4::homogeneousVector(lookAtPoint - centerOfProj);
 		Vector4 rotatedLookAtVector = rotationMatrix*lookAtVector;
 		Vector3 rotatedLookAtPoint = Vector3(centerOfProj + rotatedLookAtVector);
 		Vector3 newLookAt = Vector3(transform*Vector4(rotatedLookAtPoint));
 		
+		Vector3 newLookUp = Vector3(transform*Vector4(lookUpVector));
+		
 		camera->changeSettings(newCenter, newLookAt, newLookUp);
 		
 		valueWasChanged = false;
+		std::cout << "camera is pointing in direction " << lookAtVector<< std::endl;
 		
 	}
 	else if (valueWasChanged && isUnaffected) {
 		
-		Vector3 newCenter = Vector4(centerOfProj);
+		Vector3 newCenter = centerOfProj;
 		
 		Matrix4 rotationMatrix = Matrix4::rotate(Vector4(lookUpVector), rotation);
-		Vector3 newLookAt = Vector3(rotationMatrix*Vector4(lookAtPoint));
+		Vector4 lookAtVector = Vector4::homogeneousVector(lookAtPoint - centerOfProj);
+		Vector4 rotatedLookAtVector = rotationMatrix*lookAtVector;
+		Vector3 rotatedLookAtPoint = Vector3(centerOfProj + rotatedLookAtVector);
+		Vector3 newLookAt = rotatedLookAtPoint;
 		
 		Vector3 newLookUp = lookUpVector;
 		

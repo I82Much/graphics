@@ -82,7 +82,7 @@ void RenderWidget0::initSceneEvent()
 	
 	initSplines();
     initGeometry();
-	initLights();
+//	initLights();
 
     test();
 	
@@ -306,14 +306,15 @@ void RenderWidget0::timerEvent(QTimerEvent *t)
 	// We do have to change the lookAtPoint and the lookUpVector and for that we need the referenceFrames for the track
 	// the tangent is v and the normal is u
 	// (the -1 is because segment has been incremented)
-    Vector3 newCenter(0,0,0);// referenceFrames[(segment-1) % numSegments].getW();
+    Vector3 newCenter(0,0,0);
 	Vector3 newLookAt = newCenter + tangent;
 	Vector3 newLookUp = normal;
 	
 	// now we update the camera
+	std::cout << "************setting camera and white light*************" << std::endl;
 	movingCamera->updateProjection(newCenter, newLookAt, newLookUp);
 	whiteLight->setSpotDirection(tangent);
-	whiteLight->setPosition(newCenter);
+//	whiteLight->setPosition(newCenter);
 //	whiteLight->setSpotDirection(newLookAt);
 		    
     updateScene();
@@ -697,7 +698,7 @@ void RenderWidget0::test()
 	// now we have to set up the lighting....
     // Create a white light
     Light * white = sceneManager->createLight();
-	white->setType(Light::POINT);
+	white->setType(Light::SPOT);
     white->setSpotDirection(Vector3(0,0,-1));
     white->setDiffuseColor(Vector3(1,1,1));
     white->setAmbientColor(Vector3(.2,.2,.2));
