@@ -1776,7 +1776,7 @@ std::vector<GeometryFactory::Face> GeometryFactory::createLoft(
     const Spline &path,
     const int numPointsToEvaluateAlongShape,
     const int numPointsToEvaluateAlongPath,
-    const int test
+    const int hack
 )
 {
     // Calculate all of the points and tangent vectors for the path curve and
@@ -2042,10 +2042,8 @@ void GeometryFactory::createConnectivity(const vector <vector<Vector3> > &vecVer
                         float *&normals,
                         float *&textureCoords) 
 {
-    std::cout << "Going to create the connectivity." << std::endl;
-    
     createConnectivity(vecVertices, numPointsRows, numPointsCols, vertices, 3);
-    //createConnectivity(vecNormals, numPointsRows, numPointsCols, normals, 3);
+    createConnectivity(vecNormals, numPointsRows, numPointsCols, normals, 3);
     createConnectivity(vecTexCoords, numPointsRows, numPointsCols, textureCoords, 2);
 }
 

@@ -622,9 +622,6 @@ void RenderWidget0::test()
 	minecart = new TransformGroup();
 	minecart->addChild(minecartShape);
 
-
-    
-	
     static const int NUM_SEGMENTS_TO_SAMPLE_ALONG_CURVE = 500;
     
 
@@ -632,7 +629,6 @@ void RenderWidget0::test()
     
     Object * torch = GeometryFactory::createSurfaceOfRevolution(*torchCurve);
     sceneManager->getRoot()->addChild(new Shape3D(torch));
-    
     
     Vector3 str1(0,1,0);
     Vector3 str2(0,.5,0);
@@ -647,12 +643,20 @@ void RenderWidget0::test()
     Square square;
     square.setTransformation(Matrix4::scale(4,4,4) * Matrix4::rotateX(BasicMath::radians(90)));
     
+    
+    Circle circle3;
+    circle3.setTransformation(Matrix4::scale(4,4,4) * Matrix4::rotateX(BasicMath::radians(90)));
+    
+    
+    
     // Create the textures
     
     Material * extrudedShapeMaterial = new Material(Brass);
     //http://ryane.com/wp-content/uploads/2007/04/rock_02.jpg
     QImage *rockImg = new QImage("images/rock_02.jpg", "jpg");
     Texture *rockTexture = new Texture(rockImg);
+    
+    
     extrudedShapeMaterial->setTexture(rockTexture);
 	  extrudedShapeMaterial->setShader(twoSpotTexture);
 

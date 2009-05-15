@@ -76,10 +76,13 @@ namespace RE167 {
         Spline * firstTrackCrossSection;
         Spline * minecartProfile;
         
-        
-        
         Shader * twoSpotTexture;
         Shader * lightingTexture;
+        
+        
+        // Texture * rockTexture;
+        //         Texture * metalTexture;
+        //         
         
 		// added a LightNode to start experimenting with putting a light in front of the minecart
 		LightNode* whiteLight;
