@@ -17,12 +17,14 @@
 #include "Vector3.h"
 #include "Object.h"
 #include "Shader.h"
+#include "../spline/BezierCurve.h"
+#include "GeometryFactory.h"
 
 namespace RE167 {
 	class RE167_EXPORT Torch : public TransformGroup {
 	public:
 		
-		Torch(Vector3 location, Object* o, Shader* twoSpotTexture);
+		Torch(Vector3 location, Object* torchObject, TransformGroup* flameGroup, Shader* twoSpotTexture);
 		~Torch();
 		
 		void enable() {light->enable();}
@@ -41,7 +43,7 @@ namespace RE167 {
 	private:
 		TransformGroup* theTorch;
 		Shape3D* shape;
-		Shape3D* flame;
+		TransformGroup* flame;
 		LightNode* light;
 		
 	};

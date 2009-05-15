@@ -1,7 +1,7 @@
 /*
  *  SplineLighting.h
  *  
- *	A subclass of TransformGroup that contains a list of Torches.  Was created to implement the torches on the walls
+ *	A subclass of TransformGroup that contains a list of Torches.  This implements the torches on the walls
  *
  *  Created by Susanna Kimport on 5/14/09.
  *  Copyright 2009 __MyCompanyName__. All rights reserved.

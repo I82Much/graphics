@@ -248,9 +248,10 @@ void RenderWidget0::initLights()
     
     sceneManager->getRoot()->addChild(blueLight);
 
-	// This would have implemented the torch lights; however, the code did not work
-	sceneManager->getRoot()->addChild(new SplineLighting(track, SplineLighting::W, 3.5, 10000, 100));
-	sceneManager->getRoot()->addChild(new SplineLighting(track, SplineLighting::W, -3.5, 10000, 100));
+	// This implemets the torch lights; however, we were not able to get them working as point lights
+	// Thus, they are just pretty shapes.
+	sceneManager->getRoot()->addChild(new SplineLighting(track, SplineLighting::W, 3.5, 10000, 100, twoSpotTexture));
+	sceneManager->getRoot()->addChild(new SplineLighting(track, SplineLighting::W, -3.5, 10000, 100, twoSpotTexture));
 }
 
 
