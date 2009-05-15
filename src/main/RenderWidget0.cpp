@@ -81,10 +81,7 @@ void RenderWidget0::initSceneEvent()
 	
 	initSplines();
     initGeometry();
-//	initLights();
-
-    test();
-    
+	initLights();
     initCameras();
     
 	
@@ -137,14 +134,6 @@ void RenderWidget0::initSplines() {
 
 }
 
-/**
-* Creates all of the geometry in the scene, using helper methods in 
-* GeometryFactory
-**/
-void RenderWidget0::initGeometry()
-{
-    
-}
 
 
 void RenderWidget0::initMaterials()
@@ -236,6 +225,47 @@ void RenderWidget0::initLights()
     
     //sceneManager->getRoot()->addChild(blueLight);
 //	sceneManager->getRoot()->addChild(whiteLight);
+
+    // now we have to set up the lighting....
+    // Create a white light
+    /*Light * white = sceneManager->createLight();
+	white->setType(Light::POINT);
+    white->setSpotDirection(Vector3(0,0,-1));
+    white->setDiffuseColor(Vector3(1,1,1));
+    white->setAmbientColor(Vector3(.2,.2,.2));
+    white->setSpecularColor(Vector3(1,1,1));
+	white->setSpotCutoff(90.0);
+	white->setSpotExponent(1.0);
+	white->setPosition(Vector3(0,0,0));
+    
+    whiteLight = new LightNode(white);
+	whiteLight->setPosition(Vector3(0,0,0));
+	minecart->addChild(whiteLight);
+*/
+
+    static const int NUM_LIGHTS_TO_PLACE = 6;
+    
+    for (int i = 0; i < NUM_LIGHTS_TO_PLACE; i++) 
+    {
+        float t = static_cast<float>(i) / (NUM_LIGHTS_TO_PLACE - 1);
+        Vector3 position = track->position(t);
+        
+        Light * light = sceneManager->createLight();
+        light->setType(Light::POINT);
+        
+        light->setPosition(position);
+        Vector3 mDiffuse(1,0,0);
+    	Vector3 mSpecular(1,1,1);
+    	Vector3 mAmbient(.2,.2,.2);
+        
+        light->setDiffuseColor(mDiffuse);
+        light->setAmbientColor(mAmbient);
+        light->setSpecularColor(mSpecular);
+        LightNode * lightNode = new LightNode(light);
+        
+        sceneManager->getRoot()->addChild(lightNode);
+    }
+    
 }
 
 
@@ -565,28 +595,28 @@ void RenderWidget0::toggleWireframe()
 
 
 
-
-void RenderWidget0::test() 
+/**
+* Creates all of the geometry in the scene, using helper methods in 
+* GeometryFactory
+**/
+void RenderWidget0::initGeometry() 
 {
     // The minecart (which actually isn't rendered) is what moves around the
     // scene.  Our camera follows it
 	minecart = new TransformGroup();
 
     static const int NUM_SEGMENTS_TO_SAMPLE_ALONG_CURVE = 500;
-
     
     Square tunnelCrossSection;
     // Make it bigger and again, lying in xz plane
     tunnelCrossSection.setTransformation(Matrix4::scale(4,4,4) * Matrix4::rotateX(BasicMath::radians(90)));
-    
-    
+
     // Create the textures
     
     Material * extrudedShapeMaterial = new Material(Brass);
     //http://ryane.com/wp-content/uploads/2007/04/rock_02.jpg
     QImage *rockImg = new QImage("images/rock_02.jpg", "jpg");
     Texture *rockTexture = new Texture(rockImg);
-    
     
     extrudedShapeMaterial->setTexture(rockTexture);
     extrudedShapeMaterial->setShader(twoSpotTexture);
@@ -597,7 +627,6 @@ void RenderWidget0::test()
     Texture *metalTexture = new Texture(rockImg);
     trackMaterial->setTexture(metalTexture);
     trackMaterial->setShader(twoSpotTexture);
-    
     
     // Specify how fine the geometry mesh for the tunner will be; a higher
     // value is finer. Probably 20 - 100.
@@ -656,34 +685,8 @@ void RenderWidget0::test()
         Object * tunnelObject = GeometryFactory::createObjectFromFaces(faces, true, false, true);
         sceneManager->getRoot()->addChild(new Shape3D(tunnelObject));
     }
-    
-    
         
     static const int AMOUNT_TO_MOVE_TRACK_DOWN = 3;
-    static const int NUM_LIGHTS_TO_PLACE = 6;
-    
-    for (int i = 0; i < NUM_LIGHTS_TO_PLACE; i++) 
-    {
-        float t = static_cast<float>(i) / (NUM_LIGHTS_TO_PLACE - 1);
-        Vector3 position = track->position(t);
-        
-        Light * light = sceneManager->createLight();
-        light->setType(Light::POINT);
-        
-        light->setPosition(position);
-        Vector3 mDiffuse(1,0,0);
-    	Vector3 mSpecular(1,1,1);
-    	Vector3 mAmbient(.2,.2,.2);
-        
-        light->setDiffuseColor(mDiffuse);
-        light->setAmbientColor(mAmbient);
-        light->setSpecularColor(mSpecular);
-        LightNode * lightNode = new LightNode(light);
-        
-        sceneManager->getRoot()->addChild(lightNode);
-    }
-
-
     
     Circle trackCrossSection;
     // Cross sections for oru lofts have to lie in xz plane.
@@ -700,24 +703,6 @@ void RenderWidget0::test()
     trackLoft->setMaterial(trackMaterial);
     
     sceneManager->getRoot()->addChild(new Shape3D(trackLoft));
-    
-
-	// now we have to set up the lighting....
-    // Create a white light
-    /*Light * white = sceneManager->createLight();
-	white->setType(Light::POINT);
-    white->setSpotDirection(Vector3(0,0,-1));
-    white->setDiffuseColor(Vector3(1,1,1));
-    white->setAmbientColor(Vector3(.2,.2,.2));
-    white->setSpecularColor(Vector3(1,1,1));
-	white->setSpotCutoff(90.0);
-	white->setSpotExponent(1.0);
-	white->setPosition(Vector3(0,0,0));
-    
-    whiteLight = new LightNode(white);
-	whiteLight->setPosition(Vector3(0,0,0));
-	minecart->addChild(whiteLight);
-*/
     sceneManager->getRoot()->addChild(minecart);
     
     
