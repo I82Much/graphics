@@ -62,29 +62,37 @@ namespace RE167 {
         CameraNode *stillCamera; // this is the camera that does not move on its own and allows the trackball
 		CameraNode* movingCamera; // this is the camera that follows the minecart
 
-          
         TransformGroup *minecart;
-        
-    
-        Spline * track;
-	
 
-		
+
+        Spline * track;
+        Spline * square;
+        Spline * helix;
+        Spline * circle;
+        Spline * torchCurve;
+        
+        Spline * firstTrackCrossSection;
+        
+        
 		// added a LightNode to start experimenting with putting a light in front of the minecart
 		LightNode* whiteLight;
+
+
 	
-	
-        // Hold the last mouse position
+	    // Hold the last mouse position
         int lastX;
         int lastY;
 
         int timerId;
         int counter;
-	
-        void initCamera();
+
+        void initCameras();
+        void initShaders();
         void initLights();
         void initMaterials();
-    
+        void initSplines();
+        void initGeometry();
+        
         void switchScene();
         void toggleCulling();
         void test();
