@@ -77,14 +77,16 @@ void RenderWidget0::initSceneEvent()
     
 	sceneManager = new SceneManager();
 
-    
-	initCameras();
+    initShaders();
 	
 	initSplines();
     initGeometry();
 	initLights();
 
     test();
+    
+    initCameras();
+    
 	
 	// Trigger timer event every 5ms.
 	timerId = startTimer(5);
@@ -144,6 +146,19 @@ void RenderWidget0::initSplines()
     torchCurve = new BezierCurve(torch0, torch1, torch2, torch3);
     
     
+    Vector3 minecart0(3,3,0);
+    Vector3 minecart1(2.5,2,0);
+    Vector3 minecart2(2,1,0);
+    Vector3 minecart3(1.5,0,0);
+    Vector3 minecart4(1,0,0);
+    Vector3 minecart5(.5,0,0);
+    Vector3 minecart6(0,0,0);
+
+    Vector3 minecartArray[] = {minecart0, minecart1, minecart2, minecart3, minecart4, minecart5, minecart6 };
+
+    minecartProfile = new BezierCurve(minecartArray, sizeof(minecartArray) / sizeof(Vector3));
+    
+    
     
     
 }
@@ -182,11 +197,30 @@ void RenderWidget0::initCameras()
     
     sceneManager->getRoot()->addChild(stillCamera);
 	
+	
+    assert(minecart != NULL);
+	
+	// first we have to create the camera and cameraNode:
+	Camera* moveCamera = new Camera();
+	movingCamera = new CameraNode(moveCamera);
+	// now we modify the camera so that it sits where we want it to relative to the minecart
+	movingCamera->updateProjection(Vector3(0,0,0),Vector3(0,0,-1),Vector3(0,1,0));
+	// then we add it as a child of the minecart so that it follows the cart around
+	minecart->addChild(movingCamera);
+	
+	// last thing to do is make sure that when the scene starts, we are using the moving camera, not the still one
+	movingCamera->use();
+	stillCamera->disable();
+    
     
 }
 
 void RenderWidget0::initShaders()
 {
+    // this shader supports two spot lights
+    twoSpotTexture = NULL;// new Shader("src/Shaders/finalSpotLights.vert", "src/Shaders/finalSpotLights.frag");
+	// this shader should support 8 lights - 2 spot lights and 6 point lights
+    //	lightingTexture = new Shader("src/Shaders/finalLight.vert", "src/Shaders/finalLight.frag");
     
 }
 
@@ -446,7 +480,6 @@ void RenderWidget0::mouseReleaseEvent(QMouseEvent *e)
 {
 }
 
-
 void RenderWidget0::startAnimation()
 {
 	if(!timerId)
@@ -529,8 +562,7 @@ void RenderWidget0::keyPressEvent ( QKeyEvent * k )
 		case Qt::Key_I:
 			stillCamera->setRotation(0);
 			break;
-			
-			
+
 			
 		// switch between moving camera and still camera
 		case Qt::Key_M:
@@ -560,17 +592,6 @@ void RenderWidget0::toggleWireframe()
 
 void RenderWidget0::test() 
 {
-    Vector3 minecart1(3,3,0);
-    Vector3 minecart2(2.5,2,0);
-    Vector3 minecart3(2,1,0);
-    Vector3 minecart4(1.5,0,0);
-    Vector3 minecart5(1,0,0);
-    Vector3 minecart6(.5,0,0);
-    Vector3 minecart7(0,0,0);
-    
-    Vector3 minecartArray[] = {minecart1, minecart2, minecart3, minecart4, minecart5, minecart6, minecart7 };
-    
-    BezierCurve minecartProfile(minecartArray, sizeof(minecartArray) / sizeof(Vector3));
     
     /*
      Object * mineCartObj = sceneManager->createObject();
@@ -578,7 +599,7 @@ void RenderWidget0::test()
      mineCartObj->setTransformation(Matrix4::scale(.001,.001,.001));
      */
 
-	Object * minecartObj = GeometryFactory::createSurfaceOfRevolution(minecartProfile, 3, 4);
+	Object * minecartObj = GeometryFactory::createSurfaceOfRevolution(*minecartProfile, 3, 4);
 
 	// Need to compensate for surface of revolution weirdness.
 	minecartObj->setTransformation(Matrix4::scale(.001,.001,.001));
@@ -590,18 +611,12 @@ void RenderWidget0::test()
 	minecart->addChild(minecartShape);
 
 
-    // this shader supports two spot lights
-    Shader * twoSpotTexture = NULL;// new Shader("src/Shaders/finalSpotLights.vert", "src/Shaders/finalSpotLights.frag");
-	// this shader should support 8 lights - 2 spot lights and 6 point lights
-    //	Shader* lightingTexture = new Shader("src/Shaders/finalLight.vert", "src/Shaders/finalLight.frag");
-
+    
 	
     static const int NUM_SEGMENTS_TO_SAMPLE_ALONG_CURVE = 500;
     
 
     Helix helix(2);
-    
-        
     
     Object * torch = GeometryFactory::createSurfaceOfRevolution(*torchCurve);
     sceneManager->getRoot()->addChild(new Shape3D(torch));
@@ -637,6 +652,7 @@ void RenderWidget0::test()
 	  trackMaterial->setShader(twoSpotTexture);
     
     // TODO: doc
+    // TODO: dehack the stupid extra int
     std::vector<GeometryFactory::Face> faces = GeometryFactory::createLoft(square, *track, 5, NUM_SEGMENTS_TO_SAMPLE_ALONG_CURVE, 5);
     for (std::vector<GeometryFactory::Face>::iterator i = faces.begin(); i != faces.end(); i++) {
       GeometryFactory::Face face = *i;
@@ -675,22 +691,7 @@ void RenderWidget0::test()
     
     sceneManager->getRoot()->addChild(new Shape3D(trackLoft));
     
-    
-	// first we have to create the camera and cameraNode:
-	Camera* moveCamera = new Camera();
-	movingCamera = new CameraNode(moveCamera);
-	// now we modify the camera so that it sits where we want it to relative to the minecart
-	movingCamera->updateProjection(Vector3(0,0,0),Vector3(0,0,-1),Vector3(0,1,0));
-	// then we add it as a child of the minecart so that it follows the cart around
-	minecart->addChild(movingCamera);
-	
-	// last thing to do is make sure that when the scene starts, we are using the moving camera, not the still one
-	movingCamera->use();
-	stillCamera->disable();
-	
-	
-	
-	
+
 	// now we have to set up the lighting....
     // Create a white light
     Light * white = sceneManager->createLight();
