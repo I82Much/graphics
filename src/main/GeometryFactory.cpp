@@ -1515,14 +1515,10 @@ void GeometryFactory::createTaperedCylinder(int numRows,
 *
 * @param shape  the curve specifying the shape that will define cross sections
 * @param path   the path that the swept surface will take
-* @param numPointsToEvaluateAlongShape  at how many places along the shape
-*                                       curve will the curve be sampled
-*                                       (higher number will lead to more
-*                                       vertices)
-* @param numPointsToEvaluateAlongPath   at how many places along the path 
-*                                       curve will the curve be sampled
-*                                       (higher number will lead to more
-*                                       vertices)
+* @param numShapeSegments               how many straight line segments will
+*                                       be used to approximate the shape
+* @param numPathSegments                how many straight line segments will
+*                                       be used to approximate the path
 * @param normalize          whether or not to make the resulting shape fit
 *                           within the unit cube centered at the origin
 **/
@@ -1534,58 +1530,15 @@ Object * GeometryFactory::createLoft(
     const bool normalize
 )
 {
+    // TODO: Normalize ?
     
-    int *indices = NULL;
-	float *vertices= NULL;
-	float *colors = NULL;
-    float *normals = NULL;
-    float *textureCoords = NULL;
-	int numVertices = 0;
-	int numIndices = 0;
-	// Do the heavy lifting with a helper method
-	createLoft(shape, 
-	    path,
-	    numPointsToEvaluateAlongShape, 
-	    numPointsToEvaluateAlongPath, 
-	    normalize,
-	    vertices,  
-	    normals, 
-	    textureCoords,
-	    colors, 
-	    indices,
-	    numVertices,
-        numIndices);
     
-        
-    assert (indices != NULL);
-    assert (vertices != NULL);
-    
-    Object * o = new Object();
-        
-	fillInObject(o, vertices, normals, textureCoords, colors, indices, 
-        numVertices, numIndices);
-     
-    delete[] indices;
-    indices = NULL;
-    delete[] vertices;
-    vertices = NULL;
-    if (normals != NULL) {
-        delete[] normals;
-        normals = NULL;
-    }
-    if (colors != NULL) {
-	    delete[] colors;
-        colors = NULL;
-    }
-    if (normals != NULL) {
-        delete[] normals;
-        normals = NULL;
-    }
-    if (textureCoords != NULL) {
-        delete[] textureCoords;
-        textureCoords = NULL;
-    }
-    return o;
+    std::vector<Face> faces = createLoftFaces(shape, path, numPointsToEvaluateAlongShape, numPointsToEvaluateAlongPath);
+    bool hasNormals = true;
+    bool hasColors = false;
+    bool hasTextureCoords = true;
+    return createObjectFromFaces(faces,hasNormals, 
+        hasColors, hasTextureCoords);
 }
 
 
@@ -1606,64 +1559,30 @@ Object * GeometryFactory::createLoft(
 *
 * @param shape  the curve specifying the shape that will define cross sections
 * @param path   the path that the swept surface will take
-* @param numPointsToEvaluateAlongShape  at how many places along the shape
-*                                       curve will the curve be sampled
-*                                       (higher number will lead to more
-*                                       vertices)
-* @param numPointsToEvaluateAlongPath   at how many places along the path 
-*                                       curve will the curve be sampled
-*                                       (higher number will lead to more
-*                                       vertices)
-* @param normalize          whether or not to make the resulting shape fit
-*                           within the unit cube centered at the origin
-* @param vertices   the array that will be filled in to hold all of the 
-*                   vertices in the object.  Must be freed later
-* @param normals    the array that will be filled in to hold all of the 
-*                   normals in the object.  Must be freed later.
-* @param textureCoords  the array that will be filled in to hold the texture
-*                       coordinates of the object. Must be freed later
-* @param colors         the array that will be filled in to hold the color 
-*                       information of object's surface (separate from texture)
-*                       Must be freed later.
-* @param indices    the array that will be filled in to hold the connectivity
-*                   of all the vertices, normals, colors, texture coords, etc.
-*                   For instance, if the first three elements of this array 
-*                   are 0,2,3 then the first face is made of the vertices at
-*                   position 0, 2, and 3 in the vertices array, and so on
-*                   and so forth.
-* @param numVertices    the number of vertices in the object; indicates
-*                       size of the vertices array (3 * numVertices, since
-*                       each vertex has 3 coordinates), normals array
-*                       (3 * numVertices), colors array (3 * numVertices) and
-*                       textureCoords array (2 * numVertices).
-* @param numIndices     the number of indices we have; indicates size of
-*                       indices array (1 * numIndices)
-**/
-void GeometryFactory::createLoft(
+* @param numShapeSegments               how many straight line segments will
+*                                       be used to approximate the shape
+* @param numPathSegments                how many straight line segments will
+*                                       be used to approximate the path
+*/
+std::vector<GeometryFactory::Face> GeometryFactory::createLoftFaces(
     const Spline &shape,
     const Spline &path,
-    const int numPointsToEvaluateAlongShape,
-    const int numPointsToEvaluateAlongPath,
-    bool normalize,
-    // Outputs
-    float *&vertices,
-    float *&normals,
-    float *&textureCoords,
-    float *&colors,
-    int *&indices,
-    int &numVertices,
-    int &numIndices
+    const int numShapeSegments,
+    const int numPathSegments
 )
 {
-    // TODO: wrong number of faces being sampled
+    // You need one more point than straight line segments; e.g. two points
+    // make 1 line, three points make 2 segments
+    const int numShapePoints = numShapeSegments + 1;
+    const int numPathPoints = numPathSegments + 1;
     
     // Calculate all of the points and tangent vectors for the path curve and
     // shape curve
-    vector<Vector3> shapePoints    = shape.uniformPointSample(numPointsToEvaluateAlongShape);
-    vector<Vector3> shapeTangents  = shape.uniformTangentSample(numPointsToEvaluateAlongShape);
+    vector<Vector3> shapePoints    = shape.uniformPointSample(numShapePoints);
+    vector<Vector3> shapeTangents  = shape.uniformTangentSample(numShapePoints);
     
-    vector<Vector3> pathPoints     = path.uniformPointSample(numPointsToEvaluateAlongPath);
-    vector<Vector3> pathTangents   = path.uniformTangentSample(numPointsToEvaluateAlongPath);
+    vector<Vector3> pathPoints     = path.uniformPointSample(numPathPoints);
+    vector<Vector3> pathTangents   = path.uniformTangentSample(numPathPoints);
     
     // Rotate all of the tangents 90 degrees about the Y axis to make them
     // normal to the curve
@@ -1684,129 +1603,7 @@ void GeometryFactory::createLoft(
     
     // Calculate local coordinate systems for each point along the path spline
     // that we sample
-    vector <Basis> referenceFrames = path.getReferenceFrames(numPointsToEvaluateAlongPath, false);
-
-    // For all the points along the path curve
-    for (unsigned int i = 0; i < pathPoints.size(); i++) 
-    {
-        // Add a new vector to each of the vertices, normals, texCoords in 
-        // order to make the two dimensional vector complete
-        vecVertices.push_back(vector<Vector3>());
-        vecNormals.push_back(vector<Vector3>());
-        vecTexCoords.push_back(vector<Vector3>());
-
-        // What is the matrix that takes us from world coordinates to local
-        // coordinate system?
-        const Matrix4 pathTransform = referenceFrames[i].getTransformation();
-
-        // Determine the value of the curve parameter for the path curve
-        float pathTValue = 
-            static_cast<float>(i) / static_cast<float>(pathPoints.size() - 1);
-        
-        // For each point in the shape curve
-        for (unsigned int j = 0; j < shapePoints.size(); j++) {
-        
-            // Multiply it by M to determine the point on shape at this point
-            // on curve
-            // Need to translate Vector3 into Vector4 in order to multiply
-            // by matrices
-            Vector4 curVertex = pathTransform *
-                Vector4::homogeneousPoint(shapePoints[j]);
-            vecVertices[i].push_back(Vector3(curVertex));
-            
-            // Translate the normal vector into the correct coordinate system
-            Vector4 curNormal = pathTransform * 
-                Vector4::homogeneousVector(shapeNormals[j]);
-            vecNormals[i].push_back(Vector3(curNormal));
-            
-            // Determine the value of the curve parameter for the shape curve
-            // Store this as the "v" texture coordinate
-            float shapeTValue = static_cast<float>(j) / 
-                static_cast<float>(shapePoints.size() - 1);
-                
-            // Our texture coordinates are guaranteed to between [0,1] due to
-            // the way curves are defined between t = [0,1]
-            float u = shapeTValue;
-            float v = pathTValue;    
-            vecTexCoords[i].push_back(Vector3(u, v, 0));
-            
-        } 
-    }
-    
-    // We now have all of the vertices, normals, and texture coordinates we
-    // need.  Allocate enough space for all of the arrays, and fill them in
-    // with the same face strategy as we use for cylinders.
-    
-    // We have all of our points; now we need to connect them up correctly. 
-    const int NUM_ROWS = numPointsToEvaluateAlongPath - 1;
-    const int numFacesPerRow = numPointsToEvaluateAlongShape - 1;
-    const int NUM_VERTICES_PER_ROW =
-        NUM_VERTICES_PER_RECTANGULAR_FACE * numFacesPerRow;
-    	
-    numVertices = NUM_VERTICES_PER_ROW * NUM_ROWS;
-    numIndices = numVertices;
-    
-    // Need 3 times as much space because each vertex has an x,y,z component
-    vertices = new float[3 * numVertices];	
-    normals = new float[3 * numVertices];
-    textureCoords = new float[2 * numVertices];
-    indices = new int[numIndices];	
-    
-    
-    // TODO: make a better name than this
-    createConnectivity(vecVertices,
-                    vecNormals,
-                    vecTexCoords,
-                    numPointsToEvaluateAlongPath,
-                    numPointsToEvaluateAlongShape,
-                    vertices,
-                    normals,
-                    textureCoords);
-	
-	// Fill in the indices array
-    for (int i = 0; i < numIndices; i++)
-    {
-        indices[i] = i;
-    }
-}
-
-
-std::vector<GeometryFactory::Face> GeometryFactory::createLoft(
-    const Spline &shape,
-    const Spline &path,
-    const int numPointsToEvaluateAlongShape,
-    const int numPointsToEvaluateAlongPath,
-    const int hack
-)
-{
-    // Calculate all of the points and tangent vectors for the path curve and
-    // shape curve
-    vector<Vector3> shapePoints    = shape.uniformPointSample(numPointsToEvaluateAlongShape);
-    vector<Vector3> shapeTangents  = shape.uniformTangentSample(numPointsToEvaluateAlongShape);
-    
-    vector<Vector3> pathPoints     = path.uniformPointSample(numPointsToEvaluateAlongPath);
-    vector<Vector3> pathTangents   = path.uniformTangentSample(numPointsToEvaluateAlongPath);
-    
-    // Rotate all of the tangents 90 degrees about the Y axis to make them
-    // normal to the curve
-    Matrix4 normalRotationMatrix = Matrix4::rotateY(BasicMath::radians(90));
-    vector<Vector3> shapeNormals;
-    for (std::vector<Vector3>::iterator i = shapeTangents.begin(); i != shapeTangents.end(); i++) 
-    {
-        Vector4 normal = normalRotationMatrix * Vector4::homogeneousVector(*i);
-        shapeNormals.push_back(Vector3(normal));
-    }
-    
-    
-    // We will be computing all of the vertices, normals, and texcoords and
-    // then figuring out the connectivity later
-    vector <vector<Vector3> > vecVertices;
-    vector <vector<Vector3> > vecNormals;
-    vector <vector<Vector3> > vecTexCoords;
-    
-    // Calculate local coordinate systems for each point along the path spline
-    // that we sample
-    vector <Basis> referenceFrames = path.getReferenceFrames(numPointsToEvaluateAlongPath, false);
+    vector <Basis> referenceFrames = path.getReferenceFrames(numPathPoints, false);
 
     // For all the points along the path curve
     for (unsigned int i = 0; i < pathPoints.size(); i++) 
@@ -1857,17 +1654,17 @@ std::vector<GeometryFactory::Face> GeometryFactory::createLoft(
     
     // We now have all of the vertices, normals, and texture coordinates we
     // need.  Create the faces from them and return the vector
-    
-    const int numRows = numPointsToEvaluateAlongPath - 1;
-    const int numFacesPerRow = numPointsToEvaluateAlongShape - 1;
+    const int numRows = numPathSegments;
+    const int numFacesPerRow = numShapeSegments;
     
     // This vector will hold each quadrilateral face of our object
     std::vector<Face> faces;
     
-
+    
     for (int row = 0; row < numRows; row++) {
 		for (int face = 0; face < numFacesPerRow; face++) {
 
+            
             // Pull out all the attributes related to upper left point
             VertexAttributes upperLeft;
             upperLeft.position = vecVertices[row][face];
@@ -1890,14 +1687,19 @@ std::vector<GeometryFactory::Face> GeometryFactory::createLoft(
             lowerLeft.textureCoords = vecTexCoords[row+1][face];
             lowerLeft.normal = vecNormals[row+1][face];
 
-            Face f;
+            Face f;/*
             f.upperLeft = upperLeft;
             f.upperRight = upperRight;
             f.lowerRight = lowerRight;
-            f.lowerLeft = lowerLeft;
-            faces.push_back(f);
+            f.lowerLeft = lowerLeft;*/
+            // Not sure why we need to reverse them like this, but if we don't
+            // the faces are backwards.  
+            f.upperLeft = upperRight;
+            f.upperRight = upperLeft;
+            f.lowerLeft = lowerRight;
+            f.lowerRight = lowerLeft;
             
-            //cout << upperLeft.position << "," << upperRight.position << "," << lowerRight.position << "," << lowerLeft.position << endl;
+            faces.push_back(f);
         }
     }
     
@@ -1906,7 +1708,8 @@ std::vector<GeometryFactory::Face> GeometryFactory::createLoft(
     
 
 /**
-* 
+* Given a vector of faces of an object, creates an object, fills in the mesh
+* and returns it
 **/
 Object * GeometryFactory::createObjectFromFaces( std::vector<Face> faces, 
                                 bool hasNormals, 
