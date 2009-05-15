@@ -55,10 +55,8 @@ void CameraNode::setLookUp (Vector3 lookUp) {
 }
 
 void CameraNode::setRotation (float rotate) {
-	std::cout << "Rotate = " << rotate << std::endl;
 	if (BasicMath::approxEqual(rotate, 0)) {rotate = 0;}
 	rotation = BasicMath::clamp(rotate, -BasicMath::PI / 2.0, BasicMath::PI / 2.0);
-	std::cout << "      Rotation = " << rotation << std::endl;
 	valueWasChanged = true;
 	updateProjection();
 }
@@ -80,7 +78,6 @@ void CameraNode::updateProjection () {
 		camera->changeSettings(newCenter, newLookAt, newLookUp);
 		
 		valueWasChanged = false;
-		std::cout << "camera is pointing in direction " << lookAtVector<< std::endl;
 		
 	}
 	else if (valueWasChanged && isUnaffected) {

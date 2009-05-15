@@ -34,7 +34,6 @@ void LightNode::setTransformation(const Matrix4& t) {
 }
 
 void LightNode::updateLight() {
-	std::cout << "light is point in direction " << spotDirection << std::endl;
 	light->setSpotDirection(Vector3(transform*Vector4::homogeneousVector(spotDirection)));
 //	light->setSpotDirection(spotDirection);
 	light->setPosition(Vector3(transform*Vector4(position)));
