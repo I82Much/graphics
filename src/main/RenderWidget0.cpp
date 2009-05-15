@@ -185,7 +185,7 @@ void RenderWidget0::initCameras() {
 void RenderWidget0::initShaders()
 {
     // this shader supports two spot lights
-    twoSpotTexture = NULL;//new Shader("src/Shaders/finalSpotLights.vert", "src/Shaders/finalSpotLights.frag");
+    twoSpotTexture = new Shader("src/Shaders/finalSpotLights.vert", "src/Shaders/finalSpotLights.frag");
 	// this shader should support 8 lights - 2 spot lights and 6 point lights
 	// It slows down rendering and was never fully used because we never got the torch lights working
     //twoSpotTexture = new Shader("src/Shaders/finalLight.vert", "src/Shaders/finalLight.frag");
@@ -198,7 +198,7 @@ void RenderWidget0::initLights()
     
     // Make a blue spotlight coming from the left
     Light * blue = sceneManager->createLight();
-    blue->setType(Light::POINT);
+    blue->setType(Light::SPOT);
     blue->setAmbientColor(Vector3(.2,.2,.2));
     blue->setDiffuseColor(Vector3(0,0,1));
     blue->setSpecularColor(Vector3(1,1,1));
@@ -220,7 +220,7 @@ void RenderWidget0::initLights()
     // now we have to set up the lighting....
     // Create a white light
     Light * white = sceneManager->createLight();
-	white->setType(Light::POINT);
+	white->setType(Light::SPOT);
     white->setSpotDirection(Vector3(0,0,-1));
     white->setDiffuseColor(Vector3(1,1,1));
     white->setAmbientColor(Vector3(.2,.2,.2));
