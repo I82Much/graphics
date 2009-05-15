@@ -71,14 +71,11 @@ namespace RE167 {
         Spline * square;
         Spline * helix;
         Spline * circle;
-        Spline * torchCurve;
         
         Spline * firstTrackCrossSection;
-        Spline * minecartProfile;
         
         Shader * twoSpotTexture;
         Shader * lightingTexture;
-        
         
         // Texture * rockTexture;
         //         Texture * metalTexture;

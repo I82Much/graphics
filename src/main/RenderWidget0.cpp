@@ -135,31 +135,6 @@ void RenderWidget0::initSplines() {
     track = new BezierCurve(trackArray, sizeof(trackArray) / sizeof(Vector3));
 
 
-    // Make the curve that we will rotate around the y axis to create a
-    // torch to place on the walls
-    Vector3 torch0(.5,2,0);
-    Vector3 torch1(.3,1.5,0);
-    Vector3 torch2(.1,.1,0);
-    Vector3 torch3(0,0,0);
-    
-    torchCurve = new BezierCurve(torch0, torch1, torch2, torch3);
-    
-    
-    Vector3 minecart0(3,3,0);
-    Vector3 minecart1(2.5,2,0);
-    Vector3 minecart2(2,1,0);
-    Vector3 minecart3(1.5,0,0);
-    Vector3 minecart4(1,0,0);
-    Vector3 minecart5(.5,0,0);
-    Vector3 minecart6(0,0,0);
-
-    Vector3 minecartArray[] = {minecart0, minecart1, minecart2, minecart3, minecart4, minecart5, minecart6 };
-
-    minecartProfile = new BezierCurve(minecartArray, sizeof(minecartArray) / sizeof(Vector3));
-    
-    
-    
-    
 }
 
 /**
@@ -326,12 +301,6 @@ void RenderWidget0::timerEvent(QTimerEvent *t)
 		rotationMatrix2 = Matrix4::rotate(axisOfRotationVec4,angle);
 	}
 	
-	// added this because I could not figure out how to rotate the shape and have the camera work in the right way without it
-    TransformGroup* minecartShape = dynamic_cast<TransformGroup*>(minecart->getChild(0));
-	if (minecartShape == NULL) {
-		std::cout << "ERROR" << std::endl;
-	}
-	minecartShape->setTransformation(rotationMatrix2*rotationMatrix);
 	minecart->setTransformation(Matrix4::translate(loc.getX(), loc.getY(), loc.getZ()));
     
 	// we now add code to make the camera follow the mine cart
@@ -599,57 +568,16 @@ void RenderWidget0::toggleWireframe()
 
 void RenderWidget0::test() 
 {
-    
-    /*
-     Object * mineCartObj = sceneManager->createObject();
-     GeometryFactory::createSphere(mineCartObj);
-     mineCartObj->setTransformation(Matrix4::scale(.001,.001,.001));
-     */
-
-	Object * minecartObj = GeometryFactory::createSurfaceOfRevolution(*minecartProfile, 3, 4);
-
-	// Need to compensate for surface of revolution weirdness.
-	minecartObj->setTransformation(Matrix4::scale(.001,.001,.001));
-//	minecartObj->setTransformation(Matrix4::rotateX(BasicMath::radians(90)) * Matrix4::rotateY(BasicMath::radians(45)));
-	TransformGroup* minecartShape = new TransformGroup();
-	
-	minecartShape->addChild(new Shape3D(minecartObj));
-
-
+    // The minecart (which actually isn't rendered) is what moves around the
+    // scene.  Our camera follows it
 	minecart = new TransformGroup();
-	minecart->addChild(minecartShape);
-
-    Object * sphere = new Object();
-    GeometryFactory::createSphere(sphere);
-    sphere->setTransformation(Matrix4::translate(0,0,1));
-    minecart->addChild(new Shape3D(sphere));
-    
 
     static const int NUM_SEGMENTS_TO_SAMPLE_ALONG_CURVE = 500;
-    
 
-    Helix helix(2);
     
-    Object * torch = GeometryFactory::createSurfaceOfRevolution(*torchCurve);
-    sceneManager->getRoot()->addChild(new Shape3D(torch));
-    
-    Vector3 str1(0,1,0);
-    Vector3 str2(0,.5,0);
-    Vector3 str3(0,-.5,0);
-    Vector3 str4(0,-1,0);
-        
-    BezierCurve straightLine(str1, str2, str3, str4);
-    
-    Circle circle2;
-    circle2.setTransformation(Matrix4::rotateX(BasicMath::radians(90)));
-    
-    Square square;
-    square.setTransformation(Matrix4::scale(4,4,4) * Matrix4::rotateX(BasicMath::radians(90)));
-    
-    
-    Circle circle3;
-    circle3.setTransformation(Matrix4::scale(4,4,4) * Matrix4::rotateX(BasicMath::radians(90)));
-    
+    Square tunnelCrossSection;
+    // Make it bigger and again, lying in xz plane
+    tunnelCrossSection.setTransformation(Matrix4::scale(4,4,4) * Matrix4::rotateX(BasicMath::radians(90)));
     
     
     // Create the textures
@@ -661,18 +589,16 @@ void RenderWidget0::test()
     
     
     extrudedShapeMaterial->setTexture(rockTexture);
-	  extrudedShapeMaterial->setShader(twoSpotTexture);
+    extrudedShapeMaterial->setShader(twoSpotTexture);
 
     Material *trackMaterial = new Material();
     // http://www.stock-textures.com/images/wallpapers/44719319/Metal/metal-scratch.jpg
     QImage *metalImg = new QImage("images/metal-scratch.jpg", "jpg");
     Texture *metalTexture = new Texture(rockImg);
     trackMaterial->setTexture(metalTexture);
-	  trackMaterial->setShader(twoSpotTexture);
+    trackMaterial->setShader(twoSpotTexture);
     
-
-    // TODO: doc
-    // TODO: dehack the stupid extra int
+    
     // Specify how fine the geometry mesh for the tunner will be; a higher
     // value is finer. Probably 20 - 100.
     static const int TUNNEL_SURFACE_INTERVALS = 32;
@@ -687,42 +613,53 @@ void RenderWidget0::test()
     // Implementation detail to ensure fully overlapping walls - see below.
     static const float TUNNEL_PANEL_STRETCH = 0.1;
     
-    // The createLoft method returns a sequence of Face objects that each
-    // describe a panel in the tunnel. For each such face we will take the four
-    // corners and pass them to the fracal surface patch creation method.
-    std::vector<GeometryFactory::Face> faces = GeometryFactory::createLoftFaces(square, *track, 4, NUM_SEGMENTS_TO_SAMPLE_ALONG_CURVE);
-    for (std::vector<GeometryFactory::Face>::iterator i = faces.begin(); i != faces.end(); i++) {
-      GeometryFactory::Face face = *i;
-      Vector3 ll = face.lowerLeft.position;
-      Vector3 ul = face.upperLeft.position;
-      Vector3 ur = face.upperRight.position;
-      Vector3 lr = face.lowerRight.position;
-      // We stretch the surfaces a little so that adjacent walls are fully
-      // joined at the crease that goes in the same direction as the track.
-      // Without such a stretch, gaps would tend to form because of the
-      // unevenness introduced by the fractal terrain pertubations.
-      Object* shaftWall = 
-        FractalSurface::buildSurfaceAmong(
-          ll+ (ll - lr)*TUNNEL_PANEL_STRETCH,
-          ul+ (ul - ur)*TUNNEL_PANEL_STRETCH,
-          ur+ (lr - ll)*TUNNEL_PANEL_STRETCH,
-          lr+ (ur - ul)*TUNNEL_PANEL_STRETCH,
-          TUNNEL_SURFACE_INTERVALS,
-          TUNNEL_ROUGHNESS,
-          TUNNEL_HEIGHT_SCALE);
-      shaftWall->setMaterial(extrudedShapeMaterial);
-      sceneManager->getRoot()->addChild(new Shape3D(shaftWall));
-    }     
+    static const bool USE_FRACTAL_TERRAIN = true;
+    static const int NUM_SIDES_OF_TUNNEL = 4;
+    
+    // This is a heavy duty method.  It calculates all the geometry created by
+    // extruding the shape spline along the path spline.
+    std::vector<GeometryFactory::Face> faces = 
+        GeometryFactory::createLoftFaces(tunnelCrossSection, 
+                                        *track, 
+                                        NUM_SIDES_OF_TUNNEL, 
+                                        NUM_SEGMENTS_TO_SAMPLE_ALONG_CURVE);
+    
+    if (USE_FRACTAL_TERRAIN) {
+        // The createLoft method returns a sequence of Face objects that each
+        // describe a panel in the tunnel. For each such face we will take the four
+        // corners and pass them to the fracal surface patch creation method.
+        for (std::vector<GeometryFactory::Face>::iterator i = faces.begin(); i != faces.end(); i++) {
+          GeometryFactory::Face face = *i;
+          Vector3 ll = face.lowerLeft.position;
+          Vector3 ul = face.upperLeft.position;
+          Vector3 ur = face.upperRight.position;
+          Vector3 lr = face.lowerRight.position;
+          // We stretch the surfaces a little so that adjacent walls are fully
+          // joined at the crease that goes in the same direction as the track.
+          // Without such a stretch, gaps would tend to form because of the
+          // unevenness introduced by the fractal terrain pertubations.
+          Object* shaftWall = 
+            FractalSurface::buildSurfaceAmong(
+              ll+ (ll - lr)*TUNNEL_PANEL_STRETCH,
+              ul+ (ul - ur)*TUNNEL_PANEL_STRETCH,
+              ur+ (lr - ll)*TUNNEL_PANEL_STRETCH,
+              lr+ (ur - ul)*TUNNEL_PANEL_STRETCH,
+              TUNNEL_SURFACE_INTERVALS,
+              TUNNEL_ROUGHNESS,
+              TUNNEL_HEIGHT_SCALE);
+          shaftWall->setMaterial(extrudedShapeMaterial);
+          sceneManager->getRoot()->addChild(new Shape3D(shaftWall));
+        }     
+    }
+    // Create the plain faces without any fractal geometry
+    else {
+        Object * tunnelObject = GeometryFactory::createObjectFromFaces(faces, true, false, true);
+        sceneManager->getRoot()->addChild(new Shape3D(tunnelObject));
+    }
     
     
-    // Object * tunnelObject = GeometryFactory::createObjectFromFaces(faces, true, false, true);
-    //     sceneManager->getRoot()->addChild(new Shape3D(tunnelObject));
-    
-    Circle circle;
-    circle.setTransformation(Matrix4::scale(.5,.5,.5) * Matrix4::rotateX(BasicMath::radians(90)));
-
+        
     static const int AMOUNT_TO_MOVE_TRACK_DOWN = 3;
-
     static const int NUM_LIGHTS_TO_PLACE = 6;
     
     for (int i = 0; i < NUM_LIGHTS_TO_PLACE; i++) 
@@ -746,9 +683,15 @@ void RenderWidget0::test()
         sceneManager->getRoot()->addChild(lightNode);
     }
 
+
+    
+    Circle trackCrossSection;
+    // Cross sections for oru lofts have to lie in xz plane.
+    trackCrossSection.setTransformation(Matrix4::scale(.5,.5,.5) * Matrix4::rotateX(BasicMath::radians(90)));
+
     track->setTransformation(Matrix4::translate(0,AMOUNT_TO_MOVE_TRACK_DOWN,0) * track->getTransformation());
 
-    Object * trackLoft = GeometryFactory::createLoft(circle,  *track, 10, NUM_SEGMENTS_TO_SAMPLE_ALONG_CURVE);
+    Object * trackLoft = GeometryFactory::createLoft(trackCrossSection, *track, 10, NUM_SEGMENTS_TO_SAMPLE_ALONG_CURVE);
     
     // Move the track back to the center of the tunnel
     track->setTransformation(Matrix4::translate(0,-AMOUNT_TO_MOVE_TRACK_DOWN,0) * track->getTransformation());
