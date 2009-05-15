@@ -7,19 +7,18 @@
 
 using namespace RE167;
 
-// TODO: fix doc
 /* Returns an object representing a surface that spans the space between the
    the 4 given points. Points a, b, c, and d represent the top-left,
    top-right, bottom-right, and bottom-left corners of the space. These
    points do not need to be coplanar. The surface formed by this method
-   is perterbed according to an unerlying fractal terrain surface. Thus
+   is perturbed according to an unerlying fractal terrain surface. Thus
    the roughness parameter corresponds to the roughness of the underlying
    fractal terrain. The paramater m determines how many grid intervals there
    are to be along the da-> and cb-> vectors. The scale paramater stretches the
    pertubations: >1 makes them larger, <1 smaller, and =1 does not change them.
    The method will determine an approprate number of grid intervals to place 
-   along the ab-> and dc-> vectors based on their relative length to the two
-   vectors above.
+   along the ab-> and dc-> vectors based on their relative length to the da->
+   and cb-> vectors.
    The method forces the terrain to intersect the da-> and cb-> vectors,
    thus allowing one to tile multiple such surfaces next to each other with
    continuity, though perhaps at the expense of some seam artifacts. */

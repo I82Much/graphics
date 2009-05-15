@@ -636,7 +636,23 @@ void RenderWidget0::test()
     trackMaterial->setTexture(metalTexture);
 	  trackMaterial->setShader(twoSpotTexture);
     
-    // TODO: doc
+    // Specify how fine the geometry mesh for the tunner will be; a higher
+    // value is finer. Probably 20 - 100.
+    static const int TUNNEL_SURFACE_INTERVALS = 32;
+    
+    // Fractal terrain roughness paramater for the tunnel. Probably 0.4 - 1.0.
+    static const float TUNNEL_ROUGHNESS = 0.5;
+    
+    // Scale paramater determining how far the pertubations jut in and out of
+    // the surface. 1.0 is baseline.
+    static const float TUNNEL_HEIGHT_SCALE = 1.5;
+    
+    // Implementation detail to ensure fully overlapping walls - see below.
+    static const float TUNNEL_PANEL_STRETCH = 0.1;
+    
+    // The createLoft method returns a sequence of Face objects that each
+    // describe a panel in the tunnel. For each such face we will take the four
+    // corners and pass them to the fracal surface patch creation method.
     std::vector<GeometryFactory::Face> faces = GeometryFactory::createLoft(square, *track, 5, NUM_SEGMENTS_TO_SAMPLE_ALONG_CURVE, 5);
     for (std::vector<GeometryFactory::Face>::iterator i = faces.begin(); i != faces.end(); i++) {
       GeometryFactory::Face face = *i;
@@ -644,15 +660,19 @@ void RenderWidget0::test()
       Vector3 ul = face.upperLeft.position;
       Vector3 ur = face.upperRight.position;
       Vector3 lr = face.lowerRight.position;
+      // We stretch the surfaces a little so that adjacent walls are fully
+      // joined at the crease that goes in the same direction as the track.
+      // Without such a stretch, gaps would tend to form because of the
+      // unevenness introduced by the fractal terrain pertubations.
       Object* shaftWall = 
         FractalSurface::buildSurfaceAmong(
-          ll+ (ll - lr)*0.1,
-          ul+ (ul - ur)*0.1,
-          ur+ (lr - ll)*0.1,
-          lr+ (ur - ul)*0.1,
-          32,
-          0.5,
-          1.5);
+          ll+ (ll - lr)*TUNNEL_PANEL_STRETCH,
+          ul+ (ul - ur)*TUNNEL_PANEL_STRETCH,
+          ur+ (lr - ll)*TUNNEL_PANEL_STRETCH,
+          lr+ (ur - ul)*TUNNEL_PANEL_STRETCH,
+          TUNNEL_SURFACE_INTERVALS,
+          TUNNEL_ROUGHNESS,
+          TUNNEL_HEIGHT_SCALE);
       shaftWall->setMaterial(extrudedShapeMaterial);
       sceneManager->getRoot()->addChild(new Shape3D(shaftWall));
     }     
