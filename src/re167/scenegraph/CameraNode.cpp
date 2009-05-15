@@ -81,6 +81,8 @@ void CameraNode::updateProjection () {
 		
 		valueWasChanged = false;
 		std::cout << "camera is pointing in direction " << lookAtVector<< std::endl;
+		std::cout << "      transformed camera = " << (newLookAt - newCenter) << std::endl;
+		std::cout << "      transformed camera position = " << newCenter << std::endl;
 		
 	}
 	else if (valueWasChanged && isUnaffected) {

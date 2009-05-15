@@ -220,7 +220,7 @@ void RenderWidget0::initCameras() {
 void RenderWidget0::initShaders()
 {
     // this shader supports two spot lights
-    twoSpotTexture = NULL;// new Shader("src/Shaders/finalSpotLights.vert", "src/Shaders/finalSpotLights.frag");
+    twoSpotTexture = new Shader("src/Shaders/finalSpotLights.vert", "src/Shaders/finalSpotLights.frag");
 	// this shader should support 8 lights - 2 spot lights and 6 point lights
     //	lightingTexture = new Shader("src/Shaders/finalLight.vert", "src/Shaders/finalLight.frag");
     
@@ -347,8 +347,8 @@ void RenderWidget0::timerEvent(QTimerEvent *t)
 	// now we update the camera
 	std::cout << "************setting camera and white light*************" << std::endl;
 	movingCamera->updateProjection(newCenter, newLookAt, newLookUp);
-	whiteLight->setSpotDirection(tangent);
-//	whiteLight->setPosition(newCenter);
+	whiteLight->setSpotDirection(-tangent);
+	whiteLight->setPosition(newCenter);
 //	whiteLight->setSpotDirection(newLookAt);
 		    
     updateScene();
@@ -513,7 +513,10 @@ void RenderWidget0::toggleCulling()
 
 void RenderWidget0::keyPressEvent ( QKeyEvent * k )
 {
-    
+    static const int LARGE_CAMERA_MOVEMENT = 10;
+	static const int SMALL_CAMERA_MOVEMENT = 1;
+	static int movement = LARGE_CAMERA_MOVEMENT;
+	
     TransformGroup * root = sceneManager->getRoot();
          
 	switch ( k->key() )  {
@@ -523,27 +526,32 @@ void RenderWidget0::keyPressEvent ( QKeyEvent * k )
 			break;
 		// move still camera forward
 		case Qt::Key_Up: // Qt::Key_W
-			stillCamera->translateCamera(0,0,-1);
+			stillCamera->translateCamera(0,0,-movement);
 			break;
 		// Move still camera backwards
 		case Qt::Key_Down: //Qt::Key_S:
-			stillCamera->translateCamera(0,0,1);
+			stillCamera->translateCamera(0,0,movement);
 			break;
 		// Move still camera left
 		case Qt::Key_Left: //Key_A:
-			stillCamera->translateCamera(-1,0,0);
+			stillCamera->translateCamera(-movement,0,0);
 			break;
 		// Move still camera right
 		case Qt::Key_Right: //D:
-			stillCamera->translateCamera(1,0,0);
+			stillCamera->translateCamera(movement,0,0);
 			break;
 		// Move still camera up
 		case Qt::Key_Q:
-			stillCamera->translateCamera(0,1,0);
+			stillCamera->translateCamera(0,movement,0);
 			break;
 		// Move still camera down
 		case Qt::Key_Z:
-			stillCamera->translateCamera(0,-1,0);
+			stillCamera->translateCamera(0,-movement,0);
+			break;
+			
+		// change the movement from small to large or vice versa
+		case Qt::Key_A:
+			movement = (movement == LARGE_CAMERA_MOVEMENT)? SMALL_CAMERA_MOVEMENT : LARGE_CAMERA_MOVEMENT;
 			break;
 			
     
@@ -726,7 +734,7 @@ void RenderWidget0::test()
     white->setDiffuseColor(Vector3(1,1,1));
     white->setAmbientColor(Vector3(.2,.2,.2));
     white->setSpecularColor(Vector3(1,1,1));
-	white->setSpotCutoff(30.0);
+	white->setSpotCutoff(90.0);
 	white->setSpotExponent(1.0);
 	white->setPosition(Vector3(0,0,0));
     

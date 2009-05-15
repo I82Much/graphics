@@ -160,17 +160,26 @@ namespace RE167
 		}
 
 		
-		// Added functionality for a matrix inverse computation
+		// Added functionality for a matrix inverse computation (both for const Matrix4 and not)
 		Matrix4 inverse();
 		bool isOrthonormal();
 		float calculateDeterminant(); // computes the determinant of the given Matrix4
 		float calculateDeterminant(float* matrix3); // computes the determinant of the 3x3 matrix
 		Matrix4 computeAdjugate ();
 		float getCofactor(int i, int j);
+
+		Matrix4 inverse() const;
+		bool isOrthonormal() const;
+		float calculateDeterminant() const;
+		float calculateDeterminant(float* matrix3) const;
+		Matrix4 computeAdjugate () const;
+		float getCofactor(int i, int j) const;
 		
 		// returns the given row or column as a Vector4
 		Vector4 getRow (const int r);
 		Vector4 getColumn (const int c);
+		Vector4 getRow (const int r) const;
+		Vector4 getColumn (const int c) const;
 		
 		
 		

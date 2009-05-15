@@ -135,6 +135,7 @@ CameraNode * SceneManager::findCamera(Node * root, const Matrix4 &transform) {
     
     CameraNode * camera = dynamic_cast<CameraNode*>(root);
     if (camera != NULL && camera->inUse()) {
+		Matrix4 inverseTransform = transform.inverse();
         camera->setTransformation(transform);
         return camera;
     }
