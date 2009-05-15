@@ -338,18 +338,14 @@ void RenderWidget0::timerEvent(QTimerEvent *t)
 	// We do not need to worry about changing the center of projection because in the scene graph, the camera is a child
 	// of the minecart so that center should follow the minecart.
 	// We do have to change the lookAtPoint and the lookUpVector and for that we need the referenceFrames for the track
-	// the tangent is v and the normal is u
-	// (the -1 is because segment has been incremented)
     Vector3 newCenter(0,0,0);
 	Vector3 newLookAt = newCenter + tangent;
 	Vector3 newLookUp = normal;
 	
 	// now we update the camera
-	std::cout << "************setting camera and white light*************" << std::endl;
 	movingCamera->updateProjection(newCenter, newLookAt, newLookUp);
 	whiteLight->setSpotDirection(-tangent);
 	whiteLight->setPosition(newCenter);
-//	whiteLight->setSpotDirection(newLookAt);
 		    
     updateScene();
 	counter++;
