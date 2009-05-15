@@ -18,6 +18,8 @@ namespace RE167 {
     class Vector3;
     class CameraNode;
     class Spline;
+    class Shader;
+    
     class RE167_EXPORT RenderWidget0 : public GLRenderWidget
     {
     
@@ -72,7 +74,12 @@ namespace RE167 {
         Spline * torchCurve;
         
         Spline * firstTrackCrossSection;
+        Spline * minecartProfile;
         
+        
+        
+        Shader * twoSpotTexture;
+        Shader * lightingTexture;
         
 		// added a LightNode to start experimenting with putting a light in front of the minecart
 		LightNode* whiteLight;
