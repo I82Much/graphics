@@ -94,8 +94,7 @@ void RenderWidget0::initSceneEvent()
 * Creates all the splines we need for our scene, including the track spline
 * and the cross sectional splines.
 **/
-void RenderWidget0::initSplines()
-{
+void RenderWidget0::initSplines() {
     // This is the track that we use for our geometry and for our camera
     // to move around
     // An (almost) C1 continue curve.  See the picture in Data:Screenshots/Final curve.png
@@ -162,8 +161,11 @@ void RenderWidget0::initMaterials()
 {}
 
 
-void RenderWidget0::initCameras() 
-{
+void RenderWidget0::initCameras() {
+	// this creates the still camera that ignores the scenegraph, even though it is part of it
+	// Note: given the size of the new track, the still camera will probably be inside the track
+	// and therefore won't see much
+	
     Vector3 cameraCenter = Vector3(0,0,10);
 	Vector3 lookAtPoint = Vector3(0,0,-1);
 	Vector3 upVector = Vector3(0,1,0);
@@ -173,7 +175,7 @@ void RenderWidget0::initCameras()
 	// TODO: the camera stuff will only work if setFrustum is called first!!
 	
 	Camera* camera = new Camera();
-	camera->setFrustum(0.5, 100, 1, BasicMath::radians(60));
+	camera->setFrustum(0.5, 600, 1, BasicMath::radians(90));
 	camera->changeSettings(cameraCenter, lookAtPoint, upVector);
 	
 	
@@ -190,6 +192,7 @@ void RenderWidget0::initShaders()
     
 }
 
+// I don't think we need this method for this project - Susie
 void RenderWidget0::initLights()
 {
     
@@ -304,12 +307,12 @@ void RenderWidget0::timerEvent(QTimerEvent *t)
 	// the tangent is v and the normal is u
 	// (the -1 is because segment has been incremented)
     Vector3 newCenter(0,0,0);// referenceFrames[(segment-1) % numSegments].getW();
-	Vector3 newLookAt = newCenter + referenceFrames[(segment-1) % numSegments].getV();
-	Vector3 newLookUp = -referenceFrames[(segment-1) % numSegments].getW();
+	Vector3 newLookAt = newCenter + tangent;
+	Vector3 newLookUp = normal;
 	
 	// now we update the camera
 	movingCamera->updateProjection(newCenter, newLookAt, newLookUp);
-	whiteLight->setSpotDirection(referenceFrames[(segment-1) % numSegments].getV());
+	whiteLight->setSpotDirection(tangent);
 	whiteLight->setPosition(newCenter);
 //	whiteLight->setSpotDirection(newLookAt);
 		    
@@ -500,13 +503,6 @@ void RenderWidget0::keyPressEvent ( QKeyEvent * k )
 		case Qt::Key_Right: //D:
 			stillCamera->translateCamera(1,0,0);
 			break;
-    
-    
-		// Toggle object level culling
-		case Qt::Key_C:
-			toggleCulling();
-			break;
-    
 		// Move still camera up
 		case Qt::Key_Q:
 			stillCamera->translateCamera(0,1,0);
@@ -515,19 +511,26 @@ void RenderWidget0::keyPressEvent ( QKeyEvent * k )
 		case Qt::Key_Z:
 			stillCamera->translateCamera(0,-1,0);
 			break;
+			
+    
+		// Toggle object level culling
+		case Qt::Key_C:
+			toggleCulling();
+			break;
+    
 
 		
 		// rotate the moving camera to the left
 		case Qt::Key_J:
-			stillCamera->setRotation(stillCamera->getRotation() + 0.1);
+			movingCamera->setRotation(movingCamera->getRotation() + BasicMath::radians(10));
 			break;
 		// rotate the moving camera to the right
 		case Qt::Key_L:
-			stillCamera->setRotation(stillCamera->getRotation() - 0.1);
+			movingCamera->setRotation(movingCamera->getRotation() - BasicMath::radians(10));
 			break;
 		// put moving camera back at initial direction
 		case Qt::Key_I:
-			stillCamera->setRotation(0);
+			movingCamera->setRotation(0);
 			break;
 			
 			
