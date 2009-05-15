@@ -54,7 +54,6 @@ void main() {
 		
 		gl_FragColor += diffuse1 + specular1 + ambientColor1 * gl_FrontMaterial.ambient;
 		gl_FragColor *= texture2D(tex, gl_TexCoord[0].st);
-
 	}
 	else {
 		gl_FragColor += gl_LightSource[1].ambient * gl_FrontMaterial.ambient;
