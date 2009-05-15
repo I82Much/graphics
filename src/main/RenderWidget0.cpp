@@ -544,7 +544,6 @@ void RenderWidget0::keyPressEvent ( QKeyEvent * k )
 		case Qt::Key_Z:
 			stillCamera->translateCamera(0,-movement,0);
 			break;
-			
 		// change the movement from small to large or vice versa
 		case Qt::Key_A:
 			movement = (movement == LARGE_CAMERA_MOVEMENT)? SMALL_CAMERA_MOVEMENT : LARGE_CAMERA_MOVEMENT;
