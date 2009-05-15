@@ -129,13 +129,12 @@ namespace RE167 {
             int &numIndices
         );
         
-        
         static std::vector<Face> createLoft(
             const Spline &shape,
             const Spline &path,
             const int numPointsToEvaluateAlongShape,
             const int numPointsToEvaluateAlongPath,
-            const int test
+            const int hack
         );
         
         static Object * createSurfaceOfRevolution( 
