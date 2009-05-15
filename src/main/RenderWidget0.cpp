@@ -690,7 +690,7 @@ void RenderWidget0::test()
     // The createLoft method returns a sequence of Face objects that each
     // describe a panel in the tunnel. For each such face we will take the four
     // corners and pass them to the fracal surface patch creation method.
-    std::vector<GeometryFactory::Face> faces = GeometryFactory::createLoftFaces(square, *track, 5, NUM_SEGMENTS_TO_SAMPLE_ALONG_CURVE);
+    std::vector<GeometryFactory::Face> faces = GeometryFactory::createLoftFaces(square, *track, 4, NUM_SEGMENTS_TO_SAMPLE_ALONG_CURVE);
     for (std::vector<GeometryFactory::Face>::iterator i = faces.begin(); i != faces.end(); i++) {
       GeometryFactory::Face face = *i;
       Vector3 ll = face.lowerLeft.position;
@@ -747,9 +747,6 @@ void RenderWidget0::test()
     }
 
     track->setTransformation(Matrix4::translate(0,AMOUNT_TO_MOVE_TRACK_DOWN,0) * track->getTransformation());
-    
-
-
 
     Object * trackLoft = GeometryFactory::createLoft(circle,  *track, 10, NUM_SEGMENTS_TO_SAMPLE_ALONG_CURVE);
     

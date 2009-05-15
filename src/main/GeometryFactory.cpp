@@ -1515,14 +1515,10 @@ void GeometryFactory::createTaperedCylinder(int numRows,
 *
 * @param shape  the curve specifying the shape that will define cross sections
 * @param path   the path that the swept surface will take
-* @param numPointsToEvaluateAlongShape  at how many places along the shape
-*                                       curve will the curve be sampled
-*                                       (higher number will lead to more
-*                                       vertices)
-* @param numPointsToEvaluateAlongPath   at how many places along the path 
-*                                       curve will the curve be sampled
-*                                       (higher number will lead to more
-*                                       vertices)
+* @param numShapeSegments               how many straight line segments will
+*                                       be used to approximate the shape
+* @param numPathSegments                how many straight line segments will
+*                                       be used to approximate the path
 * @param normalize          whether or not to make the resulting shape fit
 *                           within the unit cube centered at the origin
 **/
@@ -1534,6 +1530,8 @@ Object * GeometryFactory::createLoft(
     const bool normalize
 )
 {
+    // TODO: Normalize ?
+    
     
     std::vector<Face> faces = createLoftFaces(shape, path, numPointsToEvaluateAlongShape, numPointsToEvaluateAlongPath);
     bool hasNormals = true;
@@ -1561,34 +1559,34 @@ Object * GeometryFactory::createLoft(
 *
 * @param shape  the curve specifying the shape that will define cross sections
 * @param path   the path that the swept surface will take
-* @param numPointsToEvaluateAlongShape  at how many places along the shape
-*                                       curve will the curve be sampled
-*                                       (higher number will lead to more
-*                                       vertices)
-* @param numPointsToEvaluateAlongPath   at how many places along the path 
-*                                       curve will the curve be sampled
-*                                       (higher number will lead to more
-*                                       vertices)
+* @param numShapeSegments               how many straight line segments will
+*                                       be used to approximate the shape
+* @param numPathSegments                how many straight line segments will
+*                                       be used to approximate the path
 */
-
 std::vector<GeometryFactory::Face> GeometryFactory::createLoftFaces(
     const Spline &shape,
     const Spline &path,
-    const int numPointsToEvaluateAlongShape,
-    const int numPointsToEvaluateAlongPath
+    const int numShapeSegments,
+    const int numPathSegments
 )
 {
+    // You need one more point than straight line segments; e.g. two points
+    // make 1 line, three points make 2 segments
+    const int numShapePoints = numShapeSegments + 1;
+    const int numPathPoints = numPathSegments + 1;
+    
     // Calculate all of the points and tangent vectors for the path curve and
     // shape curve
-    vector<Vector3> shapePoints    = shape.uniformPointSample(numPointsToEvaluateAlongShape);
-    vector<Vector3> shapeTangents  = shape.uniformTangentSample(numPointsToEvaluateAlongShape);
+    vector<Vector3> shapePoints    = shape.uniformPointSample(numShapePoints);
+    vector<Vector3> shapeTangents  = shape.uniformTangentSample(numShapePoints);
     
-    vector<Vector3> pathPoints     = path.uniformPointSample(numPointsToEvaluateAlongPath);
-    vector<Vector3> pathTangents   = path.uniformTangentSample(numPointsToEvaluateAlongPath);
+    vector<Vector3> pathPoints     = path.uniformPointSample(numPathPoints);
+    vector<Vector3> pathTangents   = path.uniformTangentSample(numPathPoints);
     
     // Rotate all of the tangents 90 degrees about the Y axis to make them
     // normal to the curve
-    Matrix4 normalRotationMatrix = Matrix4::IDENTITY;//Matrix4::rotateY(BasicMath::radians(90));
+    Matrix4 normalRotationMatrix = Matrix4::rotateY(BasicMath::radians(90));
     vector<Vector3> shapeNormals;
     for (std::vector<Vector3>::iterator i = shapeTangents.begin(); i != shapeTangents.end(); i++) 
     {
@@ -1605,7 +1603,7 @@ std::vector<GeometryFactory::Face> GeometryFactory::createLoftFaces(
     
     // Calculate local coordinate systems for each point along the path spline
     // that we sample
-    vector <Basis> referenceFrames = path.getReferenceFrames(numPointsToEvaluateAlongPath, false);
+    vector <Basis> referenceFrames = path.getReferenceFrames(numPathPoints, false);
 
     // For all the points along the path curve
     for (unsigned int i = 0; i < pathPoints.size(); i++) 
@@ -1656,14 +1654,13 @@ std::vector<GeometryFactory::Face> GeometryFactory::createLoftFaces(
     
     // We now have all of the vertices, normals, and texture coordinates we
     // need.  Create the faces from them and return the vector
-    
-    const int numRows = numPointsToEvaluateAlongPath - 1;
-    const int numFacesPerRow = numPointsToEvaluateAlongShape - 1;
+    const int numRows = numPathSegments;
+    const int numFacesPerRow = numShapeSegments;
     
     // This vector will hold each quadrilateral face of our object
     std::vector<Face> faces;
     
-
+    
     for (int row = 0; row < numRows; row++) {
 		for (int face = 0; face < numFacesPerRow; face++) {
 
@@ -1695,16 +1692,14 @@ std::vector<GeometryFactory::Face> GeometryFactory::createLoftFaces(
             f.upperRight = upperRight;
             f.lowerRight = lowerRight;
             f.lowerLeft = lowerLeft;*/
-            
+            // Not sure why we need to reverse them like this, but if we don't
+            // the faces are backwards.  
             f.upperLeft = upperRight;
             f.upperRight = upperLeft;
             f.lowerLeft = lowerRight;
             f.lowerRight = lowerLeft;
             
-            
             faces.push_back(f);
-            
-            //cout << upperLeft.position << "," << upperRight.position << "," << lowerRight.position << "," << lowerLeft.position << endl;
         }
     }
     

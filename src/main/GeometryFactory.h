@@ -108,8 +108,8 @@ namespace RE167 {
         static Object * createLoft(
             const Spline &shape,
             const Spline &path,
-            const int numPointsToEvaluateAlongShape = 10,
-            const int numPointsToEvaluateAlongPath = 10,
+            const int numShapeSegments = 10,
+            const int numPathSegments = 10,
             const bool normalize = true
         );
         
@@ -117,8 +117,8 @@ namespace RE167 {
         static std::vector<Face> createLoftFaces(
             const Spline &shape,
             const Spline &path,
-            const int numPointsToEvaluateAlongShape,
-            const int numPointsToEvaluateAlongPath
+            const int numShapeSegments,
+            const int numPathSegments
         );
         
         static Object * createSurfaceOfRevolution( 
