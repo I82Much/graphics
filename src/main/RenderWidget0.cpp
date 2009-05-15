@@ -679,7 +679,7 @@ void RenderWidget0::test()
     // The createLoft method returns a sequence of Face objects that each
     // describe a panel in the tunnel. For each such face we will take the four
     // corners and pass them to the fracal surface patch creation method.
-    std::vector<GeometryFactory::Face> faces = GeometryFactory::createLoft(square, *track, 5, NUM_SEGMENTS_TO_SAMPLE_ALONG_CURVE, 5);
+    std::vector<GeometryFactory::Face> faces = GeometryFactory::createLoftFaces(square, *track, 5, NUM_SEGMENTS_TO_SAMPLE_ALONG_CURVE);
     for (std::vector<GeometryFactory::Face>::iterator i = faces.begin(); i != faces.end(); i++) {
       GeometryFactory::Face face = *i;
       Vector3 ll = face.lowerLeft.position;
@@ -725,7 +725,7 @@ void RenderWidget0::test()
 	// now we have to set up the lighting....
     // Create a white light
     Light * white = sceneManager->createLight();
-	white->setType(Light::SPOT);
+	white->setType(Light::POINT);
     white->setSpotDirection(Vector3(0,0,-1));
     white->setDiffuseColor(Vector3(1,1,1));
     white->setAmbientColor(Vector3(.2,.2,.2));
