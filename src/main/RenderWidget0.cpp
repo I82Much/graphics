@@ -220,7 +220,7 @@ void RenderWidget0::initCameras() {
 void RenderWidget0::initShaders()
 {
     // this shader supports two spot lights
-    twoSpotTexture = new Shader("src/Shaders/finalSpotLights.vert", "src/Shaders/finalSpotLights.frag");
+    twoSpotTexture = NULL;//new Shader("src/Shaders/finalSpotLights.vert", "src/Shaders/finalSpotLights.frag");
 	// this shader should support 8 lights - 2 spot lights and 6 point lights
     //	lightingTexture = new Shader("src/Shaders/finalLight.vert", "src/Shaders/finalLight.frag");
     
@@ -233,7 +233,7 @@ void RenderWidget0::initLights()
     
     // Make a blue spotlight coming from the left
     Light * blue = sceneManager->createLight();
-    blue->setType(Light::SPOT);
+    blue->setType(Light::POINT);
     blue->setAmbientColor(Vector3(.2,.2,.2));
     blue->setDiffuseColor(Vector3(0,0,1));
     blue->setSpecularColor(Vector3(1,1,1));
@@ -259,7 +259,7 @@ void RenderWidget0::initLights()
     LightNode * whiteLight = new LightNode(white);
 */    
     
-    sceneManager->getRoot()->addChild(blueLight);
+    //sceneManager->getRoot()->addChild(blueLight);
 //	sceneManager->getRoot()->addChild(whiteLight);
 }
 
@@ -344,8 +344,8 @@ void RenderWidget0::timerEvent(QTimerEvent *t)
 	
 	// now we update the camera
 	movingCamera->updateProjection(newCenter, newLookAt, newLookUp);
-	whiteLight->setSpotDirection(-tangent);
-	whiteLight->setPosition(newCenter);
+	//whiteLight->setSpotDirection(-tangent);
+	//whiteLight->setPosition(newCenter);
 		    
     updateScene();
 	counter++;
@@ -613,10 +613,18 @@ void RenderWidget0::test()
 	minecartObj->setTransformation(Matrix4::scale(.001,.001,.001));
 //	minecartObj->setTransformation(Matrix4::rotateX(BasicMath::radians(90)) * Matrix4::rotateY(BasicMath::radians(45)));
 	TransformGroup* minecartShape = new TransformGroup();
+	
 	minecartShape->addChild(new Shape3D(minecartObj));
+
 
 	minecart = new TransformGroup();
 	minecart->addChild(minecartShape);
+
+    Object * sphere = new Object();
+    GeometryFactory::createSphere(sphere);
+    sphere->setTransformation(Matrix4::translate(0,0,1));
+    minecart->addChild(new Shape3D(sphere));
+    
 
     static const int NUM_SEGMENTS_TO_SAMPLE_ALONG_CURVE = 500;
     
@@ -706,14 +714,43 @@ void RenderWidget0::test()
       shaftWall->setMaterial(extrudedShapeMaterial);
       sceneManager->getRoot()->addChild(new Shape3D(shaftWall));
     }     
-
+    
+    
+    // Object * tunnelObject = GeometryFactory::createObjectFromFaces(faces, true, false, true);
+    //     sceneManager->getRoot()->addChild(new Shape3D(tunnelObject));
+    
     Circle circle;
     circle.setTransformation(Matrix4::scale(.5,.5,.5) * Matrix4::rotateX(BasicMath::radians(90)));
 
     static const int AMOUNT_TO_MOVE_TRACK_DOWN = 3;
 
+    static const int NUM_LIGHTS_TO_PLACE = 6;
+    
+    for (int i = 0; i < NUM_LIGHTS_TO_PLACE; i++) 
+    {
+        float t = static_cast<float>(i) / (NUM_LIGHTS_TO_PLACE - 1);
+        Vector3 position = track->position(t);
+        
+        Light * light = sceneManager->createLight();
+        light->setType(Light::POINT);
+        
+        light->setPosition(position);
+        Vector3 mDiffuse(1,0,0);
+    	Vector3 mSpecular(1,1,1);
+    	Vector3 mAmbient(.2,.2,.2);
+        
+        light->setDiffuseColor(mDiffuse);
+        light->setAmbientColor(mAmbient);
+        light->setSpecularColor(mSpecular);
+        LightNode * lightNode = new LightNode(light);
+        
+        sceneManager->getRoot()->addChild(lightNode);
+    }
+
     track->setTransformation(Matrix4::translate(0,AMOUNT_TO_MOVE_TRACK_DOWN,0) * track->getTransformation());
     
+
+
 
     Object * trackLoft = GeometryFactory::createLoft(circle,  *track, 10, NUM_SEGMENTS_TO_SAMPLE_ALONG_CURVE);
     
@@ -728,7 +765,7 @@ void RenderWidget0::test()
 
 	// now we have to set up the lighting....
     // Create a white light
-    Light * white = sceneManager->createLight();
+    /*Light * white = sceneManager->createLight();
 	white->setType(Light::POINT);
     white->setSpotDirection(Vector3(0,0,-1));
     white->setDiffuseColor(Vector3(1,1,1));
@@ -741,7 +778,7 @@ void RenderWidget0::test()
     whiteLight = new LightNode(white);
 	whiteLight->setPosition(Vector3(0,0,0));
 	minecart->addChild(whiteLight);
-
+*/
     sceneManager->getRoot()->addChild(minecart);
     
     

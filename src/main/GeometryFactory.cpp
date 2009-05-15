@@ -1588,7 +1588,7 @@ std::vector<GeometryFactory::Face> GeometryFactory::createLoftFaces(
     
     // Rotate all of the tangents 90 degrees about the Y axis to make them
     // normal to the curve
-    Matrix4 normalRotationMatrix = Matrix4::rotateY(BasicMath::radians(90));
+    Matrix4 normalRotationMatrix = Matrix4::IDENTITY;//Matrix4::rotateY(BasicMath::radians(90));
     vector<Vector3> shapeNormals;
     for (std::vector<Vector3>::iterator i = shapeTangents.begin(); i != shapeTangents.end(); i++) 
     {
@@ -1667,6 +1667,7 @@ std::vector<GeometryFactory::Face> GeometryFactory::createLoftFaces(
     for (int row = 0; row < numRows; row++) {
 		for (int face = 0; face < numFacesPerRow; face++) {
 
+            
             // Pull out all the attributes related to upper left point
             VertexAttributes upperLeft;
             upperLeft.position = vecVertices[row][face];
@@ -1689,11 +1690,18 @@ std::vector<GeometryFactory::Face> GeometryFactory::createLoftFaces(
             lowerLeft.textureCoords = vecTexCoords[row+1][face];
             lowerLeft.normal = vecNormals[row+1][face];
 
-            Face f;
+            Face f;/*
             f.upperLeft = upperLeft;
             f.upperRight = upperRight;
             f.lowerRight = lowerRight;
-            f.lowerLeft = lowerLeft;
+            f.lowerLeft = lowerLeft;*/
+            
+            f.upperLeft = upperRight;
+            f.upperRight = upperLeft;
+            f.lowerLeft = lowerRight;
+            f.lowerRight = lowerLeft;
+            
+            
             faces.push_back(f);
             
             //cout << upperLeft.position << "," << upperRight.position << "," << lowerRight.position << "," << lowerLeft.position << endl;
