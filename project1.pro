@@ -56,6 +56,8 @@ SOURCES += src/re167/BasicMath.cpp \
  src/re167/Basis.cpp \
  src/re167/spline/Square.cpp \
  src/re167/spline/PiecewiseSpline.cpp \
+ src/re167/scenegraph/SplineLighting.cpp \
+ src/re167/scenegraph/Torch.cpp
 
 
 
@@ -118,7 +120,8 @@ HEADERS += src/re167/BasicMath.h \
  src/re167/spline/Morpher.h \
  src/re167/spline/Square.h \
  src/re167/spline/PiecewiseSpline.h \
-
+ src/re167/scenegraph/SplineLighting.h \
+ src/re167/scenegraph/Torch.h
 
 
 

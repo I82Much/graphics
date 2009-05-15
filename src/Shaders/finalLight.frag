@@ -98,7 +98,7 @@ void main() {
 	gl_FragColor += colorFrom5;
 	gl_FragColor += colorFrom6;
 	gl_FragColor += colorFrom7;
-	gl_FragColor *= gl_TexCoord[0];
+	gl_FragColor *= texture2D(tex, gl_TexCoord[0].st);
 
 }  // end main
 

@@ -83,7 +83,7 @@ void main() {
 	}
 
 
-	gl_FragColor = colorFrom0;// + colorFrom1;
+	gl_FragColor = colorFrom0 + colorFrom1;
 	gl_FragColor *= texture2D(tex, gl_TexCoord[0].st);
 } 
 

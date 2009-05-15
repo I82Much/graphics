@@ -29,6 +29,7 @@
 #include "scenegraph/Shape3D.h"
 #include "scenegraph/TransformGroup.h"
 #include "scenegraph/CameraNode.h"
+#include "scenegraph/SplineLighting.h"
 #include "spline/BezierCurve.h"
 #include "spline/Circle.h"
 #include "spline/Helix.h"
@@ -81,9 +82,9 @@ void RenderWidget0::initSceneEvent()
 	
 	initSplines();
     initGeometry();
-//	initLights();
 
     test();
+	initLights();
     
     initCameras();
     
@@ -222,11 +223,11 @@ void RenderWidget0::initShaders()
     // this shader supports two spot lights
     twoSpotTexture = new Shader("src/Shaders/finalSpotLights.vert", "src/Shaders/finalSpotLights.frag");
 	// this shader should support 8 lights - 2 spot lights and 6 point lights
-    //	lightingTexture = new Shader("src/Shaders/finalLight.vert", "src/Shaders/finalLight.frag");
+	// It slows down rendering and was never fully used because we never got the torch lights working
+    //twoSpotTexture = new Shader("src/Shaders/finalLight.vert", "src/Shaders/finalLight.frag");
     
 }
 
-// I don't think we need this method for this project - Susie
 void RenderWidget0::initLights()
 {
     
@@ -244,23 +245,12 @@ void RenderWidget0::initLights()
     
     
     LightNode * blueLight = new LightNode(blue);
-
-/*    
-    // Create a white light
-    Light * white = sceneManager->createLight();
-	white->setType(Light::SPOT);
-    white->setSpotDirection(Vector3(1,1,1));
-    white->setDiffuseColor(Vector3(1,1,1));
-    white->setAmbientColor(Vector3(.2,.2,.2));
-    white->setSpecularColor(Vector3(1,1,1));
-	white->setSpotCutoff(90.0);
-	white->setSpotExponent(1.0);
-    
-    LightNode * whiteLight = new LightNode(white);
-*/    
     
     sceneManager->getRoot()->addChild(blueLight);
-//	sceneManager->getRoot()->addChild(whiteLight);
+
+	// This would have implemented the torch lights; however, the code did not work
+	sceneManager->getRoot()->addChild(new SplineLighting(track, SplineLighting::W, 3.5, 10000, 100));
+	sceneManager->getRoot()->addChild(new SplineLighting(track, SplineLighting::W, -3.5, 10000, 100));
 }
 
 
